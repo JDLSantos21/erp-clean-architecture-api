@@ -8,7 +8,7 @@ export abstract class VehicleDatasource {
     limit: number,
     filters?: Partial<Vehicle>
   ): Promise<{ vehicles: Vehicle[]; total: number }>;
-  abstract getVehicleById(id: string): Promise<Vehicle>;
+  abstract getVehicleById(id: string): Promise<Vehicle | null>;
   abstract updateVehicle(
     id: string,
     data: RegisterVehicleDto

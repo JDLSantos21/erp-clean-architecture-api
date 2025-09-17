@@ -5,3 +5,4 @@ src/data/postgresql/generated
 prisma/migrations
 dist
 pnpm-lock.yaml
+.env

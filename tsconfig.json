@@ -5,6 +5,7 @@
     "moduleResolution": "node",
     "outDir": "./dist",
     "rootDir": "./src",
+    "useDefineForClassFields": false,
     "strict": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

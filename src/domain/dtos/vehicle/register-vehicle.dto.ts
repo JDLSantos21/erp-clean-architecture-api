@@ -13,6 +13,8 @@ export class RegisterVehicleDto {
   }): [string?, RegisterVehicleDto?] {
     const { chasis, license_plate, brand, model, year, current_tag } = object;
 
+    console.log(object);
+
     if (
       !license_plate ||
       !chasis ||
@@ -21,11 +23,11 @@ export class RegisterVehicleDto {
       !year ||
       !current_tag
     ) {
-      return ["Missing required fields", undefined];
+      return ["Faltan campos requeridos", undefined];
     }
 
     if (typeof year !== "number" || year.toString().length !== 4) {
-      return ["Invalid year", undefined];
+      return ["Año inválido", undefined];
     }
 
     return [

@@ -13,9 +13,15 @@ export class CreateFuelConsumptionDto {
     public consumedAt?: Date
   ) {}
 
-  static create(object: {
-    [key: string]: any;
-  }): [string?, CreateFuelConsumptionDto?] {
+  /**
+   * Crea y valida el DTO de consumo de combustible.
+   * @param object Body recibido desde la petición.
+   * @param userId Id del usuario autenticado (token / middleware auth).
+   */
+  static create(
+    object: { [key: string]: any },
+    userId: string
+  ): [string?, CreateFuelConsumptionDto?] {
     const {
       vehicleType,
       MAX_GALLONS_PER_CONSUMPTION,
@@ -29,74 +35,87 @@ export class CreateFuelConsumptionDto {
       gallons,
       mileage,
       notes,
-      user_id,
       consumed_at,
       vehicle_type,
     } = object;
 
-    if (!vehicle_id || !gallons || !user_id || !vehicle_type) {
+    // Validación de userId (viene del contexto de autenticación, no del body)
+    if (!userId || typeof userId !== "string" || userId.trim() === "") {
+      return ["El ID del usuario autenticado es obligatorio", undefined];
+    }
+    if (!Validators.uuid.test(userId)) {
+      return ["El ID del usuario autenticado no es válido", undefined];
+    }
+
+    if (!vehicle_id || !gallons || !vehicle_type) {
       return ["Faltan campos obligatorios", undefined];
     }
 
-    // Validar que los IDs obligatorios no sean cadenas vacías
+    const vehicleTypeArray = Object.values(vehicleType);
+
+    if (!vehicleTypeArray.includes(vehicle_type)) {
+      return ["El tipo de vehículo no es válido", undefined];
+    }
+
     if (vehicle_id.trim() === "") {
       return ["El ID del vehículo no puede estar vacío", undefined];
-    }
-
-    if (user_id.trim() === "") {
-      return ["El ID del usuario no puede estar vacío", undefined];
-    }
-
-    if (vehicle_type === vehicleType.VEHICLE && !mileage) {
-      return ["El kilometraje es obligatorio para vehículos", undefined];
-    }
-
-    if (vehicle_type === vehicleType.VEHICLE && !driver_id) {
-      return ["El ID del conductor es obligatorio para vehículos", undefined];
     }
 
     if (vehicle_id && !Validators.uuid.test(vehicle_id)) {
       return ["El ID del vehículo no es válido", undefined];
     }
 
-    if (
-      driver_id &&
-      driver_id.trim() !== "" &&
-      !Validators.uuid.test(driver_id)
-    ) {
-      return ["El ID del conductor no es válido", undefined];
-    }
-
-    if (!Validators.uuid.test(user_id)) {
-      return ["El ID del usuario no es válido", undefined];
-    }
-
     if (typeof gallons !== "number" || gallons <= 0) {
       return ["La cantidad de galones debe ser un número positivo", undefined];
     }
 
-    if (
-      vehicle_type === vehicleType.VEHICLE &&
-      gallons > MAX_GALLONS_PER_CONSUMPTION
-    ) {
-      return [
-        `La cantidad de galones no puede exceder ${MAX_GALLONS_PER_CONSUMPTION} galones por consumo`,
-        undefined,
-      ];
+    if (vehicle_type === vehicleType.VEHICLE) {
+      if (!mileage) {
+        return ["El kilometraje es obligatorio para vehículos", undefined];
+      }
+
+      if ((mileage && typeof mileage !== "number") || mileage <= 0) {
+        return ["El kilometraje debe ser un número positivo", undefined];
+      }
+
+      if (!driver_id) {
+        return ["El ID del conductor es obligatorio para vehículos", undefined];
+      }
+
+      if (!Validators.uuid.test(driver_id.trim()))
+        return ["El ID del conductor no es válido", undefined];
+
+      if (gallons > MAX_GALLONS_PER_CONSUMPTION) {
+        return [
+          `La cantidad de galones no puede exceder ${MAX_GALLONS_PER_CONSUMPTION} galones por consumo`,
+          undefined,
+        ];
+      }
     }
 
-    if (
-      vehicle_type === vehicleType.PLANT &&
-      gallons > MAX_GALLONS_PER_CONSUMPTION_FOR_PLANT
-    ) {
-      return [
-        `La cantidad de galones no puede exceder ${MAX_GALLONS_PER_CONSUMPTION_FOR_PLANT} galones por consumo`,
-        undefined,
-      ];
+    let driver_id_final: string | null = driver_id ? driver_id : null;
+    let mileage_final: number | null = mileage ? mileage : null;
+
+    if (vehicle_type === vehicleType.PLANT) {
+      if (gallons > MAX_GALLONS_PER_CONSUMPTION_FOR_PLANT) {
+        return [
+          `La cantidad de galones no puede exceder ${MAX_GALLONS_PER_CONSUMPTION_FOR_PLANT} galones por consumo`,
+          undefined,
+        ];
+      }
+
+      driver_id_final = null;
+      mileage_final = null;
     }
 
-    if ((mileage && typeof mileage !== "number") || mileage <= 0) {
-      return ["El kilometraje debe ser un número positivo", undefined];
+    if (consumed_at !== undefined) {
+      if (isNaN(new Date(consumed_at).getTime())) {
+        return ["La fecha de consumo no es válida", undefined];
+      }
+
+      if (new Date(consumed_at) > new Date()) {
+        return ["La fecha de consumo no puede ser en el futuro", undefined];
+      }
     }
 
     if (notes !== undefined) {
@@ -108,29 +127,21 @@ export class CreateFuelConsumptionDto {
         return ["Las notas no pueden exceder los 500 caracteres", undefined];
     }
 
-    if (consumed_at !== undefined && isNaN(new Date(consumed_at).getTime())) {
-      return ["La fecha de consumo no es válida", undefined];
-    }
-
     if (tank_refill_id !== undefined && isNaN(Number(tank_refill_id))) {
       return ["El ID del reabastecimiento no es válido", undefined];
     }
-
-    // Convertir driver_id vacío a null
-    const cleanedDriverId =
-      driver_id && driver_id.trim() !== "" ? driver_id : null;
 
     return [
       undefined,
       new CreateFuelConsumptionDto(
         vehicle_id,
         gallons,
-        user_id,
-        cleanedDriverId,
-        mileage,
-        tank_refill_id,
+        userId,
+        driver_id_final,
+        mileage_final,
+        tank_refill_id !== undefined ? Number(tank_refill_id) : undefined,
         notes,
-        consumed_at
+        consumed_at ? new Date(consumed_at) : undefined
       ),
     ];
   }

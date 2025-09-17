@@ -1,18 +1,19 @@
 import { Response, Request, NextFunction } from "express";
 import { JwtAdapter } from "../../config/jwt";
 import { prisma } from "../../data/postgresql/config";
+import { RoleName } from "../../domain";
 
-//extend request type
-
+//Extendiendo el tipo Request de express para agregar la propiedad user
 declare global {
   namespace Express {
     interface Request {
       user?: {
         id: string;
         username: string;
+        password: string;
         name: string;
         lastName: string;
-        roles: string[];
+        roles: RoleName[];
         createdAt: Date;
         updatedAt: Date;
       };
@@ -22,16 +23,15 @@ declare global {
 
 export class AuthMiddleware {
   static async validateJWT(req: Request, res: Response, next: NextFunction) {
-    //validate token
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-      res.status(401).json({ error: "No token provided" });
+      res.status(401).json({ error: "No se proporcionó token" });
       return;
     }
 
     if (!authHeader.startsWith("Bearer ")) {
-      res.status(401).json({ error: "Invalid token format" });
+      res.status(401).json({ error: "Formato de token no válido" });
       return;
     }
 
@@ -41,7 +41,7 @@ export class AuthMiddleware {
       const payload = await JwtAdapter.validateToken<{ id: string }>(token);
 
       if (!payload) {
-        res.status(401).json({ error: "Invalid token" });
+        res.status(401).json({ error: "Token no válido" });
         return;
       }
 
@@ -53,7 +53,7 @@ export class AuthMiddleware {
       const roleNames = user?.roles.map((userRole) => userRole.role.name);
 
       if (!user) {
-        res.status(401).json({ error: "invalid token" });
+        res.status(401).json({ error: "Token no válido" });
         return;
       }
 
@@ -61,7 +61,7 @@ export class AuthMiddleware {
 
       next();
     } catch (error) {
-      console.log("Token validation error:", error);
+      console.log("Error de validación de token:", error);
       res.status(500).json({ error: "Internal server error" });
       return;
     }

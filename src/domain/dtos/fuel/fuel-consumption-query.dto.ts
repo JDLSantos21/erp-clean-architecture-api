@@ -10,9 +10,9 @@ export class FuelConsumptionQueryDto {
     public vehicleId?: string,
     public driverId?: string,
     public userId?: string,
-    public startDate?: Date,
-    public endDate?: Date,
-    public searchTerm?: string
+    public startDate?: string,
+    public endDate?: string,
+    public search?: string
   ) {}
 
   static create(object: {

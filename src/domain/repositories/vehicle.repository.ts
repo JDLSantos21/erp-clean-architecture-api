@@ -14,7 +14,7 @@ export abstract class VehicleRepository {
     skip,
     limit,
   }: getVehiclesParams): Promise<{ vehicles: Vehicle[]; total: number }>;
-  abstract getVehicleById(id: string): Promise<Vehicle>;
+  abstract getVehicleById(id: string): Promise<Vehicle | null>;
   abstract updateVehicle(
     id: string,
     data: RegisterVehicleDto

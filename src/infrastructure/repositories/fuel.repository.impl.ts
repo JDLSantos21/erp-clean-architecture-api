@@ -69,21 +69,24 @@ export class FuelRepositoryImpl implements FuelRepository {
     );
   }
 
-  getCurrentFuelTankStatus(): Promise<FuelTank | null> {
-    return this.fuelDatasource.getCurrentFuelTankStatus();
+  getTankCurrentStatus(): Promise<FuelTank | null> {
+    return this.fuelDatasource.getTankCurrentStatus();
   }
 
-  resetFuelTankLevel(
-    previousLevel: number,
-    userId: string
-  ): Promise<FuelTankReset | null> {
-    return this.fuelDatasource.resetFuelTankLevel(previousLevel, userId);
+  resetFuelTankLevel(userId: string): Promise<FuelTankReset | null> {
+    return this.fuelDatasource.resetFuelTankLevel(userId);
   }
 
   findAllFuelConsumptions(
     params: FiltersParams
   ): Promise<{ consumptions: FuelConsumption[]; totalPages: number }> {
     return this.fuelDatasource.findAllFuelConsumptions(params);
+  }
+
+  findAllTankRefills(
+    params: FiltersParams
+  ): Promise<{ refills: FuelRefill[]; totalPages: number }> {
+    return this.fuelDatasource.findAllTankRefills(params);
   }
 
   createFuelTankRefill(data: CreateFuelTankRefillDto): Promise<FuelRefill> {
@@ -94,14 +97,11 @@ export class FuelRepositoryImpl implements FuelRepository {
     return this.fuelDatasource.deleteFuelTankRefill(id);
   }
 
-  getFuelTankRefillById(id: number): Promise<FuelRefill | null> {
-    return this.fuelDatasource.getFuelTankRefillById(id);
-  }
-
-  getFuelTankRefills(
-    params: FiltersParams
-  ): Promise<{ refills: FuelRefill[]; totalPages: number }> {
-    return this.fuelDatasource.getFuelTankRefills(params);
+  getFuelTankRefillById(
+    id: number,
+    consumptions?: boolean
+  ): Promise<FuelRefill | null> {
+    return this.fuelDatasource.getFuelTankRefillById(id, consumptions);
   }
 
   findLastTankRefill(): Promise<FuelRefill | null> {

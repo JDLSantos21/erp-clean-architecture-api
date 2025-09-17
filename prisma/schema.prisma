@@ -28,12 +28,13 @@ model User {
   FuelRefill    FuelRefill[]
   FuelTankReset FuelTankReset[]
   FuelConsumption FuelConsumption[]
+  StockMove     StockMove[]
   @@map("users")
 }
 
 model Role {
   id        Int        @id @default(autoincrement())
-  name      String     @unique @db.VarChar(50)
+  name      RoleName   @unique
   createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime   @updatedAt @map("updated_at")
   users     UserRole[]
@@ -88,7 +89,7 @@ model Employee {
   userId                String?           @map("user_id") @db.Uuid
   employeeCode          String            @map("employee_code") @db.VarChar(50) @unique
   name                  String            @db.VarChar(100)
-  lastName              String            @db.VarChar(100)
+  lastName              String            @map("last_name") @db.VarChar(100)
   position              String            @db.VarChar(100)
   phoneNumber           String?           @map("phone_number") @db.VarChar(20) @unique
   cedula                String?           @map("cedula") @db.VarChar(15) @unique
@@ -185,4 +186,78 @@ model FuelTankReset {
 
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@map("fuel_tank_resets")
+}
+
+
+
+model MaterialCategories {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  materials Material[]
+
+  @@map("material_categories")
+}
+
+model Unit {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  symbol    String?   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  materials Material[]
+
+  @@map("units")
+}
+
+model Material {
+  id                 Int                @id @default(autoincrement())
+  name               String             @db.VarChar(100)
+  description        String?            @db.VarChar(255)
+  categoryId         Int                @map("category_id")
+  unitId             Int                @map("unit_id")
+  stock              Float              @default(0)
+  minimumStock      Float              @map("minimum_stock") @default(0)
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
+  stockMoves        StockMove[]
+
+  category          MaterialCategories @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  unit              Unit               @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@unique([name, categoryId])
+  @@map("materials")
+}
+
+model StockMove {
+  id         Int           @id @default(autoincrement())
+  materialId Int           @map("material_id")
+  type       StockMoveType
+  quantity   Float
+  userId     String        @map("user_id") @db.Uuid
+  description      String?
+  date      DateTime      @default(now())
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+
+  material   Material      @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("stock_moves")
+}
+
+enum StockMoveType {
+  COMPRA
+  CONSUMO
+  AJUSTE
+}
+
+enum RoleName {
+  ADMIN
+  ADMINISTRATIVO
+  CHOFER
+  SUPERVISOR
+  OPERADOR
+  USER
 }

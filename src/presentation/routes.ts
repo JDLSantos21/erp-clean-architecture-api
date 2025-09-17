@@ -3,6 +3,7 @@ import { AuthRoutes } from "./auth/routes";
 import { VehicleRoutes } from "./vehicles/routes";
 import { EmployeeRoutes } from "./employee/routes";
 import { FuelRoutes } from "./fuel/routes";
+import { FuelAnalyticsRoutes } from "./fuel/analytics-routes";
 
 export class AppRoutes {
   static get routes(): Router {
@@ -12,6 +13,7 @@ export class AppRoutes {
     router.use("/vehicles", VehicleRoutes.routes);
     router.use("/employees", EmployeeRoutes.routes);
     router.use("/fuel", FuelRoutes.routes);
+    router.use("/fuel", FuelAnalyticsRoutes.routes);
 
     return router;
   }

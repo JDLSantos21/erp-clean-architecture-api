@@ -10,16 +10,23 @@ export class CreateFuelTankRefillDto {
     public newLevel?: number
   ) {}
 
-  static create(object: {
-    [key: string]: any;
-  }): [string?, CreateFuelTankRefillDto?] {
-    const { gallons, user_id, price_per_gallon } = object;
+  static create(
+    object: {
+      [key: string]: any;
+    },
+    userId: string
+  ): [string?, CreateFuelTankRefillDto?] {
+    const { gallons, price_per_gallon } = object;
 
-    if (!gallons || !user_id || !price_per_gallon) {
+    if (!gallons || !userId || !price_per_gallon) {
       return ["Faltan campos obligatorios", undefined];
     }
 
-    if (!Validators.uuid.test(user_id)) {
+    if (!userId || typeof userId !== "string" || userId.trim() === "") {
+      return ["El ID del usuario autenticado es obligatorio", undefined];
+    }
+
+    if (!Validators.uuid.test(userId)) {
       return ["ID de usuario inválido", undefined];
     }
 
@@ -37,7 +44,7 @@ export class CreateFuelTankRefillDto {
 
     return [
       undefined,
-      new CreateFuelTankRefillDto(gallons, user_id, price_per_gallon),
+      new CreateFuelTankRefillDto(gallons, userId, price_per_gallon),
     ];
   }
 }

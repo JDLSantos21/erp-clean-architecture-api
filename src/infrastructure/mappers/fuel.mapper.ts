@@ -26,39 +26,31 @@ export class FuelMapper {
   }): FuelConsumption {
     const {
       id,
-      vehicleId,
-      driverId,
       gallons,
       mileage,
       tankRefillId,
       notes,
-      userId,
       consumedAt,
       createdAt,
       updatedAt,
+      driver,
+      user,
+      vehicle,
     } = object;
 
-    if (
-      !id ||
-      !vehicleId ||
-      !gallons ||
-      !userId ||
-      !consumedAt ||
-      !createdAt ||
-      !updatedAt
-    ) {
+    if (!id || !gallons || !consumedAt || !createdAt || !updatedAt) {
       throw CustomError.badRequest("Invalid fuel consumption object");
     }
 
     return new FuelConsumption({
       id,
-      vehicleId,
-      driverId,
       gallons,
       mileage,
       tankRefillId,
       notes,
-      userId,
+      driver,
+      user,
+      vehicle,
       consumedAt,
       createdAt,
       updatedAt,
@@ -105,20 +97,13 @@ export class FuelMapper {
       pricePerGallon,
       previousLevel,
       newLevel,
-      userId,
+      Consumptions: consumptions,
+      user,
       createdAt,
       updatedAt,
     } = object;
 
-    if (
-      !id ||
-      !gallons ||
-      !previousLevel ||
-      !newLevel ||
-      !userId ||
-      !createdAt ||
-      !updatedAt
-    ) {
+    if (!id || !gallons || !newLevel || !user || !createdAt || !updatedAt) {
       throw CustomError.badRequest("Invalid fuel refill object");
     }
 
@@ -128,7 +113,8 @@ export class FuelMapper {
       pricePerGallon,
       previousLevel,
       newLevel,
-      userId,
+      consumptions,
+      user,
       createdAt,
       updatedAt,
     });

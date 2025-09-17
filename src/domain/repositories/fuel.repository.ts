@@ -40,14 +40,13 @@ export abstract class FuelRepository {
     data: CreateFuelTankRefillDto
   ): Promise<FuelRefill>;
 
-  abstract getFuelTankRefills(
-    params: FiltersParams
-  ): Promise<{ refills: FuelRefill[]; totalPages: number }>;
-
-  abstract getFuelTankRefillById(id: number): Promise<FuelRefill | null>;
+  abstract getFuelTankRefillById(
+    id: number,
+    consumptions?: boolean
+  ): Promise<FuelRefill | null>;
   abstract deleteFuelTankRefill(id: number): Promise<void>;
 
-  abstract getCurrentFuelTankStatus(): Promise<FuelTank | null>;
+  abstract getTankCurrentStatus(): Promise<FuelTank | null>;
 
   abstract findVehicleLastConsumptionExcluding(
     vehicleId: string,
@@ -59,10 +58,7 @@ export abstract class FuelRepository {
     consumptionId: number
   ): Promise<FuelConsumption | null>;
 
-  abstract resetFuelTankLevel(
-    previousLevel: number,
-    userId: string
-  ): Promise<FuelTankReset | null>;
+  abstract resetFuelTankLevel(userId: string): Promise<FuelTankReset | null>;
 
   abstract createOrUpdateFuelTankLevel(
     params: CreateUpdateFuelTankDto
@@ -80,4 +76,8 @@ export abstract class FuelRepository {
   ): Promise<FuelConsumption | null>;
 
   abstract findLastTankRefill(): Promise<FuelRefill | null>;
+
+  abstract findAllTankRefills(
+    params: FiltersParams
+  ): Promise<{ refills: FuelRefill[]; totalPages: number }>;
 }

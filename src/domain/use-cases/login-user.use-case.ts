@@ -1,5 +1,6 @@
 import { JwtAdapter } from "../../config/jwt";
 import { LoginUserDto } from "../dtos/user/login-user.dto";
+import { RoleName } from "../entities/Users";
 import { CustomError } from "../errors/custom.errors";
 import { AuthRepository } from "../repositories/auth.repository";
 
@@ -7,7 +8,7 @@ type User = {
   id: string;
   name: string;
   lastName: string;
-  roles: string[];
+  roles: RoleName[];
 };
 
 interface UserToken {
@@ -47,7 +48,7 @@ export class LoginUser implements LoginUserUseCase {
         id,
         lastName,
         name,
-        roles: roles.map((role) => role.toString()),
+        roles: roles.map((role) => role),
       },
       token,
     };

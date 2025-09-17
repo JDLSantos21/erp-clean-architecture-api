@@ -1,7 +1,6 @@
 import { CreateFuelTankRefillDto } from "../../dtos";
 import { FuelRefill } from "../../entities/Fuel";
 import { CustomError } from "../../errors/custom.errors";
-import { AuthRepository } from "../../repositories/auth.repository";
 import { FuelRepository } from "../../repositories/fuel.repository";
 
 interface CreateFuelTankRefillUseCase {
@@ -9,25 +8,17 @@ interface CreateFuelTankRefillUseCase {
 }
 
 export class CreateFuelTankRefill implements CreateFuelTankRefillUseCase {
-  constructor(
-    private readonly fuelRepository: FuelRepository,
-    private readonly authRepository: AuthRepository
-  ) {}
+  constructor(private readonly fuelRepository: FuelRepository) {}
 
   async execute(data: CreateFuelTankRefillDto): Promise<FuelRefill> {
-    const { gallons, userId } = data;
+    const { gallons } = data;
 
-    const [tank, user] = await Promise.all([
-      this.fuelRepository.getCurrentFuelTankStatus(),
-      this.authRepository.findById(userId),
-    ]);
+    const tank = await this.fuelRepository.getTankCurrentStatus();
 
     if (!tank)
       throw CustomError.notFound(
         "No se ha encontrado el tanque de combustible"
       );
-
-    if (!user) throw CustomError.notFound("Usuario no encontrado");
 
     const { currentLevel, capacity } = tank;
 
@@ -37,12 +28,18 @@ export class CreateFuelTankRefill implements CreateFuelTankRefillUseCase {
       );
     }
 
-    const refillData = {
+    if (gallons + currentLevel < 0) {
+      throw CustomError.badRequest(
+        "La cantidad de galones no puede ser negativa"
+      );
+    }
+
+    const payload = {
       ...data,
       previousLevel: currentLevel,
       newLevel: currentLevel + gallons,
     };
 
-    return await this.fuelRepository.createFuelTankRefill(refillData);
+    return await this.fuelRepository.createFuelTankRefill(payload);
   }
 }

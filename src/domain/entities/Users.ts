@@ -6,14 +6,22 @@ export class User extends Entity<User> {
   lastName!: string;
   username!: string;
   password!: string;
-  roles!: string[];
+  roles!: RoleName[];
   createdAt?: Date;
   updatedAt?: Date;
 }
 
+export type RoleName =
+  | "ADMIN"
+  | "ADMINISTRATIVO"
+  | "CHOFER"
+  | "SUPERVISOR"
+  | "OPERADOR"
+  | "USER";
+
 export class Role extends Entity<Role> {
   id!: number;
-  name!: string;
+  name!: RoleName;
   createdAt?: Date;
   updatedAt?: Date;
 }

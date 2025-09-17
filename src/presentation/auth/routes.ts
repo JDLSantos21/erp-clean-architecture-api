@@ -14,12 +14,12 @@ export class AuthRoutes {
     const { isAdmin, elevateRole } = PermissionMiddleware;
 
     // Public routes
+    router.post("/role", controller.createRole);
+    router.post("/register", controller.registerUser);
     router.post("/login", controller.login);
 
     router.use(AuthMiddleware.validateJWT);
-    // Protected routes
-    router.post("/role", [elevateRole], controller.createRole);
-    router.post("/register", [elevateRole], controller.registerUser);
+
     router.get("/", controller.getUsers);
     router.get("/:id", controller.findById);
 

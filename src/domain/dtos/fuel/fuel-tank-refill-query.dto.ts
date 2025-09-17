@@ -5,10 +5,10 @@ export class FuelTankRefillQueryDto {
   constructor(
     public page: number,
     public limit: number,
-    public startDate?: Date,
-    public endDate?: Date,
+    public startDate?: string,
+    public endDate?: string,
     public userId?: string,
-    public searchTerm?: string
+    public search?: string
   ) {}
 
   static create(object: {
@@ -57,8 +57,8 @@ export class FuelTankRefillQueryDto {
     return [
       undefined,
       new FuelTankRefillQueryDto(
-        page,
-        limit,
+        pageNum,
+        limitNum,
         start_date,
         end_date,
         user_id,

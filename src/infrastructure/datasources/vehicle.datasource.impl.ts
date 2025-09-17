@@ -23,7 +23,13 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
         return vehicle;
       });
 
-      return new Vehicle(registeredVehicle);
+      console.log("vehiculo registrado", registeredVehicle);
+
+      const vehicle = new Vehicle(registeredVehicle);
+
+      console.log("vehiculo registrado - entity", vehicle);
+
+      return vehicle;
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
@@ -101,16 +107,16 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
     return vehicle ? new Vehicle(vehicle) : null;
   }
 
-  async getVehicleById(id: string): Promise<Vehicle> {
+  async getVehicleById(id: string): Promise<Vehicle | null> {
+    if (!id) return null;
+
     const vehicle = await prisma.vehicle.findUnique({
       where: {
         id,
       },
     });
 
-    if (!vehicle) throw CustomError.notFound("Vehicle not found");
-
-    return new Vehicle(vehicle);
+    return vehicle ? new Vehicle(vehicle) : null;
   }
 
   async updateVehicle(id: string, data: RegisterVehicleDto): Promise<Vehicle> {

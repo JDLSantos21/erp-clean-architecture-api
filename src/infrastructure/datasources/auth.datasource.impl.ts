@@ -29,7 +29,7 @@ export class AuthDataSourceImpl extends AuthDataSource {
         where: { name: createRoleDto.role },
       });
 
-      if (exist) throw CustomError.badRequest("Role already exists");
+      if (exist) throw CustomError.badRequest("Este rol ya existe");
 
       const newRole = await prisma.role.create({
         data: { name: createRoleDto.role },
@@ -84,10 +84,6 @@ export class AuthDataSourceImpl extends AuthDataSource {
   async loginUser(loginUserDto: LoginUserDto): Promise<User> {
     const { username, password } = loginUserDto;
 
-    //To-do: fix bug with dto and User entity in the mapper
-
-    console.log("Dto: ", loginUserDto);
-
     try {
       const user = await prisma.user.findUnique({
         where: { username },
@@ -100,16 +96,11 @@ export class AuthDataSourceImpl extends AuthDataSource {
 
       if (!user) throw CustomError.notFound("Usuario no encontrado");
 
-      console.log("User found: ", user); //log for debugging
-
       const isMatch = this.compare(password, user.password);
       if (!isMatch) throw CustomError.unauthorized("Credenciales inválidas");
 
-      const mapper = UserMapper.userEntityFromObject(user);
-      console.log("Mapped user from Datasource: ", mapper); //log for debugging
-      return mapper;
+      return UserMapper.userEntityFromObject(user);
     } catch (error) {
-      console.log("Ocurrio el error en login", error); // log for debugging
       if (error instanceof CustomError) {
         throw error;
       }

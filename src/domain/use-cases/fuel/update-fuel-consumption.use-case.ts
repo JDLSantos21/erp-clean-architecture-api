@@ -22,7 +22,17 @@ export class UpdateFuelConsumption implements UpdateFuelConsumptionUseCase {
 
     const { mileage } = data;
 
-    if (mileage !== undefined) {
+    const { createdAt } = consumption;
+
+    const THIRTY_MINUTES_IN_MILISECONDS = 30 * 60 * 1000;
+
+    if (createdAt < new Date(Date.now() - THIRTY_MINUTES_IN_MILISECONDS)) {
+      throw CustomError.badRequest(
+        "No se puede editar un registro después de 30 minutos de su creación"
+      );
+    }
+
+    if (mileage !== undefined || data.consumedAt !== undefined) {
       const previousConsumption =
         await this.fuelRepository.findVehicleLastConsumptionExcluding(
           consumption.vehicleId,
@@ -30,14 +40,19 @@ export class UpdateFuelConsumption implements UpdateFuelConsumptionUseCase {
         );
 
       if (previousConsumption) {
-        if (mileage < previousConsumption.mileage!)
+        if (mileage && mileage < previousConsumption.mileage!)
           throw CustomError.badRequest(
             "El kilometraje de combustible no puede ser menor al último registro."
           );
 
-        if (mileage - previousConsumption.mileage! > 500)
+        if (mileage && mileage - previousConsumption.mileage! > 500)
           throw CustomError.badRequest(
             "El kilometraje de combustible no puede ser mayor a 500 km del último registro."
+          );
+
+        if (data.consumedAt && previousConsumption.consumedAt > data.consumedAt)
+          throw CustomError.badRequest(
+            "La fecha de consumo no puede ser menor a la fecha del último registro."
           );
       }
 
@@ -48,13 +63,17 @@ export class UpdateFuelConsumption implements UpdateFuelConsumptionUseCase {
         );
 
       if (nextConsumption) {
-        if (mileage > nextConsumption.mileage!)
+        if (mileage && mileage > nextConsumption.mileage!)
           throw CustomError.badRequest(
             "El kilometraje de combustible no puede ser mayor al siguiente registro."
           );
-        if (nextConsumption.mileage! - mileage > 500)
+        if (mileage && nextConsumption.mileage! - mileage > 500)
           throw CustomError.badRequest(
             "El kilometraje de combustible no puede ser mayor a 500 km del siguiente registro."
+          );
+        if (data.consumedAt && nextConsumption.consumedAt < data.consumedAt)
+          throw CustomError.badRequest(
+            "La fecha de consumo no puede ser mayor a la fecha del siguiente registro."
           );
       }
     }
