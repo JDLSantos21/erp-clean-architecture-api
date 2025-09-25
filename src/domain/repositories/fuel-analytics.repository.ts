@@ -1,6 +1,6 @@
 import { FuelMetricsDto, VehicleMetricsDto } from "../dtos";
-import { FuelMetrics, DashboardSummary } from "../entities/FuelAnalytics";
-import { VehicleMetrics } from "../entities/VehicleAnalytics";
+import { FuelMetrics, DashboardSummary } from "../entities";
+import { VehicleMetrics } from "../entities/vehicle/VehicleAnalytics";
 
 export abstract class FuelAnalyticsRepository {
   // Dashboard Summary

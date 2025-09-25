@@ -7,18 +7,26 @@ import {
   LoginUser,
   CreateRoleDto,
   CreateRole,
+  SetRolesToUser,
+  SetRolesToUserDto,
 } from "../../domain";
 import { Request, Response } from "express";
+import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
+import { StatusCode } from "../../domain/constants";
 
 export class AuthController {
   constructor(private readonly authRepository: AuthRepository) {}
 
-  private handleError = (error: unknown, res: Response) => {
+  private handleError = (error: unknown, res: Response, req: Request) => {
     if (error instanceof CustomError) {
-      return res.status(error.statusCode).json({ error: error.message });
+      return res
+        .status(error.statusCode)
+        .json(ResponseBuilder.error(error.statusCode, error.message, req));
     }
 
-    return res.status(500).json({ error: "Internal server error" });
+    return res
+      .status(500)
+      .json(ResponseBuilder.error(500, "Error interno del servidor"));
   };
 
   createRole = (req: Request, res: Response) => {
@@ -32,7 +40,7 @@ export class AuthController {
     new CreateRole(this.authRepository)
       .execute(createRoleDto!)
       .then((role) => res.json(role))
-      .catch((error) => this.handleError(error, res));
+      .catch((error) => this.handleError(error, res, req));
   };
 
   registerUser = (req: Request, res: Response) => {
@@ -46,7 +54,7 @@ export class AuthController {
     new RegisterUser(this.authRepository)
       .execute(registerUserDto!)
       .then((userToken) => res.json(userToken))
-      .catch((error) => this.handleError(error, res));
+      .catch((error) => this.handleError(error, res, req));
   };
 
   login = (req: Request, res: Response) => {
@@ -57,19 +65,17 @@ export class AuthController {
       return;
     }
 
-    console.log(loginUserDto);
-
     new LoginUser(this.authRepository)
       .execute(loginUserDto!)
       .then((sessionData) => res.json(sessionData))
-      .catch((error) => this.handleError(error, res));
+      .catch((error) => this.handleError(error, res, req));
   };
 
   getUsers = (req: Request, res: Response) => {
     this.authRepository
       .getUsers()
       .then((users) => res.json(users))
-      .catch((error) => this.handleError(error, res));
+      .catch((error) => this.handleError(error, res, req));
   };
 
   findById = (req: Request, res: Response) => {
@@ -77,6 +83,27 @@ export class AuthController {
     this.authRepository
       .findById(id)
       .then((user) => res.json(user))
-      .catch((error) => this.handleError(error, res));
+      .catch((error) => this.handleError(error, res, req));
+  };
+
+  setRolesToUser = (req: Request, res: Response) => {
+    const paramUserId = req.params.id;
+    const roles: number[] = req.body.roles;
+
+    const [error, dto] = SetRolesToUserDto.create(roles, paramUserId);
+
+    if (error) {
+      res
+        .status(400)
+        .json(ResponseBuilder.error(StatusCode.BAD_REQUEST, error, req));
+      return;
+    }
+
+    const { roleIds, userId } = dto!;
+
+    new SetRolesToUser(this.authRepository)
+      .execute(userId, roleIds)
+      .then(() => res.status(204).send())
+      .catch((error) => this.handleError(error, res, req));
   };
 }

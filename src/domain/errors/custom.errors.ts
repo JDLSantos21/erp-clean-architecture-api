@@ -1,11 +1,19 @@
+import {
+  getErrorMessage,
+  getHttpStatusCode,
+  createErrorMessage,
+} from "../constants/error-codes.constants";
+
 export class CustomError extends Error {
   constructor(
     public readonly statusCode: number,
-    public readonly message: string
+    public readonly message: string,
+    public readonly errorCode?: string
   ) {
     super(message);
   }
 
+  // Métodos originales (mantenidos para compatibilidad)
   static badRequest(message: string) {
     return new CustomError(400, message);
   }
@@ -32,5 +40,50 @@ export class CustomError extends Error {
   ) {
     if (error) console.log(error);
     return new CustomError(500, message);
+  }
+
+  // Nuevos métodos que usan códigos de error
+  static withErrorCode(errorCode: string, customMessage?: string) {
+    const statusCode = getHttpStatusCode(errorCode);
+    const message = createErrorMessage(errorCode, customMessage);
+    return new CustomError(statusCode, message, errorCode);
+  }
+
+  static badRequestWithCode(errorCode: string, customMessage?: string) {
+    const message = createErrorMessage(errorCode, customMessage);
+    return new CustomError(400, message, errorCode);
+  }
+
+  static unauthorizedWithCode(errorCode: string, customMessage?: string) {
+    const message = createErrorMessage(errorCode, customMessage);
+    return new CustomError(401, message, errorCode);
+  }
+
+  static forbiddenWithCode(errorCode: string, customMessage?: string) {
+    const message = createErrorMessage(errorCode, customMessage);
+    return new CustomError(403, message, errorCode);
+  }
+
+  static notFoundWithCode(errorCode: string, customMessage?: string) {
+    const message = createErrorMessage(errorCode, customMessage);
+    return new CustomError(404, message, errorCode);
+  }
+
+  static conflictWithCode(errorCode: string, customMessage?: string) {
+    const message = createErrorMessage(errorCode, customMessage);
+    return new CustomError(409, message, errorCode);
+  }
+
+  static internalServerWithCode(
+    errorCode: string,
+    customMessage?: string,
+    error?: any
+  ) {
+    if (error) console.log(error);
+    const message = createErrorMessage(
+      errorCode,
+      customMessage || "Internal Server Error"
+    );
+    return new CustomError(500, message, errorCode);
   }
 }

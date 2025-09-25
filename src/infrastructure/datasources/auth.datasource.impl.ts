@@ -81,6 +81,29 @@ export class AuthDataSourceImpl extends AuthDataSource {
     }
   }
 
+  async setRolesToUser(userId: string, roleIds: number[]): Promise<User> {
+    try {
+      await prisma.userRole.createMany({
+        data: roleIds.map((roleId) => ({ userId, roleId })),
+        skipDuplicates: true,
+      });
+
+      const userWithRoles = await prisma.user.findUnique({
+        where: { id: userId },
+        include: { roles: { select: { role: { select: { name: true } } } } },
+      });
+
+      if (!userWithRoles) throw CustomError.notFound("Usuario no encontrado");
+
+      return UserMapper.userEntityFromObject(userWithRoles);
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw CustomError.internalServer();
+    }
+  }
+
   async loginUser(loginUserDto: LoginUserDto): Promise<User> {
     const { username, password } = loginUserDto;
 
@@ -163,6 +186,19 @@ export class AuthDataSourceImpl extends AuthDataSource {
         where: { id: { in: ids } },
       });
       return roles.map((role) => new Role(role));
+    } catch (error) {
+      throw CustomError.internalServer();
+    }
+  }
+
+  async getUserRoles(userId: string): Promise<Role[]> {
+    try {
+      const userRoles = await prisma.userRole.findMany({
+        where: { userId },
+        include: { role: true },
+      });
+
+      return userRoles.map((UserRole) => new Role(UserRole.role));
     } catch (error) {
       throw CustomError.internalServer();
     }

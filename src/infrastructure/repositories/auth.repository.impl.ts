@@ -19,6 +19,10 @@ export class AuthRepositoryImpl implements AuthRepository {
     return this.authDatasource.registerUser(registerUserDto);
   }
 
+  setRolesToUser(userId: string, roleIds: number[]): Promise<User> {
+    return this.authDatasource.setRolesToUser(userId, roleIds);
+  }
+
   login(loginUserDto: LoginUserDto): Promise<User> {
     return this.authDatasource.loginUser(loginUserDto);
   }
@@ -37,5 +41,9 @@ export class AuthRepositoryImpl implements AuthRepository {
 
   findRolesByIds(ids: number[]): Promise<Role[]> {
     return this.authDatasource.findRolesByIds(ids);
+  }
+
+  getUserRoles(userId: string): Promise<Role[]> {
+    return this.authDatasource.getUserRoles(userId);
   }
 }

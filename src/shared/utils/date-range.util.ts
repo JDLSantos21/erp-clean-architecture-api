@@ -8,6 +8,7 @@ export function buildUtcDateRange(
   let range: { gte?: Date; lt?: Date } = {};
 
   if (startDate) {
+    console.log("Start Date:", startDate);
     const start = DateTime.fromISO(startDate, { zone: userTz })
       .startOf("day")
       .toUTC();

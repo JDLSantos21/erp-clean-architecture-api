@@ -1,5 +1,5 @@
-import Entity from "./entity";
-import { Period } from "./VehicleAnalytics";
+import Entity from "../entity";
+import { Period } from "../vehicle/VehicleAnalytics";
 
 export class FuelMetrics extends Entity<FuelMetrics> {
   period!: Period;

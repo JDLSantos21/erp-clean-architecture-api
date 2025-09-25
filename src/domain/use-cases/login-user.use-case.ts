@@ -34,9 +34,6 @@ export class LoginUser implements LoginUserUseCase {
     const user = await this.authRepository.login(loginUserDto);
     const { id, name, lastName, roles } = user;
 
-    console.log(user);
-    console.log(roles);
-
     const token = await this.signToken({ id }, TOKEN_DURATION_IN_MILISECONS);
 
     console.log(token);

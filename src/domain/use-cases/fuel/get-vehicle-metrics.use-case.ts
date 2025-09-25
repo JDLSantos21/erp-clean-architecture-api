@@ -1,5 +1,5 @@
 import { VehicleMetricsDto } from "../../dtos";
-import { VehicleMetrics } from "../../entities/VehicleAnalytics";
+import { VehicleMetrics } from "../../entities/vehicle/VehicleAnalytics";
 import { FuelAnalyticsRepository } from "../../repositories/fuel-analytics.repository";
 
 interface GetVehicleMetricsUseCase {

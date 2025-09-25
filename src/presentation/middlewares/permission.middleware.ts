@@ -1,54 +1,167 @@
 import { NextFunction, Request, Response } from "express";
-import { User } from "../../domain";
+import { User, RoleName } from "../../domain";
+import {
+  hasRoleOrHigher,
+  hasPermissionLevel,
+  PERMISSION_LEVELS,
+  getRoleHierarchyLevel,
+  getRoleNameByLevel,
+} from "../../domain/constants/role-hierarchy.constants";
+import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
+import { StatusCode } from "../../domain/constants";
 
 export class PermissionMiddleware {
-  static async isUser(req: Request, res: Response, next: NextFunction) {
-    const user: Partial<User> = req.user!;
+  // Middleware genérico para verificar niveles de permisos
+  static requirePermissionLevel(requiredLevel: number) {
+    return (req: Request, res: Response, next: NextFunction) => {
+      const user: Partial<User> = req.user!;
 
-    if (!user || !user.roles) {
-      res.status(403).json({ error: "Acceso denegado" });
-      return;
-    }
-    if (!user.roles.includes("USER")) {
-      res.status(403).json({ error: "Se requieren permisos de usuario" });
-      return;
-    }
-    next();
+      const { roles } = user!;
+
+      if (!user || !roles) {
+        res.status(403).json({ error: "Acceso denegado" });
+        return;
+      }
+
+      if (!hasPermissionLevel(roles, requiredLevel)) {
+        const userRolesLevel = roles.map((role) => getRoleHierarchyLevel(role)); // Obtener niveles de los roles del usuario
+
+        const details = {
+          requiredLevel: getRoleNameByLevel(requiredLevel),
+          userMaxLevel: getRoleNameByLevel(Math.max(...userRolesLevel)),
+        };
+
+        const errorMessage =
+          "No tienes los permisos necesarios para esta acción";
+
+        const response = ResponseBuilder.error(
+          StatusCode.FORBIDDEN,
+          errorMessage,
+          req,
+          details
+        );
+
+        res.status(403).json(response);
+        return;
+      }
+
+      next();
+    };
   }
 
-  static async isAdmin(req: Request, res: Response, next: NextFunction) {
-    const user: Partial<User> = req.user!;
+  // Middleware genérico para verificar rol específico o superior
+  static requireRoleOrHigher(requiredRole: RoleName) {
+    return (req: Request, res: Response, next: NextFunction) => {
+      const user: Partial<User> = req.user!;
 
-    if (!user || !user.roles) {
-      res.status(403).json({ error: "Acceso denegado" });
-      return;
-    }
+      if (!user || !user.roles) {
+        res.status(403).json({ error: "Acceso denegado" });
+        return;
+      }
 
-    if (!user.roles.includes("ADMIN")) {
-      res.status(403).json({ error: "Se requiere permisos de administrador" });
-      return;
-    }
+      if (!hasRoleOrHigher(user.roles, requiredRole)) {
+        res.status(403).json({
+          error: `Se requiere rol ${requiredRole} o superior`,
+          userRoles: user.roles,
+          requiredRole,
+        });
+        return;
+      }
 
-    next();
+      next();
+    };
   }
 
-  static elevateRole(req: Request, res: Response, next: NextFunction) {
-    const user: Partial<User> = req.user!;
+  // Específicos basados en niveles de permisos
+  static readonly readOnly = PermissionMiddleware.requirePermissionLevel(
+    PERMISSION_LEVELS.READ_ONLY
+  );
+  static readonly basicOperations = PermissionMiddleware.requirePermissionLevel(
+    PERMISSION_LEVELS.BASIC_OPERATIONS
+  );
+  static readonly advancedOperations =
+    PermissionMiddleware.requirePermissionLevel(
+      PERMISSION_LEVELS.ADVANCED_OPERATIONS
+    );
+  static readonly supervision = PermissionMiddleware.requirePermissionLevel(
+    PERMISSION_LEVELS.SUPERVISION
+  );
+  static readonly administration = PermissionMiddleware.requirePermissionLevel(
+    PERMISSION_LEVELS.ADMINISTRATION
+  );
+  static readonly systemAdmin = PermissionMiddleware.requirePermissionLevel(
+    PERMISSION_LEVELS.SYSTEM_ADMIN
+  );
 
-    if (!user || !user.roles) {
-      res.status(403).json({ error: "Acceso denegado" });
-      return;
-    }
+  // Específicos por rol (compatibilidad hacia atrás)
+  static readonly isUser = PermissionMiddleware.requireRoleOrHigher("USER");
+  static readonly isChofer = PermissionMiddleware.requireRoleOrHigher("CHOFER");
+  static readonly isOperador =
+    PermissionMiddleware.requireRoleOrHigher("OPERADOR");
+  static readonly isSupervisor =
+    PermissionMiddleware.requireRoleOrHigher("SUPERVISOR");
+  static readonly isAdministrativo =
+    PermissionMiddleware.requireRoleOrHigher("ADMINISTRATIVO");
+  static readonly isAdmin = PermissionMiddleware.requireRoleOrHigher("ADMIN");
 
-    // Roles necesitan ser 'ADMIN' o 'ADMINISTRATIVO'
-    if (
-      !user.roles.includes("ADMIN") &&
-      !user.roles.includes("ADMINISTRATIVO")
-    ) {
-      res.status(403).json({ error: "Se requieren permisos administrativos" });
-      return;
-    }
+  // Alias para compatibilidad con código existente
+  static elevateRole = PermissionMiddleware.isAdministrativo;
 
-    next();
+  // Verificar múltiples roles específicos (sin jerarquía)
+  static requireSpecificRoles(roles: RoleName[]) {
+    return (req: Request, res: Response, next: NextFunction) => {
+      const user: Partial<User> = req.user!;
+
+      if (!user || !user.roles) {
+        res.status(403).json({ error: "Acceso denegado" });
+        return;
+      }
+
+      const hasAnyRole = roles.some((role) => user.roles!.includes(role));
+
+      const errorMessage = `Se requiere uno de los siguientes roles: ${roles.join(
+        ", "
+      )}`;
+
+      const response = ResponseBuilder.error(
+        StatusCode.FORBIDDEN,
+        errorMessage,
+        req,
+        { userRoles: user.roles, requiredRoles: roles }
+      );
+
+      if (!hasAnyRole) {
+        res.status(403).json(response);
+        return;
+      }
+
+      next();
+    };
+  }
+
+  // Excluir ciertos roles
+  static excludeRoles(excludedRoles: RoleName[]) {
+    return (req: Request, res: Response, next: NextFunction) => {
+      const user: Partial<User> = req.user!;
+
+      if (!user || !user.roles) {
+        res.status(403).json({ error: "Acceso denegado" });
+        return;
+      }
+
+      const hasExcludedRole = excludedRoles.some((role) =>
+        user.roles!.includes(role)
+      );
+
+      if (hasExcludedRole) {
+        res.status(403).json({
+          error: "Tu rol no tiene acceso a esta funcionalidad",
+          excludedRoles,
+        });
+        return;
+      }
+
+      next();
+    };
   }
 }

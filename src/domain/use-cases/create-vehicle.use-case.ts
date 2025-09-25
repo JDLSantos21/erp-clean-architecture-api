@@ -1,5 +1,5 @@
 import { RegisterVehicleDto } from "../dtos";
-import { Vehicle } from "../entities/Vehicle";
+import { Vehicle } from "../entities/vehicle/Vehicle";
 import { VehicleRepository } from "../repositories/vehicle.repository";
 import { CustomError } from "../errors/custom.errors";
 

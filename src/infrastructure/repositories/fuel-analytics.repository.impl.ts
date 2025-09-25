@@ -3,7 +3,7 @@ import {
   FuelMetrics,
   DashboardSummary,
 } from "../../domain/entities/FuelAnalytics";
-import { VehicleMetrics } from "../../domain/entities/VehicleAnalytics";
+import { VehicleMetrics } from "../../domain/entities/vehicle/VehicleAnalytics";
 import { FuelAnalyticsRepository } from "../../domain/repositories/fuel-analytics.repository";
 import { FuelAnalyticsDatasourceImpl } from "../datasources/fuel-analytics.datasource.impl";
 

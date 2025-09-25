@@ -22,6 +22,7 @@ export class AuthRoutes {
 
     router.get("/", controller.getUsers);
     router.get("/:id", controller.findById);
+    router.post("/set-roles/:id", elevateRole, controller.setRolesToUser);
 
     return router;
   }

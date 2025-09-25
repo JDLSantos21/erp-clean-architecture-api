@@ -65,4 +65,25 @@ export class Validators {
     ); // Verifica que al menos un campo no sea undefined, null o cadena vacía
     // Retorna true si hay al menos un campo válido, de lo contrario false
   }
+
+  static isPositiveInteger(value: any): boolean {
+    const number = Number(value);
+    return Number.isInteger(number) && number > 0;
+  }
+
+  static isPositiveNumber(value: any): boolean {
+    const number = Number(value);
+    return !isNaN(number) && number > 0;
+  }
+
+  static isValidDate(value: any): boolean {
+    const date = new Date(value);
+    console.log("Validating date:", value, date);
+    console.log("Is valid date:", !isNaN(date.getTime()));
+    return !isNaN(date.getTime());
+  }
+
+  static isValidString(value: any): boolean {
+    return typeof value === "string" && value.trim().length > 0;
+  }
 }

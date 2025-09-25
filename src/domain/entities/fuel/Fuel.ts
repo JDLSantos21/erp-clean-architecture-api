@@ -1,7 +1,7 @@
-import { Employee } from "./Employee";
-import Entity from "./entity";
-import { User } from "./Users";
-import { Vehicle } from "./Vehicle";
+import { Employee } from "../Employee";
+import Entity from "../entity";
+import { User } from "../Users";
+import { Vehicle } from "../vehicle/Vehicle";
 
 export class FuelTank extends Entity<FuelTank> {
   id!: number;

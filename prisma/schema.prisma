@@ -29,15 +29,39 @@ model User {
   FuelTankReset FuelTankReset[]
   FuelConsumption FuelConsumption[]
   StockMove     StockMove[]
+  VehicleMaintenance VehicleMaintenance[]
+  // Relaciones para asignación de equipos
+  assignedEquipments EquipmentAssignment[] @relation("AssignedBy")
+  unassignedEquipments EquipmentAssignment[] @relation("UnassignedBy")
+  deliveredEquipments EquipmentAssignment[] @relation("DeliveredBy")
+  // Relaciones para ubicación de equipos
+  equipmentLocations EquipmentLocation[] @relation("gpsUpdatedByUser")
+  
+  // Relaciones para reportes de equipos
+  reportedEquipmentReports EquipmentReport[] @relation("EquipmentReportReportedBy")
+  
+  
+  // Relaciones para módulo de pedidos
+  createdOrders Order[] @relation("OrderCreatedBy")
+  assignedOrders Order[] @relation("OrderAssignedTo")
+  orderStatusChanges OrderStatusHistory[] @relation("OrderStatusChangedBy")
+  
+  // Relaciones para módulo de solicitudes de equipos
+  requestedEquipmentRequests EquipmentRequest[] @relation("EquipmentRequestRequestedBy")
+  processedEquipmentRequests EquipmentRequest[] @relation("EquipmentRequestProcessedBy")
+  
   @@map("users")
+  EquipmentLocation EquipmentLocation[]
 }
 
 model Role {
-  id        Int        @id @default(autoincrement())
-  name      RoleName   @unique
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-  users     UserRole[]
+  id           Int        @id @default(autoincrement())
+  name         RoleName   @unique
+  hierarchyLevel Int      @map("hierarchy_level") @default(1)
+  description  String?    @db.VarChar(255)
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  users        UserRole[]
 
   @@map("roles")
 }
@@ -90,7 +114,7 @@ model Employee {
   employeeCode          String            @map("employee_code") @db.VarChar(50) @unique
   name                  String            @db.VarChar(100)
   lastName              String            @map("last_name") @db.VarChar(100)
-  position              String            @db.VarChar(100)
+  position              EmployeePosition  @map("position")
   phoneNumber           String?           @map("phone_number") @db.VarChar(20) @unique
   cedula                String?           @map("cedula") @db.VarChar(15) @unique
   licenseExpirationDate DateTime?         @map("license_expiration_date")
@@ -101,6 +125,14 @@ model Employee {
   FuelConsumption       FuelConsumption[]
 
   @@map("employees")
+}
+
+enum EmployeePosition {
+  CHOFER
+  CAJERO
+  OPERADOR
+  SUPERVISOR
+  ADMINISTRACION
 }
 
 model Vehicle {
@@ -116,6 +148,9 @@ model Vehicle {
 
   tagHistory      VehicleTagHistory[]
   FuelConsumption FuelConsumption[]
+  maintenances      VehicleMaintenance[]
+  maintenanceAlerts MaintenanceAlert[]
+  maintenanceSchedule MaintenanceSchedule?
 
   @@map("vehicles")
 }
@@ -129,6 +164,127 @@ model VehicleTagHistory {
   vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
 
   @@map("vehicles_tag_history")
+}
+
+model MaintenanceProcedure {
+  id Int @id @default(autoincrement())
+  name String @unique
+  description String? @db.VarChar(255)
+  category MaintenanceCategory
+  isActive Boolean @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  maintenanceItems VehicleMaintenanceItem[]
+  @@map("maintenance_procedures")
+}
+
+model VehicleMaintenance {
+  id                   String            @id @default(uuid()) @db.Uuid
+  vehicleId            String            @map("vehicle_id") @db.Uuid
+  scheduledDate        DateTime?         @map("scheduled_date")
+  performedDate        DateTime?         @map("performed_date")
+  currentMileage       Float?            @map("current_mileage")
+  nextScheduledDate    DateTime?         @map("next_scheduled_date")
+  nextScheduledMileage Float?            @map("next_scheduled_mileage")
+  totalCost            Float?            @map("total_cost") @default(0)
+  notes                String?           @db.Text
+  status               MaintenanceStatus @default(PROGRAMADO)
+  performedBy          String?           @map("performed_by") @db.VarChar(100)
+  userId               String            @map("user_id") @db.Uuid
+  createdAt            DateTime          @default(now()) @map("created_at")
+  updatedAt            DateTime          @updatedAt @map("updated_at")
+
+  vehicle              Vehicle                    @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  user                 User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  maintenanceItems     VehicleMaintenanceItem[]
+
+  @@map("vehicle_maintenances")
+}
+
+model VehicleMaintenanceItem {
+  id                   String               @id @default(uuid()) @db.Uuid
+  vehicleMaintenanceId String               @map("vehicle_maintenance_id") @db.Uuid
+  procedureId          Int                  @map("procedure_id")
+  isCompleted          Boolean              @default(false) @map("is_completed")
+  cost                 Float?               @default(0)
+  notes                String?              @db.Text
+  completedAt          DateTime?            @map("completed_at")
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+
+  vehicleMaintenance   VehicleMaintenance   @relation(fields: [vehicleMaintenanceId], references: [id], onDelete: Cascade)
+  procedure            MaintenanceProcedure @relation(fields: [procedureId], references: [id], onDelete: Cascade)
+
+  @@unique([vehicleMaintenanceId, procedureId])
+  @@map("vehicle_maintenance_items")
+}
+
+model MaintenanceSchedule {
+  id                Int      @id @default(autoincrement())
+  vehicleId         String   @map("vehicle_id") @db.Uuid
+  intervalMonths    Int      @map("interval_months") @default(2)
+  intervalKilometers Int?    @map("interval_kilometers")
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  vehicle           Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([vehicleId])
+  @@map("maintenance_schedules")
+}
+
+model MaintenanceAlert {
+  id              String      @id @default(uuid()) @db.Uuid
+  vehicleId       String      @map("vehicle_id") @db.Uuid
+  alertType       AlertType   @map("alert_type")
+  message         String      @db.VarChar(255)
+  isRead          Boolean     @default(false) @map("is_read")
+  scheduledFor    DateTime?   @map("scheduled_for")
+  daysDue         Int?        @map("days_due")
+  kilometersDue   Float?      @map("kilometers_due")
+  priority        AlertPriority @default(MEDIO)
+  createdAt       DateTime    @default(now()) @map("created_at")
+
+  vehicle         Vehicle     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@map("maintenance_alerts")
+}
+
+enum MaintenanceCategory {
+  MOTOR          // Motor
+  DIFERENCIAL    // Diferencial
+  FRENOS         // Frenos
+  FILTROS        // Filtros
+  ACEITE        // Aceites
+  LLANTAS        // Llantas
+  ELECTRICO      // Sistema eléctrico
+  CARROCERIA     // Carrocería
+  PREVENTIVO     // Preventivo general
+}
+
+enum MaintenanceStatus {
+  PROGRAMADO     // Programado
+  EN_PROGRESO    // En progreso
+  COMPLETADO     // Completado
+  CANCELADO      // Cancelado
+  VENCIDO        // Vencido
+  PARCIAL        // Parcialmente completado
+}
+
+enum AlertType {
+  POR_FECHA      // Por fecha
+  POR_KILOMETRAJE // Por kilometraje
+  VENCIDO        // Vencido
+  URGENTE        // Urgente
+}
+
+enum AlertPriority {
+  BAJO
+  MEDIO
+  ALTO
+  CRITICO
 }
 
 model FuelTank {
@@ -213,7 +369,7 @@ model Unit {
 
 model Material {
   id                 Int                @id @default(autoincrement())
-  name               String             @db.VarChar(100)
+  name               String             @db.VarChar(100) @unique
   description        String?            @db.VarChar(255)
   categoryId         Int                @map("category_id")
   unitId             Int                @map("unit_id")
@@ -226,7 +382,7 @@ model Material {
   category          MaterialCategories @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   unit              Unit               @relation(fields: [unitId], references: [id], onDelete: Cascade)
 
-  @@unique([name, categoryId])
+
   @@map("materials")
 }
 
@@ -238,6 +394,8 @@ model StockMove {
   userId     String        @map("user_id") @db.Uuid
   description      String?
   date      DateTime      @default(now())
+  previousStock Float       @map("previous_stock")
+  newStock      Float       @map("new_stock")
   createdAt  DateTime      @default(now()) @map("created_at")
   updatedAt  DateTime      @updatedAt @map("updated_at")
 
@@ -248,8 +406,8 @@ model StockMove {
 }
 
 enum StockMoveType {
-  COMPRA
-  CONSUMO
+  ENTRADA
+  SALIDA
   AJUSTE
 }
 
@@ -260,4 +418,407 @@ enum RoleName {
   SUPERVISOR
   OPERADOR
   USER
+}
+
+// equipments
+
+model Equipment {
+  id           String          @id @default(uuid()) @db.Uuid
+  name         String          @db.VarChar(100)
+  serialNumber String          @unique @map("serial_number") @db.VarChar(100)
+  modelId      Int             @map("model_id")
+  locationId   Int?            @map("location_id") // Referencia a ubicación GPS
+  status       EquipmentStatus @default(DISPONIBLE) // Estado del equipo
+  isActive     Boolean         @default(true) @map("is_active")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  model        EquipmentModel      @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  location     EquipmentLocation?  @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  assignments  EquipmentAssignment[] // Historial de asignaciones
+  reports      EquipmentReport[]   // Reportes de mantenimiento
+  
+  @@map("equipments")
+}
+
+model EquipmentModel {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  type      EquipmentType @default(OTROS)
+  brand     String?   @db.VarChar(100)
+  capacity  Float?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  equipments Equipment[]
+  equipmentRequests EquipmentRequest[] // Solicitudes para este modelo específico
+  
+  @@map("equipment_models")
+}
+
+enum EquipmentType {
+  ANAQUEL
+  NEVERA
+  OTROS
+}
+
+model EquipmentLocation {
+  id           Int      @id @default(autoincrement())
+  // Coordenadas GPS del equipo (capturadas desde app móvil)
+  latitude     Float    // Latitud GPS
+  longitude    Float    // Longitud GPS
+  address      String?  @db.VarChar(255) // Dirección física opcional
+  description  String?  @db.VarChar(255)
+  gpsUpdatedAt DateTime @default(now()) @map("gps_updated_at") // Cuándo se capturó
+  gpsUpdatedBy String   @map("gps_updated_by") @db.Uuid // Usuario que capturó GPS
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  equipments   Equipment[] // Relación con equipos
+  gpsUpdatedByUser User @relation(fields: [gpsUpdatedBy], references: [id], onDelete: Cascade)
+  @@map("equipment_locations")
+  User User[] @relation("gpsUpdatedByUser")
+}
+
+// === MÓDULO DE CUSTOMERS ===
+
+model Customer {
+  id              String   @id @default(uuid()) @db.Uuid
+  businessName    String   @map("business_name") @db.VarChar(150) // Nombre del negocio
+  representativeName String @map("representative_name") @db.VarChar(100) // Nombre del representante
+  rnc             String?  @db.VarChar(50) // RNC (República Dominicana) opcional
+  email           String?  @db.VarChar(100) // Email opcional
+  notes           String?  @db.Text // Notas adicionales
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  phones          CustomerPhone[]     // Teléfonos del cliente
+  addresses       CustomerAddress[]   // Direcciones/sucursales
+  equipmentAssignments EquipmentAssignment[] // Equipos asignados
+  equipmentReports EquipmentReport[] // Reportes de equipos
+  
+  // Relaciones del módulo de pedidos
+  orders          Order[]             // Pedidos del cliente
+  
+  // Relaciones del módulo de solicitudes de equipos
+  equipmentRequests EquipmentRequest[] // Solicitudes de equipos
+
+  @@map("customers")
+}
+
+model CustomerPhone {
+  id          Int     @id @default(autoincrement())
+  customerId  String  @map("customer_id") @db.Uuid
+  description String? @db.VarChar(100) // Descripción del teléfono (opcional)
+  phoneNumber String  @unique @map("phone_number") @db.VarChar(20) // ÚNICO GLOBALMENTE
+  type   PhoneType @map("phone_type") @default(MOVIL)
+  hasWhatsapp Boolean @default(false) @map("has_whatsapp") // Si tiene WhatsApp
+  isPrimary   Boolean @default(false) @map("is_primary") // Teléfono principal
+  isActive    Boolean @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@map("customer_phones")
+}
+
+model CustomerAddress {
+  id          Int     @id @default(autoincrement())
+  customerId  String  @map("customer_id") @db.Uuid
+  branchName  String? @map("branch_name") @db.VarChar(100) // Nombre de la sucursal
+  street      String  @db.VarChar(255) // Dirección completa
+  city        String  @db.VarChar(100)
+  latitude    Float?  // GPS opcional de la dirección
+  longitude   Float?  // GPS opcional de la dirección
+  isPrimary   Boolean @default(false) @map("is_primary") // Dirección principal
+  isActive    Boolean @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  equipmentAssignments EquipmentAssignment[] // Equipos en esta dirección
+  
+  // Relaciones del módulo de pedidos
+  ordersDelivery Order[] // Pedidos que se entregan en esta dirección
+  
+  // Relaciones del módulo de solicitudes de equipos
+  equipmentRequests EquipmentRequest[] // Solicitudes de equipos para esta dirección
+
+  @@map("customer_addresses")
+}
+
+model EquipmentAssignment {
+  id              String   @id @default(uuid()) @db.Uuid
+  equipmentId     String   @map("equipment_id") @db.Uuid
+  customerId      String   @map("customer_id") @db.Uuid
+  customerAddressId Int?   @map("customer_address_id") // En qué sucursal está
+  assignedAt      DateTime @default(now()) @map("assigned_at")
+  unassignedAt    DateTime? @map("unassigned_at") // Cuando se desasignó
+  status          AssignmentStatus @default(ACTIVO)
+  assignedBy      String   @map("assigned_by") @db.Uuid // Usuario que asignó
+  unassignedBy    String?  @map("unassigned_by") @db.Uuid // Usuario que desasignó
+  deliveredAt     DateTime? @map("delivered_at") // Fecha de entrega al cliente
+  deliveredBy     String?  @map("delivered_by") @db.Uuid // Usuario que entregó
+  notes           String?  @db.Text // Notas de la asignación
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  equipment       Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerAddress CustomerAddress? @relation(fields: [customerAddressId], references: [id], onDelete: SetNull)
+  assignedByUser  User @relation("AssignedBy", fields: [assignedBy], references: [id])
+  unassignedByUser User? @relation("UnassignedBy", fields: [unassignedBy], references: [id])
+  deliveredByUser User? @relation("DeliveredBy", fields: [deliveredBy], references: [id])
+
+  @@map("equipment_assignments")
+}
+
+// === REPORTES DE EQUIPOS ===
+
+model EquipmentReport {
+  id             Int             @id @default(autoincrement())
+  equipmentId    String          @map("equipment_id") @db.Uuid
+  customerId     String          @map("customer_id") @db.Uuid
+  reportedBy     String          @map("reported_by") @db.Uuid // Usuario que reporta
+  
+  // Información del reporte
+  title          String          @db.VarChar(200)
+  description    String          @db.Text
+  reportType     ReportType      @map("report_type")
+  priority       ReportPriority  @default(MEDIA)
+  status         ReportStatus    @default(PENDIENTE)
+  
+  // Seguimiento de mantenimiento
+  scheduledDate  DateTime?       @map("scheduled_date")
+  completedAt    DateTime?       @map("completed_at")
+  
+  // notas
+  notes          String?         @db.Text // Notas generales del reporte
+  
+  isActive       Boolean         @default(true) @map("is_active")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  // Relaciones
+  equipment      Equipment       @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  customer       Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  reportedByUser User           @relation("EquipmentReportReportedBy", fields: [reportedBy], references: [id])
+
+  @@map("equipment_reports")
+}
+
+// === MÓDULO DE SOLICITUDES DE EQUIPOS ===
+
+model EquipmentRequest {
+  id              Int      @id @default(autoincrement())
+  customerId      String?  @map("customer_id") @db.Uuid // Opcional - para clientes ya registrados
+  customerAddressId Int?   @map("customer_address_id") // Dirección donde se instalaría (solo si hay customer)
+  equipmentModelId Int?    @map("equipment_model_id") // Modelo específico solicitado (opcional)
+  
+  // Información de la solicitud
+  equipmentType   String   @map("equipment_type") @db.VarChar(100) // Tipo de equipo (nevera, anaquel, etc.)
+  description     String   @db.Text // Descripción detallada de lo que necesita
+  status          RequestStatus @default(PENDIENTE)
+  
+  // Datos de contacto (obligatorios para todos los casos)
+  contactName     String   @map("contact_name") @db.VarChar(100) // Nombre de contacto
+  contactPhone    String   @map("contact_phone") @db.VarChar(20) // Teléfono de contacto
+  contactEmail    String?  @map("contact_email") @db.VarChar(100) // Email de contacto (opcional)
+  
+  // Información adicional para potenciales clientes
+  companyName     String?  @map("company_name") @db.VarChar(200) // Nombre de la empresa (si aplica)
+  businessType    String?  @map("business_type") @db.VarChar(100) // Tipo de negocio
+  address         String?  @db.Text // Dirección completa (para casos sin customer registrado)
+  
+  // Gestión de la solicitud
+  requestedBy     String   @map("requested_by") @db.Uuid // Usuario que registró la solicitud
+  processedBy     String?  @map("processed_by") @db.Uuid // Usuario que procesó/completó
+
+  // Fechas importantes
+  requestDate     DateTime @default(now()) @map("request_date")
+  processedDate   DateTime? @map("processed_date") // Fecha en que se procesó
+  
+  // Notas y seguimiento
+  notes           String?  @db.Text
+  
+  // Control
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  customer        Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerAddress CustomerAddress? @relation(fields: [customerAddressId], references: [id], onDelete: SetNull)
+  equipmentModel  EquipmentModel? @relation(fields: [equipmentModelId], references: [id], onDelete: SetNull)
+  requestedByUser User     @relation("EquipmentRequestRequestedBy", fields: [requestedBy], references: [id])
+  processedByUser User?    @relation("EquipmentRequestProcessedBy", fields: [processedBy], references: [id])
+
+  @@map("equipment_requests")
+}
+
+
+
+// === MÓDULO DE PEDIDOS ===
+
+// Tabla de productos disponibles
+model Product {
+  id            Int      @id @default(autoincrement())
+  name          String   @db.VarChar(100)
+  description   String?  @db.Text
+  unit          String   @db.VarChar(50) // unidad (fundas, litros, kilos, etc.)
+  size          String?  @db.VarChar(50) // tamaño (1kg, 500ml, etc.)
+  sku           String?  @unique @db.VarChar(50) // código del producto
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  orderItems    OrderItem[]
+
+  @@map("products")
+}
+
+// Tabla principal de pedidos
+model Order {
+  id              Int      @id @default(autoincrement())
+  trackingCode    String   @unique @map("tracking_code") @db.VarChar(50)
+  customerId      String   @map("customer_id") @db.Uuid
+  deliveryAddressId Int?   @map("delivery_address_id") // Dirección de entrega del cliente
+  
+  // Información del pedido
+  orderDate       DateTime @default(now()) @map("order_date")
+  scheduledDate   DateTime? @map("scheduled_date") // Fecha programada de entrega
+  deliveredDate   DateTime? @map("delivered_date") // Fecha real de entrega
+  
+  // Gestión del pedido
+  createdById       String   @map("created_by") @db.Uuid // Usuario que creó el pedido
+  assignedToId      String?  @map("assigned_to") @db.Uuid // Chofer/Usuario asignado
+
+  // Notas
+  notes           String?  @db.Text
+  deliveryNotes   String?  @map("delivery_notes") @db.Text // Notas de entrega
+  
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  deliveryAddress CustomerAddress? @relation(fields: [deliveryAddressId], references: [id], onDelete: SetNull)
+  createdByUser   User     @relation("OrderCreatedBy", fields: [createdById], references: [id])
+  assignedToUser  User?    @relation("OrderAssignedTo", fields: [assignedToId], references: [id])
+  
+  // Relaciones hijas
+  orderItems      OrderItem[]
+  statusHistory   OrderStatusHistory[]
+
+  @@map("orders")
+}
+
+// Productos de cada pedido
+model OrderItem {
+  id              Int      @id @default(autoincrement())
+  orderId         Int      @map("order_id")
+  productId       Int      @map("product_id")
+  
+  // Cantidades
+  requestedQuantity Int    @map("requested_quantity") // Cantidad solicitada originalmente
+  deliveredQuantity Int?   @map("delivered_quantity") // Cantidad realmente entregada
+  
+  notes           String?  @db.Text // Notas específicas del producto
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relaciones
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+// Historial de estados de los pedidos
+model OrderStatusHistory {
+  id          Int         @id @default(autoincrement())
+  orderId     Int         @map("order_id")
+  status      OrderStatus
+  description String?     @db.Text // Descripción o nota del cambio de estado
+  changedBy   String      @map("changed_by") @db.Uuid // Usuario que cambió el estado
+  changedAt   DateTime    @default(now()) @map("changed_at")
+
+  // Relaciones
+  order       Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  changedByUser User      @relation("OrderStatusChangedBy", fields: [changedBy], references: [id])
+
+  @@map("order_status_history")
+}
+
+
+
+// === ENUMS ===
+
+enum RequestStatus {
+  PENDIENTE     // Solicitud creada, en cola de espera
+  APROBADO      // Aprobada, esperando equipo disponible
+  COMPLETADO    // Solicitud completada exitosamente
+  CANCELADO     // Cancelada por el cliente o empresa
+  RECHAZADO     // Rechazada por no cumplir criterios
+  EXPIRADO      // Expirada por falta de seguimiento
+}
+
+enum OrderStatus {
+  PENDIENTE     // Pedido creado, pendiente de preparación
+  PREPARANDO    // En preparación
+  DESPACHADO     // En camino/En ruta de entrega
+  ENTREGADO     // Entregado al cliente
+  CANCELADO     // Cancelado
+  DEVUELTO      // Devuelto (no entregado)
+}
+
+enum EquipmentStatus {
+  DISPONIBLE      // Disponible para asignación
+  ASIGNADO        // Asignado a un cliente
+  MANTENIMIENTO // En mantenimiento preventivo/correctivo
+  DAÑADO          // Dañado, no funcional
+  INHABILITADO  // Fuera de servicio permanente
+}
+
+enum ReportType {
+  PREVENTIVO    // Mantenimiento programado
+  CORRECTIVO    // Reparación por falla
+  FALLA        // Reporte de falla o mal funcionamiento
+}
+
+enum ReportPriority {
+  BAJA     // Baja prioridad
+  MEDIA    // Prioridad media
+  ALTA     // Alta prioridad
+  CRITICA  // Crítica - requiere atención inmediata
+}
+
+enum ReportStatus {
+  PENDIENTE    // Reporte creado, pendiente de revisión
+  EN_PROGRESO  // En proceso de resolución
+  COMPLETADO   // Completado exitosamente
+  CANCELADO    // Cancelado
+  RECHAZADO    // Rechazado por algún motivo
+}
+
+enum PhoneType {
+  MOVIL     // Móvil/Celular
+  FIJO      // Teléfono fijo
+  TRABAJO   // Teléfono de trabajo
+  OTROS     // Otros
+}
+
+enum AssignmentStatus {
+  ACTIVO      // Equipo asignado actualmente
+  REMOVIDO    // Equipo removido al cliente
+  DEVUELTO    // Equipo devuelto
+  DAÑADO      // Equipo dañado
+  MANTENIMIENTO // En mantenimiento
 }
