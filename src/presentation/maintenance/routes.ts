@@ -2,8 +2,9 @@ import { Router } from "express";
 import { PostgresVehicleMaintenanceDatasource } from "../../infrastructure/datasources/postgres-vehicle-maintenance.datasource";
 import { VehicleMaintenanceRepositoryImpl } from "../../infrastructure/repositories/vehicle-maintenance.repository.impl";
 import { MaintenanceProcedureController } from "./maintenance-procedure.controller";
-import { CreateMaintenanceProcedure } from "../../domain/use-cases/maintenance/create-maintenance-procedure.use-case";
+
 import { prisma } from "../../data/postgresql";
+import { CreateMaintenanceProcedure } from "../../domain";
 
 // Crear instancias
 const vehicleMaintenanceDatasource = new PostgresVehicleMaintenanceDatasource(

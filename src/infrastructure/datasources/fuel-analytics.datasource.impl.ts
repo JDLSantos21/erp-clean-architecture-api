@@ -1,7 +1,11 @@
-import { FuelMetricsDto, VehicleMetricsDto } from "../../domain/dtos";
-import { FuelMetrics, DashboardSummary } from "../../domain";
-import { VehicleMetrics } from "../../domain/entities/vehicle/VehicleAnalytics";
-import { CustomError } from "../../domain/errors/custom.errors";
+import {
+  FuelMetrics,
+  DashboardSummary,
+  FuelMetricsDto,
+  VehicleMetricsDto,
+  VehicleMetrics,
+  CustomError,
+} from "../../domain";
 import { prisma } from "../../data/postgresql";
 import { DateTime } from "luxon";
 import { buildUtcDateRange } from "../../shared/utils/date-range.util";

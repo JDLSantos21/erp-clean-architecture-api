@@ -1,14 +1,15 @@
 import { NextFunction, Request, Response } from "express";
-import { User, RoleName } from "../../domain";
 import {
+  User,
+  RoleName,
   hasRoleOrHigher,
   hasPermissionLevel,
   PERMISSION_LEVELS,
   getRoleHierarchyLevel,
   getRoleNameByLevel,
-} from "../../domain/constants/role-hierarchy.constants";
+  StatusCode,
+} from "../../domain";
 import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
-import { StatusCode } from "../../domain/constants";
 
 export class PermissionMiddleware {
   // Middleware genérico para verificar niveles de permisos

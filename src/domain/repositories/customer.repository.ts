@@ -8,7 +8,7 @@ import {
   UpdateCustomerPhoneDto,
 } from "../dtos";
 import { Customer, CustomerAddress, CustomerPhone } from "../entities";
-import { FilterParams } from "../types/filter-params.type";
+import { FilterParams } from "../types";
 
 export abstract class CustomerRepository {
   abstract create(registerCustomerDto: RegisterCustomerDTO): Promise<Customer>;

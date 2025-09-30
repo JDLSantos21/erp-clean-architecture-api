@@ -2,6 +2,8 @@ import {
   CreateFuelConsumptionDto,
   CreateFuelTankRefillDto,
   CreateUpdateFuelTankDto,
+  FuelConsumptionQueryDto,
+  FuelTankRefillQueryDto,
   UpdateFuelConsumptionDto,
 } from "../dtos";
 import { CreateFuelTankDto } from "../dtos/fuel/create-fuel-tank.dto";
@@ -12,12 +14,7 @@ import {
   FuelTank,
   FuelTankReset,
 } from "../entities";
-
-interface FiltersParams {
-  filters?: Partial<FuelConsumption>;
-  skip?: number;
-  limit?: number;
-}
+import { FilterParams } from "../types";
 
 export abstract class FuelRepository {
   abstract createFuelConsumption(
@@ -25,7 +22,7 @@ export abstract class FuelRepository {
   ): Promise<FuelConsumption>;
 
   abstract findAllFuelConsumptions(
-    params: FiltersParams
+    params: FilterParams<FuelConsumptionQueryDto>
   ): Promise<{ consumptions: FuelConsumption[]; totalPages: number }>;
 
   abstract findFuelConsumptionById(id: number): Promise<FuelConsumption | null>;
@@ -78,6 +75,6 @@ export abstract class FuelRepository {
   abstract findLastTankRefill(): Promise<FuelRefill | null>;
 
   abstract findAllTankRefills(
-    params: FiltersParams
+    params: FilterParams<FuelTankRefillQueryDto>
   ): Promise<{ refills: FuelRefill[]; totalPages: number }>;
 }

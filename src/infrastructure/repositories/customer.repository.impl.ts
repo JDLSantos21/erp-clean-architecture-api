@@ -10,8 +10,8 @@ import {
   RegisterCustomerDTO,
   UpdateCustomerDTO,
   UpdateCustomerPhoneDto,
+  FilterParams,
 } from "../../domain";
-import { FilterParams } from "../../domain";
 
 export class CustomerRepositoryImpl implements CustomerRepository {
   constructor(private readonly customerDatasource: CustomerDatasource) {}

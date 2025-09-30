@@ -3,21 +3,18 @@ import {
   CreateFuelTankDto,
   CreateFuelTankRefillDto,
   CreateUpdateFuelTankDto,
+  FilterParams,
   FuelConsumption,
+  FuelConsumptionQueryDto,
   FuelDatasource,
   FuelRefill,
   FuelRepository,
   FuelTank,
+  FuelTankRefillQueryDto,
   FuelTankReset,
   UpdateFuelConsumptionDto,
   UpdateFuelTankDto,
 } from "../../domain";
-
-interface FiltersParams {
-  filters?: Partial<FuelConsumption>;
-  skip?: number;
-  limit?: number;
-}
 
 export class FuelRepositoryImpl implements FuelRepository {
   constructor(private readonly fuelDatasource: FuelDatasource) {}
@@ -78,13 +75,13 @@ export class FuelRepositoryImpl implements FuelRepository {
   }
 
   findAllFuelConsumptions(
-    params: FiltersParams
+    params: FilterParams<FuelConsumptionQueryDto>
   ): Promise<{ consumptions: FuelConsumption[]; totalPages: number }> {
     return this.fuelDatasource.findAllFuelConsumptions(params);
   }
 
   findAllTankRefills(
-    params: FiltersParams
+    params: FilterParams<FuelTankRefillQueryDto>
   ): Promise<{ refills: FuelRefill[]; totalPages: number }> {
     return this.fuelDatasource.findAllTankRefills(params);
   }

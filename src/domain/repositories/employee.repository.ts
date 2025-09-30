@@ -1,11 +1,10 @@
-import { CreateEmployeeDto, UpdateEmployeeDto } from "../dtos";
+import {
+  CreateEmployeeDto,
+  EmployeeQueryDto,
+  UpdateEmployeeDto,
+} from "../dtos";
 import { Employee } from "../entities/Employee";
-
-interface findAllParams {
-  filters?: Partial<Employee>;
-  skip?: number;
-  limit?: number;
-}
+import { FilterParams } from "../types";
 
 export abstract class EmployeeRepository {
   abstract findById(id: string): Promise<Employee | null>;
@@ -13,7 +12,10 @@ export abstract class EmployeeRepository {
     filters,
     skip,
     limit,
-  }: findAllParams): Promise<{ employees: Employee[]; total: number }>;
+  }: FilterParams<EmployeeQueryDto>): Promise<{
+    employees: Employee[];
+    total: number;
+  }>;
   abstract create(employee: CreateEmployeeDto): Promise<Employee>;
   abstract update(
     id: string,

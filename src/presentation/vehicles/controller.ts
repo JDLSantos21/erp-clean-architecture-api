@@ -4,10 +4,10 @@ import {
   RegisterVehicleDto,
   UpdateVehicle,
   VehicleRepository,
+  VehicleQueryDto,
 } from "../../domain";
 import { Request, Response } from "express";
 import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
-import { VehicleQueryDto } from "../../domain/dtos/vehicle/vehicle-query.dto";
 
 export class VehicleController {
   constructor(private readonly vehicleRepository: VehicleRepository) {}

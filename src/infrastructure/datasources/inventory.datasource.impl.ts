@@ -10,16 +10,11 @@ import {
   StockMoveQueryDto,
   Unit,
   UpdateMaterialDto,
+  MaterialQueryDto,
+  StatusCode,
 } from "../../domain";
 import { prisma } from "../../data/postgresql";
 import { buildWhere, InventoryMapper } from "../mappers";
-import {
-  EMPLOYEE_ERRORS,
-  ERROR_MESSAGES,
-  INVENTORY_ERRORS,
-  StatusCode,
-} from "../../domain/constants";
-import { MaterialQueryDto } from "../../domain/dtos";
 
 export class InventoryDatasourceImpl extends InventoryDatasource {
   async createMaterial(data: CreateMaterialDto): Promise<Material> {

@@ -4,6 +4,8 @@ import {
   CustomError,
   Employee,
   EmployeeDatasource,
+  EmployeeQueryDto,
+  FilterParams,
 } from "../../domain";
 import { buildWhere } from "../mappers/prisma-where.mapper";
 
@@ -40,11 +42,10 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
     filters,
     skip,
     limit,
-  }: {
-    filters?: Partial<Employee>;
-    skip: number;
-    limit: number;
-  }): Promise<{ employees: Employee[]; total: number }> {
+  }: FilterParams<EmployeeQueryDto>): Promise<{
+    employees: Employee[];
+    total: number;
+  }> {
     const where = buildWhere(filters!, [
       "name",
       "lastName",

@@ -6,21 +6,7 @@ import {
   CustomError,
 } from "../../domain";
 
-/**
- * FuelMapper - Mapper para entidades de combustible
- *
- * Este mapper es responsable de convertir objetos de Prisma a entidades de dominio.
- * Es necesario para:
- * 1. Evitar referencias circulares en la serialización JSON
- * 2. Seguir el principio de Single Responsibility (SRP)
- * 3. Mantener la separación entre la capa de infraestructura y dominio
- * 4. Asegurar que solo se retornen los datos necesarios (principio de Dependency Inversion)
- */
 export class FuelMapper {
-  /**
-   * Convierte un objeto de Prisma a una entidad FuelConsumption del dominio
-   * Evita referencias circulares extrayendo solo los campos necesarios
-   */
   static fuelConsumptionEntityFromObject(object: {
     [key: string]: any;
   }): FuelConsumption {
@@ -57,9 +43,6 @@ export class FuelMapper {
     });
   }
 
-  /**
-   * Convierte un objeto de Prisma a una entidad FuelTank del dominio
-   */
   static fuelTankEntityFromObject(object: { [key: string]: any }): FuelTank {
     const { id, capacity, currentLevel, minLevel, createdAt, updatedAt } =
       object;
@@ -85,9 +68,6 @@ export class FuelMapper {
     });
   }
 
-  /**
-   * Convierte un objeto de Prisma a una entidad FuelRefill del dominio
-   */
   static fuelRefillEntityFromObject(object: {
     [key: string]: any;
   }): FuelRefill {
@@ -120,9 +100,6 @@ export class FuelMapper {
     });
   }
 
-  /**
-   * Convierte un objeto de Prisma a una entidad FuelTankReset del dominio
-   */
   static fuelTankResetEntityFromObject(object: {
     [key: string]: any;
   }): FuelTankReset {

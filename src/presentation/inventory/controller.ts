@@ -11,10 +11,11 @@ import {
   UpdateMaterial,
   DeleteUnit,
   DeleteCategory,
+  MaterialQueryDto,
+  UpdateMaterialDto,
 } from "../../domain";
 import { Request, Response } from "express";
 import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
-import { MaterialQueryDto, UpdateMaterialDto } from "../../domain/dtos";
 import { Validators } from "../../config";
 
 export class InventoryController {

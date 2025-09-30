@@ -9,7 +9,6 @@ import {
   VehicleMaintenance,
   MaintenanceAlert,
   MaintenanceSchedule,
-  Vehicle,
 } from "../../domain";
 
 export class PostgresVehicleMaintenanceDatasource extends VehicleMaintenanceDatasource {

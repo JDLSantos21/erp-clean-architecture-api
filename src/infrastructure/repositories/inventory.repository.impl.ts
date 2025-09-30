@@ -10,8 +10,8 @@ import {
   StockMoveQueryDto,
   Unit,
   UpdateMaterialDto,
+  MaterialQueryDto,
 } from "../../domain";
-import { MaterialQueryDto } from "../../domain/dtos";
 
 export class InventoryRepositoryImpl implements InventoryRepository {
   constructor(private readonly InventoryDatasource: InventoryDatasource) {}

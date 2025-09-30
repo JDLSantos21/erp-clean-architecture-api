@@ -2,7 +2,9 @@ import {
   CreateEmployeeDto,
   Employee,
   EmployeeDatasource,
+  EmployeeQueryDto,
   EmployeeRepository,
+  FilterParams,
 } from "../../domain";
 
 export class EmployeeRepositoryImpl implements EmployeeRepository {
@@ -16,11 +18,10 @@ export class EmployeeRepositoryImpl implements EmployeeRepository {
     filters,
     skip,
     limit,
-  }: {
-    filters: Partial<Employee>;
-    skip: number;
-    limit: number;
-  }): Promise<{ employees: Employee[]; total: number }> {
+  }: FilterParams<EmployeeQueryDto>): Promise<{
+    employees: Employee[];
+    total: number;
+  }> {
     return this.employeeDatasource.findAll({ filters, skip, limit });
   }
 

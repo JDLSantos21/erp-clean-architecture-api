@@ -1,9 +1,11 @@
 import { Request, Response } from "express";
 import {
+  ReportType,
+  ReportPriority,
+  ReportStatus,
   CreateEquipmentReportDto,
   EquipmentReportFilters,
-} from "../../domain/datasources/equipment-report.datasource";
-import { ReportType, ReportPriority, ReportStatus } from "../../domain";
+} from "../../domain";
 
 export class EquipmentReportController {
   /**

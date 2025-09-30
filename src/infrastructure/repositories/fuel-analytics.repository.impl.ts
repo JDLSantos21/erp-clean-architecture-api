@@ -1,10 +1,12 @@
-import { FuelMetricsDto, VehicleMetricsDto } from "../../domain/dtos";
 import {
+  FuelMetricsDto,
+  VehicleMetricsDto,
   FuelMetrics,
   DashboardSummary,
-} from "../../domain/entities/FuelAnalytics";
-import { VehicleMetrics } from "../../domain/entities/vehicle/VehicleAnalytics";
-import { FuelAnalyticsRepository } from "../../domain/repositories/fuel-analytics.repository";
+  VehicleMetrics,
+  FuelAnalyticsRepository,
+} from "../../domain";
+
 import { FuelAnalyticsDatasourceImpl } from "../datasources/fuel-analytics.datasource.impl";
 
 export class FuelAnalyticsRepositoryImpl implements FuelAnalyticsRepository {

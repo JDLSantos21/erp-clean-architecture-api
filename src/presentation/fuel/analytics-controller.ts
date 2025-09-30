@@ -1,11 +1,15 @@
 import { Request, Response } from "express";
-import { CustomError } from "../../domain";
-import { FuelAnalyticsRepository } from "../../domain/repositories/fuel-analytics.repository";
+import {
+  CustomError,
+  FuelAnalyticsRepository,
+  GetDashboardSummary,
+  GetDashboardMetrics,
+  GetVehicleMetrics,
+  FuelMetricsDto,
+  VehicleMetricsDto,
+} from "../../domain";
+
 import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
-import { GetDashboardSummary } from "../../domain/use-cases/fuel/get-dashboard-summary.use-case";
-import { GetDashboardMetrics } from "../../domain/use-cases/fuel/get-dashboard-metrics.use-case";
-import { GetVehicleMetrics } from "../../domain/use-cases/fuel/get-vehicle-metrics.use-case";
-import { FuelMetricsDto, VehicleMetricsDto } from "../../domain/dtos";
 
 export class FuelAnalyticsController {
   constructor(
