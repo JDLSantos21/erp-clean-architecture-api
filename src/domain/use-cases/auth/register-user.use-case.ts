@@ -1,7 +1,7 @@
-import { RegisterUserDto } from "../dtos/user/register-user.dto";
-import { AuthRepository } from "../repositories/auth.repository";
-import { JwtAdapter } from "../../config/jwt";
-import { CustomError } from "../errors/custom.errors";
+import { JwtAdapter } from "../../../config/jwt";
+import { RegisterUserDto } from "../../dtos";
+import { CustomError } from "../../errors";
+import { AuthRepository } from "../../repositories";
 
 type User = {
   id: string;

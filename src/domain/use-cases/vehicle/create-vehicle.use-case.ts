@@ -1,7 +1,7 @@
-import { RegisterVehicleDto } from "../dtos";
-import { Vehicle } from "../entities/vehicle/Vehicle";
-import { VehicleRepository } from "../repositories/vehicle.repository";
-import { CustomError } from "../errors/custom.errors";
+import { RegisterVehicleDto } from "../../dtos";
+import { Vehicle } from "../../entities";
+import { CustomError } from "../../errors";
+import { VehicleRepository } from "../../repositories";
 
 interface CreateVehicleUseCase {
   execute(createVehicleDto: RegisterVehicleDto): Promise<Vehicle>;

@@ -1,7 +1,7 @@
-import { RegisterVehicleDto } from "../dtos";
-import { Vehicle } from "../entities/vehicle/Vehicle";
-import { VehicleRepository } from "../repositories/vehicle.repository";
-import { VehicleService } from "../services/vehicle.service";
+import { RegisterVehicleDto } from "../../dtos";
+import { Vehicle } from "../../entities";
+import { VehicleRepository } from "../../repositories";
+import { VehicleService } from "../../services";
 
 interface UpdateVehicleUseCase {
   execute(id: string, updateVehicleDto: RegisterVehicleDto): Promise<Vehicle>;
