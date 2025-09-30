@@ -4,13 +4,20 @@ import Entity from "../entity";
 import { User } from "../Users";
 import { Equipment } from "./Equipment";
 
-export enum AssignmentStatus {
-  ASIGNADO = "ASIGNADO",
-  REMOVIDO = "REMOVIDO",
-  DEVUELTO = "DEVUELTO",
-  MANTENIMIENTO = "MANTENIMIENTO",
-  DAÑADO = "DAÑADO",
-}
+export type AssignmentStatus =
+  | "ASIGNADO"
+  | "REMOVIDO"
+  | "DEVUELTO"
+  | "MANTENIMIENTO"
+  | "DAÑADO";
+
+export const ASSIGNMENT_STATUS = {
+  ASIGNADO: "ASIGNADO" as const,
+  REMOVIDO: "REMOVIDO" as const,
+  DEVUELTO: "DEVUELTO" as const,
+  MANTENIMIENTO: "MANTENIMIENTO" as const,
+  DAÑADO: "DAÑADO" as const,
+} as const;
 
 export class EquipmentAssignment extends Entity<EquipmentAssignment> {
   id!: string;
@@ -36,23 +43,23 @@ export class EquipmentAssignment extends Entity<EquipmentAssignment> {
 
   // Métodos de negocio
   public isActive(): boolean {
-    return this.status === AssignmentStatus.ASIGNADO;
+    return this.status === ASSIGNMENT_STATUS.ASIGNADO;
   }
 
   public isRemoved(): boolean {
-    return this.status === AssignmentStatus.REMOVIDO;
+    return this.status === ASSIGNMENT_STATUS.REMOVIDO;
   }
 
   public isReturned(): boolean {
-    return this.status === AssignmentStatus.DEVUELTO;
+    return this.status === ASSIGNMENT_STATUS.DEVUELTO;
   }
 
   public isInMaintenance(): boolean {
-    return this.status === AssignmentStatus.MANTENIMIENTO;
+    return this.status === ASSIGNMENT_STATUS.MANTENIMIENTO;
   }
 
   public isDamaged(): boolean {
-    return this.status === AssignmentStatus.DAÑADO;
+    return this.status === ASSIGNMENT_STATUS.DAÑADO;
   }
 
   public isDelivered(): boolean {
@@ -64,7 +71,7 @@ export class EquipmentAssignment extends Entity<EquipmentAssignment> {
       throw new Error("Solo se puede remover un equipo que esté asignado");
     }
 
-    this.status = AssignmentStatus.REMOVIDO;
+    this.status = ASSIGNMENT_STATUS.REMOVIDO;
     this.unassignedAt = new Date();
     this.unassignedById = userId;
   }
@@ -76,7 +83,7 @@ export class EquipmentAssignment extends Entity<EquipmentAssignment> {
       );
     }
 
-    this.status = AssignmentStatus.DEVUELTO;
+    this.status = ASSIGNMENT_STATUS.DEVUELTO;
     this.unassignedAt = new Date();
     this.unassignedById = userId;
   }
@@ -88,11 +95,11 @@ export class EquipmentAssignment extends Entity<EquipmentAssignment> {
       );
     }
 
-    this.status = AssignmentStatus.MANTENIMIENTO;
+    this.status = ASSIGNMENT_STATUS.MANTENIMIENTO;
   }
 
   public markAsDamaged(): void {
-    this.status = AssignmentStatus.DAÑADO;
+    this.status = ASSIGNMENT_STATUS.DAÑADO;
   }
 
   public deliver(userId: string): void {

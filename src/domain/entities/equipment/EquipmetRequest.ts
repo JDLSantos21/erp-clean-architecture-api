@@ -3,14 +3,22 @@ import Entity from "../entity";
 import { User } from "../Users";
 import { EquipmentModel } from "./EquipmentModel";
 
-export enum RequestStatus {
-  PENDIENTE = "PENDIENTE",
-  APROBADO = "APROBADO",
-  COMPLETADO = "COMPLETADO",
-  CANCELADO = "CANCELADO",
-  RECHAZADO = "RECHAZADO",
-  EXPIRADO = "EXPIRADO",
-}
+export type RequestStatus =
+  | "PENDIENTE"
+  | "APROBADO"
+  | "COMPLETADO"
+  | "CANCELADO"
+  | "RECHAZADO"
+  | "EXPIRADO";
+
+export const REQUEST_STATUS = {
+  PENDIENTE: "PENDIENTE" as const,
+  APROBADO: "APROBADO" as const,
+  COMPLETADO: "COMPLETADO" as const,
+  CANCELADO: "CANCELADO" as const,
+  RECHAZADO: "RECHAZADO" as const,
+  EXPIRADO: "EXPIRADO" as const,
+} as const;
 
 export class EquipmentRequest extends Entity<EquipmentRequest> {
   id!: string;
@@ -39,34 +47,34 @@ export class EquipmentRequest extends Entity<EquipmentRequest> {
 
   // Métodos de negocio
   public isPending(): boolean {
-    return this.status === RequestStatus.PENDIENTE;
+    return this.status === REQUEST_STATUS.PENDIENTE;
   }
 
   public isApproved(): boolean {
-    return this.status === RequestStatus.APROBADO;
+    return this.status === REQUEST_STATUS.APROBADO;
   }
 
   public isCompleted(): boolean {
-    return this.status === RequestStatus.COMPLETADO;
+    return this.status === REQUEST_STATUS.COMPLETADO;
   }
 
   public isCancelled(): boolean {
-    return this.status === RequestStatus.CANCELADO;
+    return this.status === REQUEST_STATUS.CANCELADO;
   }
 
   public isRejected(): boolean {
-    return this.status === RequestStatus.RECHAZADO;
+    return this.status === REQUEST_STATUS.RECHAZADO;
   }
 
   public isExpired(): boolean {
-    return this.status === RequestStatus.EXPIRADO;
+    return this.status === REQUEST_STATUS.EXPIRADO;
   }
 
   public approve(userId: string): void {
     if (!this.isPending()) {
       throw new Error("Solo se puede aprobar una solicitud pendiente");
     }
-    this.status = RequestStatus.APROBADO;
+    this.status = REQUEST_STATUS.APROBADO;
     this.processedById = userId;
     this.processedDate = new Date();
   }
@@ -75,7 +83,7 @@ export class EquipmentRequest extends Entity<EquipmentRequest> {
     if (!this.isPending()) {
       throw new Error("Solo se puede rechazar una solicitud pendiente");
     }
-    this.status = RequestStatus.RECHAZADO;
+    this.status = REQUEST_STATUS.RECHAZADO;
     this.processedById = userId;
     this.processedDate = new Date();
 
@@ -88,21 +96,21 @@ export class EquipmentRequest extends Entity<EquipmentRequest> {
     if (!this.isApproved()) {
       throw new Error("Solo se puede completar una solicitud aprobada");
     }
-    this.status = RequestStatus.COMPLETADO;
+    this.status = REQUEST_STATUS.COMPLETADO;
   }
 
   public cancel(): void {
     if (this.isCompleted()) {
       throw new Error("No se puede cancelar una solicitud completada");
     }
-    this.status = RequestStatus.CANCELADO;
+    this.status = REQUEST_STATUS.CANCELADO;
   }
 
   public expire(): void {
     if (!this.isPending()) {
       throw new Error("Solo solicitudes pendientes pueden expirar");
     }
-    this.status = RequestStatus.EXPIRADO;
+    this.status = REQUEST_STATUS.EXPIRADO;
   }
 
   public hasContactEmail(): boolean {

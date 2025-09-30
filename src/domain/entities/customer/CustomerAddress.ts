@@ -5,11 +5,12 @@ export class CustomerAddress extends Entity<CustomerAddress> {
   id!: number;
   customerId!: string;
   customer?: Customer;
-  branchName?: string;
-  street!: string;
+  branchName?: string | null;
+
+  direction!: string;
   city!: string;
-  latitude?: number;
-  longitude?: number;
+  latitude?: number | null;
+  longitude?: number | null;
   isPrimary!: boolean;
   isActive!: boolean;
   createdAt!: Date;
@@ -55,7 +56,7 @@ export class CustomerAddress extends Entity<CustomerAddress> {
 
   public getFullAddress(): string {
     return this.branchName
-      ? `${this.branchName}, ${this.street}, ${this.city}`
-      : `${this.street}, ${this.city}`;
+      ? `${this.branchName}, ${this.direction}, ${this.city}`
+      : `${this.direction}, ${this.city}`;
   }
 }

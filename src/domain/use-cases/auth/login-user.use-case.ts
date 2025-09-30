@@ -1,8 +1,8 @@
-import { JwtAdapter } from "../../config/jwt";
-import { LoginUserDto } from "../dtos/user/login-user.dto";
-import { RoleName } from "../entities/Users";
-import { CustomError } from "../errors/custom.errors";
-import { AuthRepository } from "../repositories/auth.repository";
+import { JwtAdapter } from "../../../config/jwt";
+import { LoginUserDto } from "../../dtos";
+import { RoleName } from "../../entities";
+import { CustomError } from "../../errors";
+import { AuthRepository } from "../../repositories";
 
 type User = {
   id: string;

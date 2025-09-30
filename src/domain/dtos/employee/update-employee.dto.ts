@@ -1,11 +1,13 @@
 import { Validators } from "../../../config/validators";
+import { EMPLOYEE_POSITION } from "../../constants";
+import { EmployeePosition as EmployeePositionT } from "../../entities";
 
 export class UpdateEmployeeDto {
   constructor(
     public name?: string,
     public lastName?: string,
     public employeeCode?: string,
-    public position?: string,
+    public position?: EmployeePositionT,
     public phoneNumber?: string,
     public cedula?: string,
     public licenseExpirationDate?: Date,
@@ -44,6 +46,9 @@ export class UpdateEmployeeDto {
         undefined,
       ];
     }
+
+    if (position && !(position in EMPLOYEE_POSITION))
+      return ["El formato del puesto no es válido", undefined];
 
     if (is_active !== undefined && typeof is_active !== "boolean") {
       return ["El formato de is_active no es válido", undefined];

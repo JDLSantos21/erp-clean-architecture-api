@@ -512,7 +512,7 @@ model CustomerPhone {
   id          Int     @id @default(autoincrement())
   customerId  String  @map("customer_id") @db.Uuid
   description String? @db.VarChar(100) // Descripción del teléfono (opcional)
-  phoneNumber String  @unique @map("phone_number") @db.VarChar(20) // ÚNICO GLOBALMENTE
+  phoneNumber String  @unique @map("phone_number") @db.VarChar(15) // ÚNICO GLOBALMENTE
   type   PhoneType @map("phone_type") @default(MOVIL)
   hasWhatsapp Boolean @default(false) @map("has_whatsapp") // Si tiene WhatsApp
   isPrimary   Boolean @default(false) @map("is_primary") // Teléfono principal
@@ -529,7 +529,7 @@ model CustomerAddress {
   id          Int     @id @default(autoincrement())
   customerId  String  @map("customer_id") @db.Uuid
   branchName  String? @map("branch_name") @db.VarChar(100) // Nombre de la sucursal
-  street      String  @db.VarChar(255) // Dirección completa
+  direction   String  @db.VarChar(255) // Dirección completa
   city        String  @db.VarChar(100)
   latitude    Float?  // GPS opcional de la dirección
   longitude   Float?  // GPS opcional de la dirección
@@ -554,7 +554,7 @@ model EquipmentAssignment {
   id              String   @id @default(uuid()) @db.Uuid
   equipmentId     String   @map("equipment_id") @db.Uuid
   customerId      String   @map("customer_id") @db.Uuid
-  customerAddressId Int?   @map("customer_address_id") // En qué sucursal está
+  customerAddressId Int   @map("customer_address_id") // En qué sucursal está
   assignedAt      DateTime @default(now()) @map("assigned_at")
   unassignedAt    DateTime? @map("unassigned_at") // Cuando se desasignó
   status          AssignmentStatus @default(ACTIVO)
@@ -569,7 +569,7 @@ model EquipmentAssignment {
   // Relaciones
   equipment       Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
   customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  customerAddress CustomerAddress? @relation(fields: [customerAddressId], references: [id], onDelete: SetNull)
+  customerAddress CustomerAddress @relation(fields: [customerAddressId], references: [id], onDelete: Cascade)
   assignedByUser  User @relation("AssignedBy", fields: [assignedBy], references: [id])
   unassignedByUser User? @relation("UnassignedBy", fields: [unassignedBy], references: [id])
   deliveredByUser User? @relation("DeliveredBy", fields: [deliveredBy], references: [id])
@@ -687,7 +687,7 @@ model Order {
   id              Int      @id @default(autoincrement())
   trackingCode    String   @unique @map("tracking_code") @db.VarChar(50)
   customerId      String   @map("customer_id") @db.Uuid
-  deliveryAddressId Int?   @map("delivery_address_id") // Dirección de entrega del cliente
+  customerAddressId Int?   @map("customer_address_id") // Dirección de entrega del cliente
   
   // Información del pedido
   orderDate       DateTime @default(now()) @map("order_date")
@@ -708,7 +708,7 @@ model Order {
 
   // Relaciones
   customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  deliveryAddress CustomerAddress? @relation(fields: [deliveryAddressId], references: [id], onDelete: SetNull)
+  customerAddress CustomerAddress? @relation(fields: [customerAddressId], references: [id], onDelete: SetNull)
   createdByUser   User     @relation("OrderCreatedBy", fields: [createdById], references: [id])
   assignedToUser  User?    @relation("OrderAssignedTo", fields: [assignedToId], references: [id])
   

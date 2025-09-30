@@ -20,6 +20,10 @@ export class Validators {
     return /^\d{1,4}$/;
   }
 
+  static get rnc() {
+    return /^\d{9}$/;
+  }
+
   static validateAndFormatExpirationDate(
     licenseExpirationDate: any
   ): [string?, Date?] {
@@ -85,5 +89,19 @@ export class Validators {
 
   static isValidString(value: any): boolean {
     return typeof value === "string" && value.trim().length > 0;
+  }
+
+  static isBoolean(value: any): boolean {
+    const type = typeof value;
+    return type === "boolean";
+  }
+
+  static validateCoordinates(lat: unknown, lon: unknown): boolean {
+    if (typeof lat !== "number" || typeof lon !== "number") return false;
+
+    const isLatValid = lat >= -90 && lat <= 90;
+    const isLonValid = lon >= -180 && lon <= 180;
+
+    return isLatValid && isLonValid;
   }
 }

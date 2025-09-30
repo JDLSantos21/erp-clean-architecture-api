@@ -1,171 +1,90 @@
 import {
-  Customer,
-  CustomerAddress,
-  CustomerPhone,
-  EquipmentAssignment,
-  PhoneType,
-} from "../entities";
+  CreateCustomerAddressDTO,
+  CreateCustomerPhoneDTO,
+  CustomerQueryDTO,
+  RegisterCustomerDTO,
+  UpdateCustomerAddressDTO,
+  UpdateCustomerDTO,
+  UpdateCustomerPhoneDto,
+} from "../dtos";
+import { Customer, CustomerAddress, CustomerPhone } from "../entities";
+import { FilterParams } from "../types/filter-params.type";
 
-export interface CreateCustomerDto {
-  name: string;
-  email?: string;
-  rnc?: string;
-  isBusiness: boolean;
-  contactPerson?: string;
-  note?: string;
-}
+// export interface UpdateCustomerDto {
+//   id: string;
+//   name?: string;
+//   email?: string;
+//   rnc?: string;
+//   isBusiness?: boolean;
+//   contactPerson?: string;
+//   note?: string;
+// }
 
-export interface UpdateCustomerDto {
-  id: string;
-  name?: string;
-  email?: string;
-  rnc?: string;
-  isBusiness?: boolean;
-  contactPerson?: string;
-  note?: string;
-}
+// export interface CustomerFilters {
+//   name?: string;
+//   email?: string;
+//   rnc?: string;
+//   isBusiness?: boolean;
+//   isActive?: boolean;
+// }
 
-export interface CreateCustomerPhoneDto {
-  customerId: string;
-  phoneNumber: string;
-  phoneType: PhoneType;
-  hasWhatsapp?: boolean;
-  isPrimary?: boolean;
-}
-
-export interface CreateCustomerAddressDto {
-  customerId: string;
-  branchName?: string;
-  street: string;
-  city: string;
-  latitude?: number;
-  longitude?: number;
-  isPrimary?: boolean;
-}
-
-export interface CreateEquipmentAssignmentDto {
-  equipmentId: string;
-  customerId: string;
-  customerAddressId?: number;
-  assignedBy: string;
-  notes?: string;
-}
-
-export interface CustomerFilters {
-  name?: string;
-  email?: string;
-  rnc?: string;
-  isBusiness?: boolean;
-  isActive?: boolean;
-}
-
-export interface CustomerSummary {
-  totalCustomers: number;
-  businessCustomers: number;
-  individualCustomers: number;
-  activeAssignments: number;
-  totalEquipmentAssigned: number;
-  pendingReports: number;
-}
+// export interface CustomerSummary {
+//   totalCustomers: number;
+//   businessCustomers: number;
+//   individualCustomers: number;
+//   activeAssignments: number;
+//   totalEquipmentAssigned: number;
+//   pendingReports: number;
+// }
 
 export abstract class CustomerDatasource {
-  // Customer CRUD Operations
-  abstract createCustomer(
-    createCustomerDto: CreateCustomerDto
-  ): Promise<Customer>;
-  abstract getCustomerById(id: string): Promise<Customer>;
-  abstract getAllCustomers(filters?: CustomerFilters): Promise<Customer[]>;
-  abstract updateCustomer(
-    updateCustomerDto: UpdateCustomerDto
-  ): Promise<Customer>;
-  abstract deleteCustomer(id: string): Promise<Customer>;
+  abstract create(registerCustomerDto: RegisterCustomerDTO): Promise<Customer>;
+  abstract update(id: string, data: UpdateCustomerDTO): Promise<Customer>;
+  abstract list(
+    params: FilterParams<CustomerQueryDTO>
+  ): Promise<{ customers: Customer[]; total: number }>;
 
-  // Customer Phone Operations
-  abstract addCustomerPhone(
-    createPhoneDto: CreateCustomerPhoneDto
-  ): Promise<CustomerPhone>;
-  abstract getCustomerPhones(customerId: string): Promise<CustomerPhone[]>;
-  abstract updateCustomerPhone(
-    phoneId: number,
-    updates: Partial<CreateCustomerPhoneDto>
-  ): Promise<CustomerPhone>;
-  abstract deleteCustomerPhone(phoneId: number): Promise<CustomerPhone>;
-  abstract setPrimaryPhone(phoneId: number): Promise<CustomerPhone>;
-
-  // Customer Address Operations
-  abstract addCustomerAddress(
-    createAddressDto: CreateCustomerAddressDto
+  abstract createAddress(
+    customerId: string,
+    address: CreateCustomerAddressDTO
   ): Promise<CustomerAddress>;
-  abstract getCustomerAddresses(customerId: string): Promise<CustomerAddress[]>;
-  abstract updateCustomerAddress(
+  abstract createPhone(
+    customerId: string,
+    data: CreateCustomerPhoneDTO
+  ): Promise<CustomerPhone>;
+
+  abstract updateAddress(
     addressId: number,
-    updates: Partial<CreateCustomerAddressDto>
+    address: Partial<UpdateCustomerAddressDTO>
   ): Promise<CustomerAddress>;
-  abstract deleteCustomerAddress(addressId: number): Promise<CustomerAddress>;
-  abstract setPrimaryAddress(addressId: number): Promise<CustomerAddress>;
+  abstract updatePhone(
+    phoneId: number,
+    phone: Partial<UpdateCustomerPhoneDto>
+  ): Promise<CustomerPhone>;
 
-  // Equipment Assignment Operations
-  abstract assignEquipment(
-    assignmentDto: CreateEquipmentAssignmentDto
-  ): Promise<EquipmentAssignment>;
-  abstract getCustomerAssignments(
-    customerId: string
-  ): Promise<EquipmentAssignment[]>;
-  abstract getEquipmentAssignments(
-    equipmentId: string
-  ): Promise<EquipmentAssignment[]>;
-  abstract returnEquipment(
-    assignmentId: number,
-    unassignedBy: string,
-    notes?: string
-  ): Promise<EquipmentAssignment>;
-  abstract markEquipmentAsLost(
-    assignmentId: number,
-    notes?: string
-  ): Promise<EquipmentAssignment>;
-  abstract markEquipmentAsDamaged(
-    assignmentId: number,
-    notes?: string
-  ): Promise<EquipmentAssignment>;
-  abstract sendEquipmentToMaintenance(
-    assignmentId: number,
-    notes?: string
-  ): Promise<EquipmentAssignment>;
+  abstract listAddresses(customerId: string): Promise<CustomerAddress[]>;
+  abstract listPhones(customerId: string): Promise<CustomerPhone[]>;
 
-  // Query Operations
-  abstract getCustomerWithFullData(customerId: string): Promise<
-    Customer & {
-      phones: CustomerPhone[];
-      addresses: CustomerAddress[];
-      equipmentAssignments: EquipmentAssignment[];
-    }
-  >;
-  abstract searchCustomers(query: string): Promise<Customer[]>;
-  abstract getCustomersByEquipment(equipmentId: string): Promise<Customer[]>;
-  abstract getActiveAssignments(): Promise<EquipmentAssignment[]>;
+  abstract findAddressById(id: number): Promise<CustomerAddress | null>;
+  abstract findPhoneById(id: number): Promise<CustomerPhone | null>;
+  abstract findPhoneByNumber(
+    phoneNumber: string
+  ): Promise<CustomerPhone | null>;
 
-  // Analytics and Reporting
-  abstract getCustomerSummary(): Promise<CustomerSummary>;
-  abstract getCustomerEquipmentHistory(
-    customerId: string
-  ): Promise<EquipmentAssignment[]>;
-  abstract getTopCustomersByEquipmentCount(): Promise<
-    Array<Customer & { equipmentCount: number }>
-  >;
+  abstract setPrimaryAddress(
+    customerId: string,
+    addressId: number
+  ): Promise<void>;
+  abstract setPrimaryPhone(customerId: string, phoneId: number): Promise<void>;
 
-  // Business Operations
-  abstract validatePhoneUniqueness(
-    phoneNumber: string,
-    excludePhoneId?: number
-  ): Promise<boolean>;
-  abstract validateRncUniqueness(
-    rnc: string,
-    excludeCustomerId?: string
-  ): Promise<boolean>;
-  abstract transferEquipment(
-    assignmentId: number,
-    newCustomerId: string,
-    newAddressId?: number,
-    transferredBy?: string
-  ): Promise<EquipmentAssignment>;
+  abstract findById(id: string): Promise<Customer | null>;
+  abstract findByEmail(email: string): Promise<Customer | null>;
+  abstract findByRnc(rnc: string): Promise<Customer | null>;
+
+  abstract delete(customerId: string): Promise<void>;
+  abstract deleteAddress(addressId: number): Promise<void>;
+  abstract deletePhone(phoneId: number): Promise<void>;
+
+  abstract active(customerId: string): Promise<void>;
+  abstract deactive(customerId: string): Promise<void>;
 }

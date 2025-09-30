@@ -1,30 +1,57 @@
-import { Router } from "express";
+import Router, { Router as RouterType } from "express";
+import { PermissionMiddleware } from "../middlewares/permission.middleware";
 import { CustomerController } from "./customer.controller";
+import { CustomerRepositoryImpl } from "../../infrastructure/repositories/customer.repository.impl";
+import { CustomerDatasourceImpl } from "../../infrastructure/datasources/customer.datasource.impl";
+import { AuthMiddleware } from "../middlewares/auth.middleware";
 
 export class CustomerRoutes {
-  static get routes(): Router {
+  static get routes(): RouterType {
     const router = Router();
-    const controller = new CustomerController();
 
-    // Rutas principales de clientes
-    router.post("/", controller.createCustomer);
-    router.get("/", controller.getAllCustomers);
-    router.get("/summary", controller.getCustomersSummary);
-    router.get("/:id", controller.getCustomerById);
-
-    // Rutas de gestión de teléfonos
-    router.post("/:id/phones", controller.addCustomerPhone);
-
-    // Rutas de gestión de direcciones
-    router.post("/:id/addresses", controller.addCustomerAddress);
-
-    // Rutas de gestión de equipos
-    router.post("/:id/assign-equipment", controller.assignEquipment);
-    router.get("/:id/equipment", controller.getCustomerEquipment);
-    router.put(
-      "/:customerId/equipment/:assignmentId/return",
-      controller.returnEquipment
+    const customerRepository = new CustomerRepositoryImpl(
+      new CustomerDatasourceImpl()
     );
+    const controller = new CustomerController(customerRepository);
+    router.use(AuthMiddleware.validateJWT);
+    const { advancedOperations, readOnly } = PermissionMiddleware;
+
+    // Rutas sin parámetros primero
+    router.post("/", advancedOperations, controller.createCustomer);
+    router.get("/", readOnly, controller.getAllCustomers);
+
+    // Rutas con parámetros específicos (más específicas primero)
+    router.patch("/:id", advancedOperations, controller.updateCustomer);
+    router.delete("/:id", advancedOperations, controller.deleteCustomer);
+
+    // Direcciones
+    router.post(
+      "/:id/addresses",
+      advancedOperations,
+      controller.createCustomerAddress
+    );
+    router.get("/:id/addresses", readOnly, controller.getCustomerAddresses);
+    router.patch(
+      "/addresses/:addressId",
+      advancedOperations,
+      controller.updateCustomerAddress
+    );
+
+    // Telefonos
+    router.post(
+      "/:id/phones",
+      advancedOperations,
+      controller.createCustomerPhone
+    );
+    router.get("/:id/phones", readOnly, controller.getCustomerPhones);
+    router.patch(
+      "/phones/:phoneId",
+      advancedOperations,
+      controller.updateCustomerPhone
+    );
+
+    // Ruta general con parámetro al final
+    router.get("/:id", readOnly, controller.getCustomerById);
 
     return router;
   }

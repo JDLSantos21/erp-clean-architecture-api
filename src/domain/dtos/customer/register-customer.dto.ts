@@ -1,38 +1,75 @@
 import { Validators } from "../../../config";
+import { CreateCustomerPhoneDTO } from "./create-customer-phone.dto";
+import { CreateCustomerAddressDTO } from "./create-customer-address.dto";
 
 export class RegisterCustomerDTO {
   private constructor(
-    public name: string,
-    public email: string,
-    public phoneNumber: string,
-    public hasWhatsapp: string,
-    public addresses: string[],
+    public businessName: string,
+    public representativeName: string,
+    public phones: CreateCustomerPhoneDTO[],
+    public addresses: CreateCustomerAddressDTO[],
+    public email?: string,
+    public rnc?: string,
     public note?: string
   ) {}
 
   static create(object: {
     [key: string]: any;
   }): [string?, RegisterCustomerDTO?] {
-    const { name, email, phoneNumber, hasWhatsapp, addresses, note } = object;
+    const {
+      business_name,
+      representative_name,
+      rnc,
+      email,
+      phones,
+      addresses,
+      note,
+    } = object;
 
-    if (!name) return ["Name is required"];
-    if (!email) return ["Email is required"];
-    if (!Validators.email.test(email)) return ["Email is not valid"];
-    if (!phoneNumber) return ["Phone number is required"];
-    if (!hasWhatsapp) return ["WhatsApp status is required"];
-    if (!addresses || addresses.length === 0)
-      return ["At least one address is required"];
-    if (note && note.length > 300)
-      return ["Note must be at most 300 characters"];
+    if (!Validators.isValidString(business_name))
+      return ["El formato del nombre de la empresa no es válido"];
+
+    if (!Validators.isValidString(representative_name))
+      return ["El formato del nombre del representante no es válido"];
+
+    if (email && !Validators.email.test(email))
+      return ["El formato del email no es válido"];
+
+    if (rnc && !Validators.rnc.test(rnc))
+      if (!addresses || addresses.length === 0)
+        return ["Se requiere al menos una dirección"];
+
+    if (!phones || phones.length === 0)
+      return ["Se requiere al menos un teléfono"];
+
+    const valid_phones: CreateCustomerPhoneDTO[] = [];
+
+    for (const phone of phones) {
+      const [error, phoneDTO] = CreateCustomerPhoneDTO.create(phone);
+      if (error) return [error];
+      valid_phones.push(phoneDTO!);
+    }
+
+    const valid_addresses: CreateCustomerAddressDTO[] = [];
+
+    for (const address of addresses) {
+      const [error, addressDTO] = CreateCustomerAddressDTO.create(address);
+      if (error) return [error];
+      valid_addresses.push(addressDTO!);
+    }
+
+    if (note && note.length > 100)
+      return ["La nota debe tener un máximo de 100 caracteres"];
 
     return [
       undefined,
       new RegisterCustomerDTO(
-        name,
+        business_name.trim(),
+        representative_name.trim(),
+        valid_phones,
+        valid_addresses,
         email,
-        phoneNumber,
-        hasWhatsapp,
-        addresses,
+        rnc,
         note
       ),
     ];

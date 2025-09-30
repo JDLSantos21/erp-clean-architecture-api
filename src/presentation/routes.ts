@@ -6,8 +6,8 @@ import { FuelRoutes } from "./fuel/routes";
 import { FuelAnalyticsRoutes } from "./fuel/analytics-routes";
 import { InventoryRoutes } from "./inventory/routes";
 import { MaintenanceRoutes } from "./maintenance/routes";
-import { CustomerRoutes } from "./customers/customer.routes";
 import { EquipmentReportRoutes } from "./equipment-reports/equipment-report.routes";
+import { CustomerRoutes } from "./customers/customer.routes";
 
 export class AppRoutes {
   static get routes(): Router {
@@ -32,7 +32,6 @@ export class AppRoutes {
 
     // Sistema de gestión de clientes
     router.use("/customers", CustomerRoutes.routes);
-
     // Sistema de reportes de equipos
     router.use("/equipment-reports", EquipmentReportRoutes.routes);
 

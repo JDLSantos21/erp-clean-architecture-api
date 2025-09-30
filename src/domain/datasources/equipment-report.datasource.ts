@@ -1,8 +1,9 @@
-import EquipmentReport, {
+import {
   ReportType,
   ReportPriority,
   ReportStatus,
-} from "../entities/EquipmentReport";
+  EquipmentReport,
+} from "../entities";
 
 export interface CreateEquipmentReportDto {
   equipmentId: string;

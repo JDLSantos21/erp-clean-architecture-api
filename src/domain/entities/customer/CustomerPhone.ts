@@ -1,18 +1,13 @@
 import Entity from "../entity";
 import { Customer } from "./Customer";
 
-export enum PhoneType {
-  MOVIL = "MOVIL",
-  FIJO = "FIJO",
-  TRABAJO = "TRABAJO",
-  OTROS = "OTROS",
-}
+export type PhoneType = "MOVIL" | "FIJO" | "TRABAJO" | "OTROS";
 
 export class CustomerPhone extends Entity<CustomerPhone> {
   id!: number;
   customerId!: string;
-  customer?: Customer;
-  description?: string;
+  customer?: Customer | null;
+  description?: string | null;
   phoneNumber!: string;
   type!: PhoneType;
   hasWhatsapp!: boolean;

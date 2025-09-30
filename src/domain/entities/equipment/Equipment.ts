@@ -2,13 +2,12 @@ import Entity from "../entity";
 import { EquipmentLocation } from "./EquipmentLocation";
 import { EquipmentModel } from "./EquipmentModel";
 
-export enum EquipmentStatus {
-  DISPONIBLE = "DISPONIBLE",
-  ASIGNADO = "ASIGNADO",
-  MANTENIMIENTO = "MANTENIMIENTO",
-  DAÑADO = "DAÑADO",
-  INHABILITADO = "INHABILITADO",
-}
+export type EquipmentStatus =
+  | "DISPONIBLE"
+  | "ASIGNADO"
+  | "MANTENIMIENTO"
+  | "DAÑADO"
+  | "INHABILITADO";
 
 export class Equipment extends Entity<Equipment> {
   id!: string;
@@ -25,23 +24,23 @@ export class Equipment extends Entity<Equipment> {
 
   // Métodos de negocio para gestión de estado
   public isAvailable(): boolean {
-    return this.status === EquipmentStatus.DISPONIBLE && this.isActive;
+    return this.status === "DISPONIBLE" && this.isActive;
   }
 
   public isAssigned(): boolean {
-    return this.status === EquipmentStatus.ASIGNADO;
+    return this.status === "ASIGNADO";
   }
 
   public isInMaintenance(): boolean {
-    return this.status === EquipmentStatus.MANTENIMIENTO;
+    return this.status === "MANTENIMIENTO";
   }
 
   public isDamaged(): boolean {
-    return this.status === EquipmentStatus.DAÑADO;
+    return this.status === "DAÑADO";
   }
 
   public isOutOfService(): boolean {
-    return this.status === EquipmentStatus.INHABILITADO || !this.isActive;
+    return this.status === "INHABILITADO" || !this.isActive;
   }
 
   public assign(): void {
@@ -49,7 +48,7 @@ export class Equipment extends Entity<Equipment> {
       throw new Error("El equipo debe estar disponible para asignarlo");
     }
 
-    this.status = EquipmentStatus.ASIGNADO;
+    this.status = "ASIGNADO";
     this.updatedAt = new Date();
   }
 
@@ -58,7 +57,7 @@ export class Equipment extends Entity<Equipment> {
       throw new Error("El equipo debe estar asignado para desasignarlo");
     }
 
-    this.status = EquipmentStatus.DISPONIBLE;
+    this.status = "DISPONIBLE";
     this.updatedAt = new Date();
   }
 
@@ -69,7 +68,7 @@ export class Equipment extends Entity<Equipment> {
       );
     }
 
-    this.status = EquipmentStatus.MANTENIMIENTO;
+    this.status = "MANTENIMIENTO";
     this.updatedAt = new Date();
   }
 
@@ -80,28 +79,28 @@ export class Equipment extends Entity<Equipment> {
       );
     }
 
-    this.status = EquipmentStatus.DISPONIBLE;
+    this.status = "DISPONIBLE";
     this.updatedAt = new Date();
   }
 
   public markAsDamaged(): void {
-    this.status = EquipmentStatus.DAÑADO;
+    this.status = "DAÑADO";
     this.updatedAt = new Date();
   }
 
   public markAsOutOfService(): void {
-    this.status = EquipmentStatus.INHABILITADO;
+    this.status = "INHABILITADO";
     this.isActive = false;
     this.updatedAt = new Date();
   }
 
   public reactivate(): void {
     if (this.isOutOfService()) {
-      this.status = EquipmentStatus.DISPONIBLE;
+      this.status = "DISPONIBLE";
       this.isActive = true;
       this.updatedAt = new Date();
     } else if (this.isDamaged()) {
-      this.status = EquipmentStatus.DISPONIBLE;
+      this.status = "DISPONIBLE";
       this.updatedAt = new Date();
     } else {
       throw new Error(

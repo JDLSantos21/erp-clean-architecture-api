@@ -1,7 +1,7 @@
-import { CreateEmployeeDto } from "../dtos";
-import { Employee } from "../entities/Employee";
-import { EmployeeRepository } from "../repositories/employee.repository";
-import { EmployeeService } from "../services/employee.service";
+import { CreateEmployeeDto } from "../../dtos";
+import { Employee } from "../../entities";
+import { EmployeeRepository } from "../../repositories";
+import { EmployeeService } from "../../services";
 
 interface CreateEmployeeUseCase {
   execute(createEmployeeDto: CreateEmployeeDto): Promise<Employee>;

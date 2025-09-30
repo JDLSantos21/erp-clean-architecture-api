@@ -1,7 +1,7 @@
-import { AuthRepository } from "../repositories/auth.repository";
-import { CustomError } from "../errors/custom.errors";
-import { CreateRoleDto } from "../dtos/user/create-role.dto";
-import { Role } from "../entities/Users";
+import { CreateRoleDto } from "../../dtos";
+import { Role } from "../../entities";
+import { CustomError } from "../../errors";
+import { AuthRepository } from "../../repositories";
 
 interface CreateRoleUseCase {
   execute(createRoleDto: CreateRoleDto): Promise<Role>;

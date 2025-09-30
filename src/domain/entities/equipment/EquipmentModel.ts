@@ -1,10 +1,12 @@
 import Entity from "../entity";
 
-export enum EquipmentType {
-  ANAQUEL = "ANAQUEL",
-  NEVERA = "NEVERA",
-  OTROS = "OTROS",
-}
+export type EquipmentType = "ANAQUEL" | "NEVERA" | "OTROS";
+
+export const EQUIPMENT_TYPE = {
+  ANAQUEL: "ANAQUEL" as const,
+  NEVERA: "NEVERA" as const,
+  OTROS: "OTROS" as const,
+} as const;
 
 export class EquipmentModel extends Entity<EquipmentModel> {
   id!: number;
@@ -17,15 +19,15 @@ export class EquipmentModel extends Entity<EquipmentModel> {
 
   // Métodos de negocio
   public isRefrigerator(): boolean {
-    return this.type === EquipmentType.NEVERA;
+    return this.type === EQUIPMENT_TYPE.NEVERA;
   }
 
   public isShelf(): boolean {
-    return this.type === EquipmentType.ANAQUEL;
+    return this.type === EQUIPMENT_TYPE.ANAQUEL;
   }
 
   public isOther(): boolean {
-    return this.type === EquipmentType.OTROS;
+    return this.type === EQUIPMENT_TYPE.OTROS;
   }
 
   public hasBrand(): boolean {

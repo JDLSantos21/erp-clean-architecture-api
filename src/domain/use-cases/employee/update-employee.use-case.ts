@@ -1,8 +1,8 @@
-import { UpdateEmployeeDto } from "../dtos";
-import { Employee } from "../entities/Employee";
-import { CustomError } from "../errors/custom.errors";
-import { EmployeeRepository } from "../repositories/employee.repository";
-import { EmployeeService } from "../services/employee.service";
+import { UpdateEmployeeDto } from "../../dtos";
+import { Employee } from "../../entities";
+import { CustomError } from "../../errors";
+import { EmployeeRepository } from "../../repositories";
+import { EmployeeService } from "../../services";
 
 interface UpdateEmployeeUseCaseI {
   execute(id: string, updateEmployeeDto: UpdateEmployeeDto): Promise<Employee>;

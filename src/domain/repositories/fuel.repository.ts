@@ -11,7 +11,7 @@ import {
   FuelRefill,
   FuelTank,
   FuelTankReset,
-} from "../entities/Fuel";
+} from "../entities";
 
 interface FiltersParams {
   filters?: Partial<FuelConsumption>;

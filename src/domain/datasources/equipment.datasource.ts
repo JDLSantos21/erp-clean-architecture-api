@@ -1,5 +1,5 @@
 import { Equipment, EquipmentModel, EquipmentLocation } from "../entities";
-import { EquipmentStatus } from "../entities/EquipmentReport";
+import { EquipmentStatus } from "../entities";
 
 export interface CreateEquipmentDto {
   name: string;

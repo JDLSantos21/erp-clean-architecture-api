@@ -36,3 +36,13 @@ export * from "./user/set-role-to-user.dto";
 export * from "./user/create-role.dto";
 export * from "./user/register-user.dto";
 export * from "./user/login-user.dto";
+
+//Customers
+
+export * from "./customer/create-customer-phone.dto";
+export * from "./customer/create-customer-address.dto";
+export * from "./customer/register-customer.dto";
+export * from "./customer/update-customer.dto";
+export * from "./customer/update-customer-phone.dto";
+export * from "./customer/customer-query.dto";
+export * from "./customer/update-customer-address.dto";

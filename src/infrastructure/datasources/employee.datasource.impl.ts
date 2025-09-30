@@ -9,7 +9,6 @@ import { buildWhere } from "../mappers/prisma-where.mapper";
 
 export class EmployeeDatasourceImpl extends EmployeeDatasource {
   async createEmployee(data: CreateEmployeeDto): Promise<Employee> {
-    console.log(data);
     try {
       const registeredEmployee = await prisma.employee.create({ data });
       return new Employee(registeredEmployee);

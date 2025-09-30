@@ -3,26 +3,37 @@ import Entity from "../entity";
 import { User } from "../Users";
 import { Equipment } from "./Equipment";
 
-export enum ReportType {
-  PREVENTIVO = "PREVENTIVO",
-  CORRECTIVO = "CORRECTIVO",
-  FALLA = "FALLA",
-}
+export type ReportType = "PREVENTIVO" | "CORRECTIVO" | "FALLA";
 
-export enum ReportPriority {
-  BAJA = "BAJA",
-  MEDIA = "MEDIA",
-  ALTA = "ALTA",
-  CRITICA = "CRITICA",
-}
+export const REPORT_TYPE = {
+  PREVENTIVO: "PREVENTIVO" as const,
+  CORRECTIVO: "CORRECTIVO" as const,
+  FALLA: "FALLA" as const,
+} as const;
 
-export enum ReportStatus {
-  PENDIENTE = "PENDIENTE",
-  EN_PROGRESO = "EN_PROGRESO",
-  COMPLETADO = "COMPLETADO",
-  CANCELADO = "CANCELADO",
-  RECHAZADO = "RECHAZADO",
-}
+export type ReportPriority = "BAJA" | "MEDIA" | "ALTA" | "CRITICA";
+
+export const REPORT_PRIORITY = {
+  BAJA: "BAJA" as const,
+  MEDIA: "MEDIA" as const,
+  ALTA: "ALTA" as const,
+  CRITICA: "CRITICA" as const,
+} as const;
+
+export type ReportStatus =
+  | "PENDIENTE"
+  | "EN_PROGRESO"
+  | "COMPLETADO"
+  | "CANCELADO"
+  | "RECHAZADO";
+
+export const REPORT_STATUS = {
+  PENDIENTE: "PENDIENTE" as const,
+  EN_PROGRESO: "EN_PROGRESO" as const,
+  COMPLETADO: "COMPLETADO" as const,
+  CANCELADO: "CANCELADO" as const,
+  RECHAZADO: "RECHAZADO" as const,
+} as const;
 
 export class EquipmentReport extends Entity<EquipmentReport> {
   id!: string;
@@ -46,50 +57,50 @@ export class EquipmentReport extends Entity<EquipmentReport> {
 
   // Métodos de negocio
   public isPending(): boolean {
-    return this.status === ReportStatus.PENDIENTE;
+    return this.status === REPORT_STATUS.PENDIENTE;
   }
 
   public isInProgress(): boolean {
-    return this.status === ReportStatus.EN_PROGRESO;
+    return this.status === REPORT_STATUS.EN_PROGRESO;
   }
 
   public isCompleted(): boolean {
-    return this.status === ReportStatus.COMPLETADO;
+    return this.status === REPORT_STATUS.COMPLETADO;
   }
 
   public isCancelled(): boolean {
-    return this.status === ReportStatus.CANCELADO;
+    return this.status === REPORT_STATUS.CANCELADO;
   }
 
   public isRejected(): boolean {
-    return this.status === ReportStatus.RECHAZADO;
+    return this.status === REPORT_STATUS.RECHAZADO;
   }
 
   public isPreventive(): boolean {
-    return this.type === ReportType.PREVENTIVO;
+    return this.type === REPORT_TYPE.PREVENTIVO;
   }
 
   public isCorrective(): boolean {
-    return this.type === ReportType.CORRECTIVO;
+    return this.type === REPORT_TYPE.CORRECTIVO;
   }
 
   public isFailureReport(): boolean {
-    return this.type === ReportType.FALLA;
+    return this.type === REPORT_TYPE.FALLA;
   }
 
   public isCritical(): boolean {
-    return this.priority === ReportPriority.CRITICA;
+    return this.priority === REPORT_PRIORITY.CRITICA;
   }
 
   public isHighPriority(): boolean {
-    return this.priority === ReportPriority.ALTA || this.isCritical();
+    return this.priority === REPORT_PRIORITY.ALTA || this.isCritical();
   }
 
   public startProgress(): void {
     if (!this.isPending()) {
       throw new Error("Solo se puede iniciar un reporte que esté pendiente");
     }
-    this.status = ReportStatus.EN_PROGRESO;
+    this.status = REPORT_STATUS.EN_PROGRESO;
   }
 
   public complete(): void {
@@ -98,7 +109,7 @@ export class EquipmentReport extends Entity<EquipmentReport> {
         "Solo se puede completar un reporte que esté en progreso"
       );
     }
-    this.status = ReportStatus.COMPLETADO;
+    this.status = REPORT_STATUS.COMPLETADO;
     this.completedAt = new Date();
   }
 
@@ -106,14 +117,14 @@ export class EquipmentReport extends Entity<EquipmentReport> {
     if (this.isCompleted()) {
       throw new Error("No se puede cancelar un reporte que ya está completado");
     }
-    this.status = ReportStatus.CANCELADO;
+    this.status = REPORT_STATUS.CANCELADO;
   }
 
   public reject(): void {
     if (!this.isPending()) {
       throw new Error("Solo se puede rechazar un reporte que esté pendiente");
     }
-    this.status = ReportStatus.RECHAZADO;
+    this.status = REPORT_STATUS.RECHAZADO;
   }
 
   public isScheduled(): boolean {

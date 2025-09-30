@@ -1,11 +1,13 @@
 import { Validators } from "../../../config/validators";
+import { EMPLOYEE_POSITION } from "../../constants";
+import { EmployeePosition as EmployeePositionT } from "../../entities";
 
 export class CreateEmployeeDto {
   constructor(
     public name: string,
     public lastName: string,
     public employeeCode: string,
-    public position: string,
+    public position: EmployeePositionT,
     public phoneNumber?: string,
     public cedula?: string,
     public licenseExpirationDate?: Date,
@@ -62,6 +64,13 @@ export class CreateEmployeeDto {
 
       if (error) return [error, undefined];
       validDate = formattedDate;
+    }
+
+    if (
+      !Validators.isValidString(position) ||
+      !(position in EMPLOYEE_POSITION)
+    ) {
+      return ["El puesto no es válido", undefined];
     }
 
     return [

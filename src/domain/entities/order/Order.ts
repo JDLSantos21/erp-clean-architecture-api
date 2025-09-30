@@ -17,8 +17,8 @@ export class Order extends Entity<Order> {
   trackingCode!: string;
   customerId!: string;
   customer?: Customer;
-  deliveryAddressId?: number;
-  deliveryAddress?: CustomerAddress;
+  customerAddressId!: number;
+  customerAddress?: CustomerAddress;
   orderDate!: Date;
   scheduledDate?: Date;
   deliveredDate?: Date;
@@ -65,8 +65,8 @@ export class Order extends Entity<Order> {
     return !!this.assignedToId;
   }
 
-  public hasDeliveryAddress(): boolean {
-    return !!this.deliveryAddressId;
+  public hasCustomerAddress(): boolean {
+    return !!this.customerAddressId;
   }
 
   public isOverdue(): boolean {
