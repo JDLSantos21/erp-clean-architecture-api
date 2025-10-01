@@ -11,99 +11,101 @@ import {
   SetRolesToUserDto,
 } from "../../domain";
 import { Request, Response } from "express";
-import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
 import { StatusCode } from "../../domain/constants";
+import { BaseController } from "../shared/base.controller";
 
-export class AuthController {
-  constructor(private readonly authRepository: AuthRepository) {}
+export class AuthController extends BaseController {
+  constructor(private readonly authRepository: AuthRepository) {
+    super();
+  }
 
-  private handleError = (error: unknown, res: Response, req: Request) => {
-    if (error instanceof CustomError) {
-      return res
-        .status(error.statusCode)
-        .json(ResponseBuilder.error(error.statusCode, error.message, req));
+  createRole = async (req: Request, res: Response) => {
+    try {
+      const [error, createRoleDto] = CreateRoleDto.create(req.body.role_name);
+
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
+
+      const role = await new CreateRole(this.authRepository).execute(
+        createRoleDto!
+      );
+      this.handleCreated(res, role, req);
+    } catch (error) {
+      this.handleError(error, res, req);
     }
-
-    return res
-      .status(500)
-      .json(ResponseBuilder.error(500, "Error interno del servidor"));
   };
 
-  createRole = (req: Request, res: Response) => {
-    const [error, createRoleDto] = CreateRoleDto.create(req.body.role_name);
+  registerUser = async (req: Request, res: Response) => {
+    try {
+      const [error, registerUserDto] = RegisterUserDto.create(req.body);
 
-    if (error) {
-      res.status(400).json({ error });
-      return;
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
+
+      const userToken = await new RegisterUser(this.authRepository).execute(
+        registerUserDto!
+      );
+      this.handleCreated(res, userToken, req);
+    } catch (error) {
+      this.handleError(error, res, req);
     }
-
-    new CreateRole(this.authRepository)
-      .execute(createRoleDto!)
-      .then((role) => res.json(role))
-      .catch((error) => this.handleError(error, res, req));
   };
 
-  registerUser = (req: Request, res: Response) => {
-    const [error, registerUserDto] = RegisterUserDto.create(req.body);
+  login = async (req: Request, res: Response) => {
+    try {
+      const [error, loginUserDto] = LoginUserDto.create(req.body);
 
-    if (error) {
-      res.status(400).json({ error });
-      return;
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
+
+      const sessionData = await new LoginUser(this.authRepository).execute(
+        loginUserDto!
+      );
+      this.handleSuccess(res, sessionData, req);
+    } catch (error) {
+      this.handleError(error, res, req);
     }
-
-    new RegisterUser(this.authRepository)
-      .execute(registerUserDto!)
-      .then((userToken) => res.json(userToken))
-      .catch((error) => this.handleError(error, res, req));
   };
 
-  login = (req: Request, res: Response) => {
-    const [error, loginUserDto] = LoginUserDto.create(req.body);
-
-    if (error) {
-      res.status(400).json({ error });
-      return;
+  getUsers = async (req: Request, res: Response) => {
+    try {
+      const users = await this.authRepository.getUsers();
+      this.handleSuccess(res, users, req);
+    } catch (error) {
+      this.handleError(error, res, req);
     }
-
-    new LoginUser(this.authRepository)
-      .execute(loginUserDto!)
-      .then((sessionData) => res.json(sessionData))
-      .catch((error) => this.handleError(error, res, req));
   };
 
-  getUsers = (req: Request, res: Response) => {
-    this.authRepository
-      .getUsers()
-      .then((users) => res.json(users))
-      .catch((error) => this.handleError(error, res, req));
-  };
-
-  findById = (req: Request, res: Response) => {
-    const id = req.params.id;
-    this.authRepository
-      .findById(id)
-      .then((user) => res.json(user))
-      .catch((error) => this.handleError(error, res, req));
-  };
-
-  setRolesToUser = (req: Request, res: Response) => {
-    const paramUserId = req.params.id;
-    const roles: number[] = req.body.roles;
-
-    const [error, dto] = SetRolesToUserDto.create(roles, paramUserId);
-
-    if (error) {
-      res
-        .status(400)
-        .json(ResponseBuilder.error(StatusCode.BAD_REQUEST, error, req));
-      return;
+  findById = async (req: Request, res: Response) => {
+    try {
+      const id = req.params.id;
+      const user = await this.authRepository.findById(id);
+      this.handleSuccess(res, user, req);
+    } catch (error) {
+      this.handleError(error, res, req);
     }
+  };
 
-    const { roleIds, userId } = dto!;
+  setRolesToUser = async (req: Request, res: Response) => {
+    try {
+      const paramUserId = req.params.id;
+      const roles: number[] = req.body.roles;
 
-    new SetRolesToUser(this.authRepository)
-      .execute(userId, roleIds)
-      .then(() => res.status(204).send())
-      .catch((error) => this.handleError(error, res, req));
+      const [error, dto] = SetRolesToUserDto.create(roles, paramUserId);
+
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
+
+      const { roleIds, userId } = dto!;
+
+      await new SetRolesToUser(this.authRepository).execute(userId, roleIds);
+      this.handleNoContent(res);
+    } catch (error) {
+      this.handleError(error, res, req);
+    }
   };
 }

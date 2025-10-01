@@ -7,118 +7,94 @@ import {
   VehicleQueryDto,
 } from "../../domain";
 import { Request, Response } from "express";
-import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
+import { BaseController } from "../shared/base.controller";
 
-export class VehicleController {
-  constructor(private readonly vehicleRepository: VehicleRepository) {}
-
-  private handleError = (error: unknown, res: Response, req: Request) => {
-    if (error instanceof CustomError) {
-      return res
-        .status(error.statusCode)
-        .json(ResponseBuilder.error(error.statusCode, error.message, req));
-    }
-
-    return res
-      .status(500)
-      .json(ResponseBuilder.error(500, "Internal server error", req));
-  };
+export class VehicleController extends BaseController {
+  constructor(private readonly vehicleRepository: VehicleRepository) {
+    super();
+  }
 
   createVehicle = async (req: Request, res: Response) => {
-    const [error, registerVehicleDto] = RegisterVehicleDto.create(req.body);
-
-    if (error) {
-      res.status(400).json({ error });
-      return;
-    }
-
-    new CreateVehicle(this.vehicleRepository)
-      .execute(registerVehicleDto!)
-      .then((vehicle) => res.json(vehicle))
-      .catch((error) => this.handleError(error, res, req));
     try {
+      const [error, registerVehicleDto] = RegisterVehicleDto.create(req.body);
+
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
+
+      const vehicle = await new CreateVehicle(this.vehicleRepository).execute(
+        registerVehicleDto!
+      );
+      this.handleCreated(res, vehicle, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
   };
 
   getVehicles = async (req: Request, res: Response) => {
-    const [error, vehicleQueryDto] = VehicleQueryDto.create(req.query);
-
-    console.log("dto:", vehicleQueryDto);
-
-    if (error) {
-      console.log("Error creating DTO:", error);
-      res.status(400).json(ResponseBuilder.error(400, error, req));
-      return;
-    }
-
-    const { page, limit, ...filters } = vehicleQueryDto!;
-
-    const skip = (page - 1) * limit;
-
     try {
+      const [error, vehicleQueryDto] = VehicleQueryDto.create(req.query);
+
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
+
+      const { page, limit, ...filters } = vehicleQueryDto!;
+      const skip = (page - 1) * limit;
+
       const { vehicles, total } = await this.vehicleRepository.getVehicles({
         skip,
         limit,
         filters,
       });
 
-      const response = ResponseBuilder.successWithPagination(
+      this.handleSuccessWithPagination(
+        res,
         vehicles,
         { page, limit, total },
         req
       );
-
-      res.status(200).json(response);
     } catch (error) {
       this.handleError(error, res, req);
     }
   };
 
   getVehicleById = async (req: Request, res: Response) => {
-    const id = req.params.id;
-
     try {
+      const id = req.params.id;
+
       const vehicle = await this.vehicleRepository.getVehicleById(id);
-      res.status(200).json(ResponseBuilder.success(vehicle, req));
+      this.handleSuccess(res, vehicle, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
   };
 
   updateVehicle = async (req: Request, res: Response) => {
-    const [error, registerVehicleDto] = RegisterVehicleDto.create(req.body);
+    try {
+      const [error, registerVehicleDto] = RegisterVehicleDto.create(req.body);
+      const id = req.params.id;
 
-    const id = req.params.id;
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
 
-    if (error) {
-      res.status(400).json({ error });
-      return;
+      const vehicle = await new UpdateVehicle(this.vehicleRepository).execute(
+        id,
+        registerVehicleDto!
+      );
+      this.handleSuccess(res, vehicle, req);
+    } catch (error) {
+      this.handleError(error, res, req);
     }
-
-    new UpdateVehicle(this.vehicleRepository)
-      .execute(id, registerVehicleDto!)
-      .then((vehicle) =>
-        res.status(200).json(ResponseBuilder.success(vehicle, req))
-      )
-      .catch((error) => this.handleError(error, res, req));
   };
 
   deleteVehicle = async (req: Request, res: Response) => {
-    const id = req.params.id;
-
     try {
-      await this.vehicleRepository.deleteVehicle(id);
+      const id = req.params.id;
 
-      res
-        .status(200)
-        .json(
-          ResponseBuilder.success(
-            { message: "Vehicle deleted successfully" },
-            req
-          )
-        );
+      await this.vehicleRepository.deleteVehicle(id);
+      this.handleSuccess(res, { message: "Vehicle deleted successfully" }, req);
     } catch (error) {
       this.handleError(error, res, req);
     }

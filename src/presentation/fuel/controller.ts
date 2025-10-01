@@ -17,35 +17,24 @@ import {
   UpdateFuelConsumptionDto,
   DeleteFuelConsumption,
 } from "../../domain";
-import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
 import { Request, Response } from "express";
+import { BaseController } from "../shared/base.controller";
 
-export class FuelController {
+export class FuelController extends BaseController {
   constructor(
     private readonly fuelRepository: FuelRepository,
     private readonly vehicleRepository: VehicleRepository,
     private readonly employeeRepository: EmployeeRepository
-  ) {}
-  private handleError = (error: unknown, res: Response, req: Request) => {
-    console.log("Fuel Controller Error: ", error);
-    if (error instanceof CustomError) {
-      return res
-        .status(error.statusCode)
-        .json(ResponseBuilder.error(error.statusCode, error.message, req));
-    }
-
-    return res
-      .status(500)
-      .json(ResponseBuilder.error(500, "Internal server error", req));
-  };
+  ) {
+    super();
+  }
 
   createFuelTank = async (req: Request, res: Response) => {
     try {
       const [error, dto] = CreateFuelTankDto.create(req.body);
 
       if (error) {
-        res.status(400).json(ResponseBuilder.error(400, error, req));
-        return;
+        return this.handleError(CustomError.badRequest(error), res, req);
       }
 
       const currentTank = await this.fuelRepository.getTankCurrentStatus();
@@ -55,8 +44,7 @@ export class FuelController {
       }
 
       const fuelTank = await this.fuelRepository.createFuelTank(dto!);
-      const response = ResponseBuilder.success(fuelTank, req);
-      res.status(201).json(response);
+      this.handleCreated(res, fuelTank, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
@@ -69,8 +57,7 @@ export class FuelController {
       const [error, dto] = CreateFuelConsumptionDto.create(req.body, user!.id);
 
       if (error) {
-        res.status(400).json(ResponseBuilder.error(400, error, req));
-        return;
+        return this.handleError(CustomError.badRequest(error), res, req);
       }
 
       const consumption = await new CreateFuelConsumption(
@@ -79,61 +66,55 @@ export class FuelController {
         this.employeeRepository
       ).execute(dto!);
 
-      const response = ResponseBuilder.success(consumption, req);
-      res.status(201).json(response);
+      this.handleCreated(res, consumption, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
   };
 
   updateFuelConsumption = async (req: Request, res: Response) => {
-    const { id } = req.params;
-
-    const idNum = Number(id);
-
-    if (!id || isNaN(idNum) || idNum <= 0) {
-      res
-        .status(400)
-        .json(ResponseBuilder.error(400, "El ID de consumo no es válido", req));
-      return;
-    }
-
-    const [error, dto] = UpdateFuelConsumptionDto.create(req.body);
-
-    if (error) {
-      res.status(400).json(ResponseBuilder.error(400, error, req));
-      return;
-    }
-
     try {
+      const { id } = req.params;
+      const idNum = Number(id);
+
+      if (!id || isNaN(idNum) || idNum <= 0) {
+        return this.handleError(
+          CustomError.badRequest("El ID de consumo no es válido"),
+          res,
+          req
+        );
+      }
+
+      const [error, dto] = UpdateFuelConsumptionDto.create(req.body);
+
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
+
       const consumption = await new UpdateFuelConsumption(
         this.fuelRepository
       ).execute(idNum, dto!);
 
-      const response = ResponseBuilder.success(consumption, req);
-      res.status(200).json(response);
+      this.handleSuccess(res, consumption, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
   };
 
   createFuelTankRefill = async (req: Request, res: Response) => {
-    const user = req.user;
-    const [error, dto] = CreateFuelTankRefillDto.create(req.body, user!.id);
-
-    if (error) {
-      res.status(400).json(ResponseBuilder.error(400, error, req));
-      return;
-    }
-
     try {
+      const user = req.user;
+      const [error, dto] = CreateFuelTankRefillDto.create(req.body, user!.id);
+
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
+
       const refill = await new CreateFuelTankRefill(
         this.fuelRepository
       ).execute(dto!);
 
-      const response = ResponseBuilder.success(refill, req);
-      res.status(201).json(response);
-      console.log(response);
+      this.handleCreated(res, refill, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
@@ -142,134 +123,131 @@ export class FuelController {
   getTankCurrentStatus = async (req: Request, res: Response) => {
     try {
       const status = await this.fuelRepository.getTankCurrentStatus();
-      const response = ResponseBuilder.success(status, req);
-      res.status(200).json(response);
+      this.handleSuccess(res, status, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
   };
 
   resetFuelTankLevel = async (req: Request, res: Response) => {
-    const user = req.user;
-
-    const [error, dto] = ResetFuelTankDto.create(req.body, user!.id);
-
-    if (error) {
-      res.status(400).json(ResponseBuilder.error(400, error, req));
-      return;
-    }
-
-    const { password, userId } = dto!;
-
-    const isValid = BcryptAdapter.compare(password, user!.password);
-
     try {
+      const user = req.user;
+
+      const [error, dto] = ResetFuelTankDto.create(req.body, user!.id);
+
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
+
+      const { password, userId } = dto!;
+
+      const isValid = BcryptAdapter.compare(password, user!.password);
+
       if (!isValid) throw new CustomError(401, "La contraseña es incorrecta");
+
       const reset = await this.fuelRepository.resetFuelTankLevel(userId);
-      const response = ResponseBuilder.success(reset, req);
-      res.status(200).json(response);
+      this.handleSuccess(res, reset, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
   };
 
   findAllTankRefills = async (req: Request, res: Response) => {
-    const [error, dto] = FuelTankRefillQueryDto.create(req.query);
-
-    if (error) {
-      res.status(400).json(ResponseBuilder.error(400, error, req));
-      return;
-    }
-
-    const { page, limit, ...filters } = dto!;
-    const skip = (page - 1) * limit;
-
     try {
+      const [error, dto] = FuelTankRefillQueryDto.create(req.query);
+
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
+
+      const { page, limit, ...filters } = dto!;
+      const skip = (page - 1) * limit;
+
       const { refills, totalPages } =
         await this.fuelRepository.findAllTankRefills({
           skip,
           limit,
           filters,
         });
-      const response = ResponseBuilder.successWithPagination(
+
+      this.handleSuccessWithPagination(
+        res,
         refills,
         { page, limit, total: totalPages },
         req
       );
-      res.status(200).json(response);
     } catch (error) {
       this.handleError(error, res, req);
     }
   };
 
   findTankRefillById = async (req: Request, res: Response) => {
-    const { consumptions } = req.query;
-    const [error, dto] = FuelTankRefillByIdDto.create(req.params, consumptions);
-
-    if (error) {
-      res.status(400).json(ResponseBuilder.error(400, error, req));
-      return;
-    }
-
     try {
+      const { consumptions } = req.query;
+      const [error, dto] = FuelTankRefillByIdDto.create(
+        req.params,
+        consumptions
+      );
+
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
+
       const refill = await this.fuelRepository.getFuelTankRefillById(
         dto!.id,
         dto!.consumptions
       );
 
       if (!refill) {
-        res
-          .status(404)
-          .json(
-            ResponseBuilder.error(404, "Reabastecimiento no encontrado", req)
-          );
-        return;
+        return this.handleError(
+          CustomError.notFound("Reabastecimiento no encontrado"),
+          res,
+          req
+        );
       }
 
-      const response = ResponseBuilder.success(refill, req);
-      res.status(200).json(response);
+      this.handleSuccess(res, refill, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
   };
 
   findAllFuelConsumptions = async (req: Request, res: Response) => {
-    const [error, dto] = FuelConsumptionQueryDto.create(req.query);
-
-    if (error) {
-      res.status(400).json(ResponseBuilder.error(400, error, req));
-      return;
-    }
-
-    const { page, limit, ...filters } = dto!;
-    const skip = (page - 1) * limit;
-
     try {
+      const [error, dto] = FuelConsumptionQueryDto.create(req.query);
+
+      if (error) {
+        return this.handleError(CustomError.badRequest(error), res, req);
+      }
+
+      const { page, limit, ...filters } = dto!;
+      const skip = (page - 1) * limit;
+
       const { consumptions, totalPages } =
         await this.fuelRepository.findAllFuelConsumptions({
           skip,
           limit,
           filters,
         });
-      const response = ResponseBuilder.successWithPagination(
+
+      this.handleSuccessWithPagination(
+        res,
         consumptions,
         { page, limit, total: totalPages },
         req
       );
-      res.status(200).json(response);
     } catch (error) {
       this.handleError(error, res, req);
     }
   };
 
   deleteFuelConsumption = async (req: Request, res: Response) => {
-    const { id } = req.params;
-
     try {
+      const { id } = req.params;
+
       await new DeleteFuelConsumption(this.fuelRepository).execute(Number(id));
 
-      const response = ResponseBuilder.success({}, req);
-      res.status(204).json(response);
+      this.handleNoContent(res);
     } catch (error) {
       this.handleError(error, res, req);
     }
