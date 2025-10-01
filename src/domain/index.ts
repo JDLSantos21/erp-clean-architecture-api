@@ -21,6 +21,10 @@ export * from "./errors/custom.errors";
 
 //services
 export * from "./services/vehicle.service";
+export * from "./services/logger.service";
+
+//utils
+export * from "./utils/logger.helper";
 
 //constants
 export * from "./constants/index";

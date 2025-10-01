@@ -1,4 +1,5 @@
 import express, { Router } from "express";
+import { Logger } from "../domain";
 
 interface Options {
   port?: number;
@@ -21,9 +22,9 @@ export class Server {
 
     this.app.use(this.routes);
 
-    this.app.listen(this.port, () => {
-      console.log(`Server is running on port ${this.port}`);
-    });
+    this.app.listen(this.port, () =>
+      Logger.info(`Server is running on port ${this.port}`)
+    );
   }
 
   private setupMiddlewares() {

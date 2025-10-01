@@ -22,6 +22,7 @@ import {
   VehicleDatasourceImpl,
   PostgresVehicleMaintenanceDatasource,
 } from "../datasources";
+import { WinstonLogger } from "../logger";
 import {
   AuthRepositoryImpl,
   CustomerRepositoryImpl,
@@ -71,8 +72,16 @@ export class DIContainer {
   }
 
   private registerDefaults() {
+    // Infrastructure Services
+    this.registerSingleton("Logger", () => {
+      const logger = new WinstonLogger();
+      logger.initialize();
+      return logger;
+    });
+
     // Database
     this.registerSingleton("PrismaClient", () => prisma);
+    // Hashing
     this.registerSingleton("HashFunction", () => BcryptAdapter.hash);
     this.registerSingleton("CompareFunction", () => BcryptAdapter.compare);
 

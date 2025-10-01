@@ -12,16 +12,15 @@ export class VehicleRoutes {
       container.resolve<VehicleController>("VehicleController");
     const authMiddleware = container.resolve<AuthMiddleware>("AuthMiddleware");
 
-    const { elevateRole } = PermissionMiddleware;
+    const { supervision, administration } = PermissionMiddleware;
 
     router.use(authMiddleware.validateJWT);
-    router.use(elevateRole);
 
     // Public routes
-    router.post("/", controller.createVehicle);
+    router.post("/", supervision, controller.createVehicle);
     router.get("/", controller.getVehicles);
     router.put("/:id", controller.updateVehicle);
-    router.delete("/:id", elevateRole, controller.deleteVehicle);
+    router.delete("/:id", administration, controller.deleteVehicle);
     router.get("/:id", controller.getVehicleById);
 
     return router;
