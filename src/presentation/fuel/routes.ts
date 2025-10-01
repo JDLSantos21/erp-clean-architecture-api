@@ -9,8 +9,9 @@ export class FuelRoutes {
 
     const container = DIContainer.getInstance();
     const controller = container.resolve<FuelController>("FuelController");
+    const authMiddleware = container.resolve<AuthMiddleware>("AuthMiddleware");
 
-    router.use(AuthMiddleware.validateJWT);
+    router.use(authMiddleware.validateJWT);
     router.use(PermissionMiddleware.elevateRole);
 
     router.post("/consumption", controller.createFuelConsumption);

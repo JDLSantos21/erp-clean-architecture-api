@@ -10,8 +10,9 @@ export class CustomerRoutes {
     const container = DIContainer.getInstance();
     const controller =
       container.resolve<CustomerController>("CustomerController");
+    const authMiddleware = container.resolve<AuthMiddleware>("AuthMiddleware");
 
-    router.use(AuthMiddleware.validateJWT);
+    router.use(authMiddleware.validateJWT);
     const { advancedOperations, readOnly } = PermissionMiddleware;
 
     // Rutas sin parámetros primero

@@ -11,8 +11,9 @@ export class InventoryRoutes {
     const controller = container.resolve<InventoryController>(
       "InventoryController"
     );
+    const authMiddleware = container.resolve<AuthMiddleware>("AuthMiddleware");
 
-    router.use(AuthMiddleware.validateJWT);
+    router.use(authMiddleware.validateJWT);
 
     const { supervision, advancedOperations, readOnly, administration } =
       PermissionMiddleware;

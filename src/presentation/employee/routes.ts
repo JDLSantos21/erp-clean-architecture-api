@@ -11,8 +11,9 @@ export class EmployeeRoutes {
     const container = DIContainer.getInstance();
     const controller =
       container.resolve<EmployeeController>("EmployeeController");
+    const authMiddleware = container.resolve<AuthMiddleware>("AuthMiddleware");
 
-    router.use(AuthMiddleware.validateJWT);
+    router.use(authMiddleware.validateJWT);
     router.use(PermissionMiddleware.elevateRole);
 
     router.post("/", controller.createEmployee);

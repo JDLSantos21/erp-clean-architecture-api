@@ -10,11 +10,12 @@ export class VehicleRoutes {
     const container = DIContainer.getInstance();
     const controller =
       container.resolve<VehicleController>("VehicleController");
+    const authMiddleware = container.resolve<AuthMiddleware>("AuthMiddleware");
 
     const { elevateRole } = PermissionMiddleware;
 
-    router.use(AuthMiddleware.validateJWT);
-    router.use(PermissionMiddleware.elevateRole);
+    router.use(authMiddleware.validateJWT);
+    router.use(elevateRole);
 
     // Public routes
     router.post("/", controller.createVehicle);

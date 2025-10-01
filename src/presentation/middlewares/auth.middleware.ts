@@ -1,69 +1,43 @@
 import { Response, Request, NextFunction } from "express";
 import { JwtAdapter } from "../../config/jwt";
-import { prisma } from "../../data/postgresql/config";
-import { RoleName } from "../../domain";
+import { AuthRepository, CustomError, User } from "../../domain";
 
-//Extendiendo el tipo Request de express para agregar la propiedad user
+//Extendiendo el tipo Request de express para agregar user
 declare global {
   namespace Express {
     interface Request {
-      user?: {
-        id: string;
-        username: string;
-        password: string;
-        name: string;
-        lastName: string;
-        roles: RoleName[];
-        createdAt: Date;
-        updatedAt: Date;
-      };
+      user: User;
     }
   }
 }
 
 export class AuthMiddleware {
-  static async validateJWT(req: Request, res: Response, next: NextFunction) {
-    const authHeader = req.headers.authorization;
+  constructor(private readonly authRepository: AuthRepository) {}
 
-    if (!authHeader) {
-      res.status(401).json({ error: "No se proporcionó token" });
-      return;
-    }
-
-    if (!authHeader.startsWith("Bearer ")) {
-      res.status(401).json({ error: "Formato de token no válido" });
-      return;
-    }
-
-    const token = authHeader.split(" ").at(1) || "";
-
+  validateJWT = async (req: Request, _: Response, next: NextFunction) => {
     try {
+      const token = this.extractToken(req);
       const payload = await JwtAdapter.validateToken<{ id: string }>(token);
 
-      if (!payload) {
-        res.status(401).json({ error: "Token no válido" });
-        return;
-      }
+      if (!payload) throw CustomError.unauthorized("Token no válido");
 
-      const user = await prisma.user.findUnique({
-        where: { id: payload.id },
-        include: { roles: { include: { role: { select: { name: true } } } } },
-      });
+      const user = await this.authRepository.findById(payload.id);
+      if (!user) throw CustomError.unauthorized("Usuario no encontrado");
 
-      const roleNames = user?.roles.map((userRole) => userRole.role.name);
-
-      if (!user) {
-        res.status(401).json({ error: "Token no válido" });
-        return;
-      }
-
-      req.user = { ...user, roles: roleNames! };
+      req.user = user;
 
       next();
     } catch (error) {
       console.log("Error de validación de token:", error);
-      res.status(500).json({ error: "Internal server error" });
-      return;
+      throw CustomError.unauthorized("Error de autenticación");
     }
+  };
+
+  private extractToken(req: Request): string {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw CustomError.unauthorized("No se proporcionó un token válido");
+    }
+    return authHeader.split(" ")[1];
   }
 }

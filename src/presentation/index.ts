@@ -10,3 +10,5 @@ export * from "./fuel/controller";
 export * from "./fuel/analytics-controller";
 export * from "./inventory/controller";
 export * from "./maintenance/maintenance-procedure.controller";
+
+export * from "./middlewares/index";

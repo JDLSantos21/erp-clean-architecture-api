@@ -8,16 +8,18 @@ export class AuthRoutes {
     const router = Router();
 
     const container = DIContainer.getInstance();
-    const controller = container.resolve<AuthController>("AuthController");
 
-    const { isAdmin, elevateRole } = PermissionMiddleware;
+    const controller = container.resolve<AuthController>("AuthController");
+    const authMiddleware = container.resolve<AuthMiddleware>("AuthMiddleware");
+
+    const { elevateRole } = PermissionMiddleware;
 
     // Public routes
     router.post("/role", controller.createRole);
     router.post("/register", controller.registerUser);
     router.post("/login", controller.login);
 
-    router.use(AuthMiddleware.validateJWT);
+    router.use(authMiddleware.validateJWT);
 
     router.get("/", controller.getUsers);
     router.get("/:id", controller.findById);

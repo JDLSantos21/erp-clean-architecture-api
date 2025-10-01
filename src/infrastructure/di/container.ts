@@ -10,6 +10,7 @@ import {
   FuelAnalyticsController,
   InventoryController,
   MaintenanceProcedureController,
+  AuthMiddleware,
 } from "../../presentation";
 import {
   AuthDataSourceImpl,
@@ -156,6 +157,10 @@ export class DIContainer {
     this.register(
       "AuthController",
       () => new AuthController(this.resolve("AuthRepository"))
+    );
+    this.register(
+      "AuthMiddleware",
+      () => new AuthMiddleware(this.resolve("AuthRepository"))
     );
     this.register(
       "VehicleController",

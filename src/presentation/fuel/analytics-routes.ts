@@ -12,8 +12,9 @@ export class FuelAnalyticsRoutes {
     const controller = container.resolve<FuelAnalyticsController>(
       "FuelAnalyticsController"
     );
+    const authMiddleware = container.resolve<AuthMiddleware>("AuthMiddleware");
 
-    router.use(AuthMiddleware.validateJWT);
+    router.use(authMiddleware.validateJWT);
     router.use(PermissionMiddleware.elevateRole);
 
     // Dashboard Summary - métricas principales
