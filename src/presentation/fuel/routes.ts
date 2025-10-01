@@ -1,37 +1,16 @@
 import Router, { Router as RouterType } from "express";
-import { AuthMiddleware } from "../middlewares/auth.middleware";
-import { PermissionMiddleware } from "../middlewares/permission.middleware";
+import { AuthMiddleware, PermissionMiddleware } from "../middlewares";
 import { FuelController } from "./controller";
-import {
-  FuelDatasourceImpl,
-  FuelRepositoryImpl,
-  VehicleDatasourceImpl,
-  VehicleRepositoryImpl,
-  EmployeeDatasourceImpl,
-  EmployeeRepositoryImpl,
-} from "../../infrastructure";
+import { DIContainer } from "../../infrastructure";
 
 export class FuelRoutes {
   static get routes(): RouterType {
     const router = Router();
 
-    const fuelRepository = new FuelRepositoryImpl(new FuelDatasourceImpl());
-    const vehicleRepository = new VehicleRepositoryImpl(
-      new VehicleDatasourceImpl()
-    );
-    const employeeRepository = new EmployeeRepositoryImpl(
-      new EmployeeDatasourceImpl()
-    );
-    const controller = new FuelController(
-      fuelRepository,
-      vehicleRepository,
-      employeeRepository
-    );
-
-    const { elevateRole } = PermissionMiddleware;
+    const container = DIContainer.getInstance();
+    const controller = container.resolve<FuelController>("FuelController");
 
     router.use(AuthMiddleware.validateJWT);
-
     router.use(PermissionMiddleware.elevateRole);
 
     router.post("/consumption", controller.createFuelConsumption);

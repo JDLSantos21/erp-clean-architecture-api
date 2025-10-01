@@ -1,22 +1,17 @@
 import Router, { Router as RouterType } from "express";
 import { VehicleController } from "./controller";
-import { AuthMiddleware } from "../middlewares/auth.middleware";
-import { PermissionMiddleware } from "../middlewares/permission.middleware";
-import {
-  VehicleDatasourceImpl,
-  VehicleRepositoryImpl,
-} from "../../infrastructure";
+import { AuthMiddleware, PermissionMiddleware } from "../middlewares";
+import { DIContainer } from "../../infrastructure";
 
 export class VehicleRoutes {
   static get routes(): RouterType {
     const router = Router();
 
-    const vehicleRepository = new VehicleRepositoryImpl(
-      new VehicleDatasourceImpl()
-    );
-    const controller = new VehicleController(vehicleRepository);
+    const container = DIContainer.getInstance();
+    const controller =
+      container.resolve<VehicleController>("VehicleController");
 
-    const { isAdmin, elevateRole } = PermissionMiddleware;
+    const { elevateRole } = PermissionMiddleware;
 
     router.use(AuthMiddleware.validateJWT);
     router.use(PermissionMiddleware.elevateRole);

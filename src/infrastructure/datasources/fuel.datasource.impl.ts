@@ -1,4 +1,3 @@
-import { prisma } from "../../data/postgresql";
 import {
   CreateFuelConsumptionDto,
   CreateFuelTankDto,
@@ -15,6 +14,7 @@ import {
 } from "../../domain";
 import { buildWhere } from "../mappers/prisma-where.mapper";
 import { FuelMapper } from "../mappers/fuel.mapper";
+import { PrismaClient } from "@prisma/client";
 
 interface FiltersParams {
   filters?: Partial<FuelConsumption>;
@@ -23,9 +23,14 @@ interface FiltersParams {
 }
 
 export class FuelDatasourceImpl extends FuelDatasource {
+  constructor(private readonly prisma: PrismaClient) {
+    super();
+  }
   async createFuelTank(data: CreateFuelTankDto): Promise<FuelTank> {
     try {
-      const result = await prisma.fuelTank.create({ data: { id: 1, ...data } });
+      const result = await this.prisma.fuelTank.create({
+        data: { id: 1, ...data },
+      });
 
       const fuelTank = FuelMapper.fuelTankEntityFromObject(result);
 
@@ -51,7 +56,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
     if (params.minLevel !== undefined) updateData.minLevel = params.minLevel;
 
     try {
-      const result = await prisma.fuelTank.update({
+      const result = await this.prisma.fuelTank.update({
         where: { id },
         data: updateData,
       });
@@ -66,7 +71,9 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
   async getTankCurrentStatus(): Promise<FuelTank | null> {
     try {
-      const result = await prisma.fuelTank.findUnique({ where: { id: 1 } });
+      const result = await this.prisma.fuelTank.findUnique({
+        where: { id: 1 },
+      });
       return result ? FuelMapper.fuelTankEntityFromObject(result) : null;
     } catch (error) {
       if (error instanceof CustomError) {
@@ -80,23 +87,25 @@ export class FuelDatasourceImpl extends FuelDatasource {
     data: CreateFuelConsumptionDto
   ): Promise<FuelConsumption> {
     try {
-      const insertedConsumption = await prisma.$transaction(async (prisma) => {
-        const createdConsumption = await prisma.fuelConsumption.create({
-          data,
-          include: {
-            driver: { select: { id: true, name: true, lastName: true } },
-            user: { select: { id: true, name: true, lastName: true } },
-            vehicle: { select: { id: true, currentTag: true } },
-          },
-        });
+      const insertedConsumption = await this.prisma.$transaction(
+        async (prisma) => {
+          const createdConsumption = await this.prisma.fuelConsumption.create({
+            data,
+            include: {
+              driver: { select: { id: true, name: true, lastName: true } },
+              user: { select: { id: true, name: true, lastName: true } },
+              vehicle: { select: { id: true, currentTag: true } },
+            },
+          });
 
-        await prisma.fuelTank.update({
-          where: { id: 1 },
-          data: { currentLevel: { decrement: createdConsumption.gallons } },
-        });
+          await this.prisma.fuelTank.update({
+            where: { id: 1 },
+            data: { currentLevel: { decrement: createdConsumption.gallons } },
+          });
 
-        return createdConsumption;
-      });
+          return createdConsumption;
+        }
+      );
 
       const consumptionEntity =
         FuelMapper.fuelConsumptionEntityFromObject(insertedConsumption);
@@ -117,7 +126,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
     data: UpdateFuelConsumptionDto
   ): Promise<FuelConsumption | null> {
     try {
-      const result = await prisma.fuelConsumption.update({
+      const result = await this.prisma.fuelConsumption.update({
         where: { id },
         data,
         include: {
@@ -138,7 +147,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
   async findFuelConsumptionById(id: number): Promise<FuelConsumption | null> {
     try {
-      const result = await prisma.fuelConsumption.findUnique({
+      const result = await this.prisma.fuelConsumption.findUnique({
         where: { id },
         include: {
           driver: { select: { id: true, name: true, lastName: true } },
@@ -158,8 +167,8 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
   async deleteFuelConsumption(id: number): Promise<void> {
     try {
-      await prisma.$transaction(async (prisma) => {
-        const consumption = await prisma.fuelConsumption.findUnique({
+      await this.prisma.$transaction(async (prisma) => {
+        const consumption = await this.prisma.fuelConsumption.findUnique({
           where: { id },
         });
 
@@ -168,9 +177,9 @@ export class FuelDatasourceImpl extends FuelDatasource {
             "No se ha encontrado el consumo de combustible"
           );
 
-        await prisma.fuelConsumption.delete({ where: { id } });
+        await this.prisma.fuelConsumption.delete({ where: { id } });
 
-        await prisma.fuelTank.update({
+        await this.prisma.fuelTank.update({
           where: { id: 1 },
           data: { currentLevel: { increment: consumption.gallons } },
         });
@@ -193,7 +202,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
     try {
       const [consumptions, totalPages] = await Promise.all([
-        prisma.fuelConsumption.findMany({
+        this.prisma.fuelConsumption.findMany({
           where: {
             ...where,
             vehicleId: filters?.vehicleId
@@ -209,7 +218,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
             vehicle: { select: { id: true, currentTag: true } },
           },
         }),
-        prisma.fuelConsumption.count({ where }),
+        this.prisma.fuelConsumption.count({ where }),
       ]);
 
       return {
@@ -239,7 +248,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
     try {
       const [refills, totalPages] = await Promise.all([
-        prisma.fuelRefill.findMany({
+        this.prisma.fuelRefill.findMany({
           where,
           skip,
           take: limit,
@@ -247,7 +256,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
             user: { select: { id: true, name: true, lastName: true } },
           },
         }),
-        prisma.fuelRefill.count({ where }),
+        this.prisma.fuelRefill.count({ where }),
       ]);
       return {
         refills: refills.map((r) => FuelMapper.fuelRefillEntityFromObject(r)),
@@ -263,8 +272,8 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
   async resetFuelTankLevel(userId: string): Promise<FuelTankReset | null> {
     try {
-      const result = await prisma.$transaction(async (prisma) => {
-        const currentTank = await prisma.fuelTank.findUnique({
+      const result = await this.prisma.$transaction(async (prisma) => {
+        const currentTank = await this.prisma.fuelTank.findUnique({
           where: { id: 1 },
         });
 
@@ -278,11 +287,11 @@ export class FuelDatasourceImpl extends FuelDatasource {
           );
         }
 
-        const resetInfo = await prisma.fuelTankReset.create({
+        const resetInfo = await this.prisma.fuelTankReset.create({
           data: { userId, previousLevel: currentTank.currentLevel },
         });
 
-        await prisma.fuelTank.update({
+        await this.prisma.fuelTank.update({
           where: { id: 1 },
           data: { currentLevel: 0 },
         });
@@ -309,7 +318,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
     vehicleId: string
   ): Promise<FuelConsumption | null> {
     try {
-      const result = await prisma.fuelConsumption.findFirst({
+      const result = await this.prisma.fuelConsumption.findFirst({
         where: { vehicleId },
         orderBy: { consumedAt: "desc" },
       });
@@ -327,7 +336,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
     consumptionId: number
   ): Promise<FuelConsumption | null> {
     try {
-      const result = await prisma.fuelConsumption.findFirst({
+      const result = await this.prisma.fuelConsumption.findFirst({
         where: { vehicleId, id: { gt: consumptionId } },
         orderBy: { createdAt: "asc" },
       });
@@ -345,7 +354,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
     consumptionId: number
   ): Promise<FuelConsumption | null> {
     try {
-      const result = await prisma.fuelConsumption.findFirst({
+      const result = await this.prisma.fuelConsumption.findFirst({
         where: { vehicleId, id: { lt: consumptionId } },
         orderBy: { createdAt: "desc" },
       });
@@ -362,8 +371,8 @@ export class FuelDatasourceImpl extends FuelDatasource {
     data: CreateFuelTankRefillDto
   ): Promise<FuelRefill> {
     try {
-      const tankRefill = await prisma.$transaction(async (prisma) => {
-        const refill = await prisma.fuelRefill.create({
+      const tankRefill = await this.prisma.$transaction(async (prisma) => {
+        const refill = await this.prisma.fuelRefill.create({
           data: {
             ...data,
             previousLevel: data.previousLevel!,
@@ -374,7 +383,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
           },
         });
 
-        await prisma.fuelTank.update({
+        await this.prisma.fuelTank.update({
           where: { id: 1 },
           data: { currentLevel: { increment: refill.gallons } },
         });
@@ -394,7 +403,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
   async deleteFuelTankRefill(id: number): Promise<void> {
     try {
-      await prisma.fuelRefill.delete({ where: { id } });
+      await this.prisma.fuelRefill.delete({ where: { id } });
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
@@ -408,7 +417,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
     Consumptions: boolean = false
   ): Promise<FuelRefill | null> {
     try {
-      const result = await prisma.fuelRefill.findUnique({
+      const result = await this.prisma.fuelRefill.findUnique({
         where: { id },
         include: {
           user: {
@@ -429,7 +438,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
   async findLastTankRefill(): Promise<FuelRefill | null> {
     try {
-      const result = await prisma.fuelRefill.findFirst({
+      const result = await this.prisma.fuelRefill.findFirst({
         orderBy: { createdAt: "desc" },
         include: {
           user: { select: { id: true, name: true, lastName: true } },

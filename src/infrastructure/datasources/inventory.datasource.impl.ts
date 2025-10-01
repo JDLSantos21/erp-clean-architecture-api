@@ -13,13 +13,16 @@ import {
   MaterialQueryDto,
   StatusCode,
 } from "../../domain";
-import { prisma } from "../../data/postgresql";
 import { buildWhere, InventoryMapper } from "../mappers";
+import { PrismaClient } from "@prisma/client";
 
 export class InventoryDatasourceImpl extends InventoryDatasource {
+  constructor(private readonly prisma: PrismaClient) {
+    super();
+  }
   async createMaterial(data: CreateMaterialDto): Promise<Material> {
     try {
-      const createdMaterial = await prisma.material.create({
+      const createdMaterial = await this.prisma.material.create({
         data,
         include: {
           category: { select: { name: true } },
@@ -39,7 +42,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async updateMaterial(id: number, data: UpdateMaterialDto): Promise<Material> {
     try {
-      const updatedMaterial = await prisma.material.update({
+      const updatedMaterial = await this.prisma.material.update({
         where: { id },
         data,
         include: {
@@ -59,7 +62,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   createMaterialCategory(name: string): Promise<MaterialCategory> {
     try {
-      const createdCategory = prisma.materialCategories.create({
+      const createdCategory = this.prisma.materialCategories.create({
         data: { name },
       });
 
@@ -75,26 +78,28 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async createStockMove(data: CreateStockMoveDto): Promise<StockMove> {
     try {
-      const createdStockMove = await prisma.$transaction(async (prisma) => {
-        const stockMove = await prisma.stockMove.create({
-          data: {
-            ...data,
-            previousStock: data.previousStock!,
-            newStock: data.newStock!,
-          },
-          include: {
-            material: { select: { id: true, name: true } },
-            user: { select: { id: true, name: true } },
-          },
-        });
+      const createdStockMove = await this.prisma.$transaction(
+        async (prisma) => {
+          const stockMove = await this.prisma.stockMove.create({
+            data: {
+              ...data,
+              previousStock: data.previousStock!,
+              newStock: data.newStock!,
+            },
+            include: {
+              material: { select: { id: true, name: true } },
+              user: { select: { id: true, name: true } },
+            },
+          });
 
-        await prisma.material.update({
-          where: { id: data.materialId },
-          data: { stock: data.newStock! },
-        });
+          await this.prisma.material.update({
+            where: { id: data.materialId },
+            data: { stock: data.newStock! },
+          });
 
-        return stockMove;
-      });
+          return stockMove;
+        }
+      );
 
       return InventoryMapper.stockMoveEntityFromObject(createdStockMove);
     } catch (error) {
@@ -108,7 +113,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async createUnit(data: CreateUnitDto): Promise<Unit> {
     try {
-      const createdUnit = await prisma.unit.create({ data });
+      const createdUnit = await this.prisma.unit.create({ data });
       return new Unit(createdUnit);
     } catch (error) {
       if (error instanceof CustomError) throw error;
@@ -118,7 +123,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async deleteMaterial(id: number): Promise<boolean> {
     try {
-      const materialStockMoves = await prisma.stockMove.findFirst({
+      const materialStockMoves = await this.prisma.stockMove.findFirst({
         where: { materialId: id },
       });
 
@@ -129,7 +134,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
         );
       }
 
-      const material = await prisma.material.delete({ where: { id } });
+      const material = await this.prisma.material.delete({ where: { id } });
 
       return !!material;
     } catch (error) {
@@ -144,7 +149,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async deleteMaterialCategory(id: number): Promise<boolean> {
     try {
-      const category = await prisma.materialCategories.delete({
+      const category = await this.prisma.materialCategories.delete({
         where: { id },
       });
 
@@ -160,7 +165,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async deleteUnit(id: number): Promise<boolean> {
     try {
-      const unit = await prisma.unit.delete({ where: { id } });
+      const unit = await this.prisma.unit.delete({ where: { id } });
       return !!unit;
     } catch (error) {
       if (error instanceof CustomError) throw error;
@@ -176,7 +181,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
     moves: boolean = false
   ): Promise<Material | null> {
     try {
-      const material = await prisma.material.findUnique({
+      const material = await this.prisma.material.findUnique({
         where: { id },
         include: {
           category: { select: { name: true } },
@@ -204,7 +209,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async getMaterialByName(name: string): Promise<Material | null> {
     try {
-      const material = await prisma.material.findUnique({
+      const material = await this.prisma.material.findUnique({
         where: { name },
         include: {
           category: { select: { name: true } },
@@ -226,7 +231,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async getMaterialCategories(): Promise<MaterialCategory[]> {
     try {
-      const categories = await prisma.materialCategories.findMany();
+      const categories = await this.prisma.materialCategories.findMany();
       return categories.map((category) => new MaterialCategory(category));
     } catch (error) {
       if (error instanceof CustomError) throw error;
@@ -239,7 +244,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async getMaterialCategoryById(id: number): Promise<MaterialCategory | null> {
     try {
-      const category = await prisma.materialCategories.findUnique({
+      const category = await this.prisma.materialCategories.findUnique({
         where: { id },
       });
       return category ? new MaterialCategory(category) : null;
@@ -256,7 +261,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
     name: string
   ): Promise<MaterialCategory | null> {
     try {
-      const category = await prisma.materialCategories.findUnique({
+      const category = await this.prisma.materialCategories.findUnique({
         where: { name },
       });
       return category ? new MaterialCategory(category) : null;
@@ -285,7 +290,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
     try {
       const [materials, total] = await Promise.all([
-        prisma.material.findMany({
+        this.prisma.material.findMany({
           where,
           skip,
           take: limit,
@@ -294,7 +299,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
             unit: { select: { name: true } },
           },
         }),
-        prisma.material.count({ where }),
+        this.prisma.material.count({ where }),
       ]);
 
       const mappedMaterials = materials.map((material) =>
@@ -327,7 +332,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
     try {
       const [stockMoves, total] = await Promise.all([
-        prisma.stockMove.findMany({
+        this.prisma.stockMove.findMany({
           where,
           skip,
           take: limit,
@@ -337,7 +342,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
           },
           orderBy: { date: "desc" },
         }),
-        prisma.stockMove.count({ where }),
+        this.prisma.stockMove.count({ where }),
       ]);
 
       const mappedStockMoves = stockMoves.map((move) =>
@@ -355,7 +360,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async getStockMoveById(id: number): Promise<StockMove | null> {
     try {
-      const stockMove = await prisma.stockMove.findUnique({
+      const stockMove = await this.prisma.stockMove.findUnique({
         where: {
           id,
         },
@@ -378,7 +383,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async getUnitById(id: number): Promise<Unit | null> {
     try {
-      const unit = await prisma.unit.findUnique({ where: { id } });
+      const unit = await this.prisma.unit.findUnique({ where: { id } });
       return unit ? new Unit(unit) : null;
     } catch (error) {
       if (error instanceof CustomError) throw error;
@@ -388,7 +393,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async getUnitByName(name: string): Promise<Unit | null> {
     try {
-      const unit = await prisma.unit.findUnique({ where: { name } });
+      const unit = await this.prisma.unit.findUnique({ where: { name } });
       return unit ? new Unit(unit) : null;
     } catch (error) {
       if (error instanceof CustomError) throw error;
@@ -398,7 +403,7 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
 
   async getUnits(): Promise<Unit[]> {
     try {
-      const units = await prisma.unit.findMany();
+      const units = await this.prisma.unit.findMany();
       return units.map((unit) => new Unit(unit));
     } catch (error) {
       if (error instanceof CustomError) throw error;

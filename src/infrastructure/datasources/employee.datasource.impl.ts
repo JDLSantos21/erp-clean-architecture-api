@@ -1,4 +1,4 @@
-import { prisma } from "../../data/postgresql";
+import { PrismaClient } from "@prisma/client";
 import {
   CreateEmployeeDto,
   CustomError,
@@ -10,9 +10,12 @@ import {
 import { buildWhere } from "../mappers/prisma-where.mapper";
 
 export class EmployeeDatasourceImpl extends EmployeeDatasource {
+  constructor(private readonly prisma: PrismaClient) {
+    super();
+  }
   async createEmployee(data: CreateEmployeeDto): Promise<Employee> {
     try {
-      const registeredEmployee = await prisma.employee.create({ data });
+      const registeredEmployee = await this.prisma.employee.create({ data });
       return new Employee(registeredEmployee);
     } catch (error) {
       console.log(error);
@@ -29,7 +32,7 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
     if (!employeeExist) throw CustomError.notFound("Este empleado no existe");
 
     try {
-      await prisma.employee.delete({ where: { id } });
+      await this.prisma.employee.delete({ where: { id } });
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
@@ -57,12 +60,12 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
 
     try {
       const [employees, total] = await Promise.all([
-        await prisma.employee.findMany({
+        await this.prisma.employee.findMany({
           where,
           skip,
           take: limit,
         }),
-        await prisma.employee.count({ where }),
+        await this.prisma.employee.count({ where }),
       ]);
 
       return { employees, total };
@@ -76,7 +79,7 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
 
   async getEmployeeById(id: string): Promise<Employee | null> {
     try {
-      const employee = await prisma.employee.findUnique({ where: { id } });
+      const employee = await this.prisma.employee.findUnique({ where: { id } });
       return employee ? new Employee(employee) : null;
     } catch (error) {
       if (error instanceof CustomError) {
@@ -88,7 +91,7 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
 
   async updateEmployee(id: string, data: CreateEmployeeDto): Promise<Employee> {
     try {
-      const updatedEmployee = await prisma.employee.update({
+      const updatedEmployee = await this.prisma.employee.update({
         where: { id },
         data,
       });
@@ -103,7 +106,7 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
 
   async findByCedula(cedula: string): Promise<Employee | null> {
     try {
-      const employee = await prisma.employee.findUnique({
+      const employee = await this.prisma.employee.findUnique({
         where: { cedula },
       });
       return employee ? new Employee(employee) : null;
@@ -117,7 +120,7 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
 
   async findByEmployeeCode(employeeCode: string): Promise<Employee | null> {
     try {
-      const employee = await prisma.employee.findUnique({
+      const employee = await this.prisma.employee.findUnique({
         where: { employeeCode },
       });
       return employee ? new Employee(employee) : null;
@@ -133,7 +136,7 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
 
   async findByPhoneNumber(phoneNumber: string): Promise<Employee | null> {
     try {
-      const employee = await prisma.employee.findUnique({
+      const employee = await this.prisma.employee.findUnique({
         where: { phoneNumber },
       });
       return employee ? new Employee(employee) : null;

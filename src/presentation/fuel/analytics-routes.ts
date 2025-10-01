@@ -1,19 +1,17 @@
 import Router, { Router as RouterType } from "express";
-import { AuthMiddleware } from "../middlewares/auth.middleware";
-import { PermissionMiddleware } from "../middlewares/permission.middleware";
+import { AuthMiddleware, PermissionMiddleware } from "../middlewares";
 import { FuelAnalyticsController } from "./analytics-controller";
-import { FuelAnalyticsRepositoryImpl } from "../../infrastructure/repositories/fuel-analytics.repository.impl";
-import { FuelAnalyticsDatasourceImpl } from "../../infrastructure/datasources/fuel-analytics.datasource.impl";
+
+import { DIContainer } from "../../infrastructure";
 
 export class FuelAnalyticsRoutes {
   static get routes(): RouterType {
     const router = Router();
 
-    const fuelAnalyticsDatasource = new FuelAnalyticsDatasourceImpl();
-    const fuelAnalyticsRepository = new FuelAnalyticsRepositoryImpl(
-      fuelAnalyticsDatasource
+    const container = DIContainer.getInstance();
+    const controller = container.resolve<FuelAnalyticsController>(
+      "FuelAnalyticsController"
     );
-    const controller = new FuelAnalyticsController(fuelAnalyticsRepository);
 
     router.use(AuthMiddleware.validateJWT);
     router.use(PermissionMiddleware.elevateRole);

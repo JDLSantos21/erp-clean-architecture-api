@@ -11,23 +11,28 @@ import {
   MaintenanceSchedule,
 } from "../../domain";
 
-import { prisma } from "../../data/postgresql";
 import { buildWhere } from "../mappers/prisma-where.mapper";
+import { PrismaClient } from "@prisma/client";
 
 export class VehicleDatasourceImpl extends VehicleDatasource {
+  constructor(private readonly prisma: PrismaClient) {
+    super();
+  }
   async createVehicle(data: RegisterVehicleDto): Promise<Vehicle> {
     try {
-      const registeredVehicle = await prisma.$transaction(async (prisma) => {
-        const vehicle = await prisma.vehicle.create({ data });
+      const registeredVehicle = await this.prisma.$transaction(
+        async (prisma) => {
+          const vehicle = await this.prisma.vehicle.create({ data });
 
-        const { id, currentTag } = vehicle;
+          const { id, currentTag } = vehicle;
 
-        await prisma.vehicleTagHistory.create({
-          data: { tag: currentTag, vehicleId: id },
-        });
+          await this.prisma.vehicleTagHistory.create({
+            data: { tag: currentTag, vehicleId: id },
+          });
 
-        return vehicle;
-      });
+          return vehicle;
+        }
+      );
 
       console.log("vehiculo registrado", registeredVehicle);
 
@@ -58,8 +63,8 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
 
     try {
       const [vehicles, total] = await Promise.all([
-        prisma.vehicle.findMany({ skip, take: limit, where }),
-        prisma.vehicle.count({ where }),
+        this.prisma.vehicle.findMany({ skip, take: limit, where }),
+        this.prisma.vehicle.count({ where }),
       ]);
 
       return { vehicles, total };
@@ -76,7 +81,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
 
     if (!vehicleExist) throw CustomError.notFound("Vehicle not found");
 
-    await prisma.vehicle.delete({
+    await this.prisma.vehicle.delete({
       where: {
         id,
       },
@@ -84,7 +89,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
   }
 
   async findByChasis(chasis: string): Promise<Vehicle | null> {
-    const vehicle = await prisma.vehicle.findUnique({
+    const vehicle = await this.prisma.vehicle.findUnique({
       where: {
         chasis,
       },
@@ -94,7 +99,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
   }
 
   async findByLicensePlate(licensePlate: string): Promise<Vehicle | null> {
-    const vehicle = await prisma.vehicle.findUnique({
+    const vehicle = await this.prisma.vehicle.findUnique({
       where: {
         licensePlate,
       },
@@ -104,7 +109,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
   }
 
   async findByCurrentTag(currentTag: string): Promise<Vehicle | null> {
-    const vehicle = await prisma.vehicle.findUnique({
+    const vehicle = await this.prisma.vehicle.findUnique({
       where: {
         currentTag,
       },
@@ -116,7 +121,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
   async getVehicleById(id: string): Promise<Vehicle | null> {
     if (!id) return null;
 
-    const vehicle = await prisma.vehicle.findUnique({
+    const vehicle = await this.prisma.vehicle.findUnique({
       where: {
         id,
       },
@@ -126,7 +131,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
   }
 
   async updateVehicle(id: string, data: RegisterVehicleDto): Promise<Vehicle> {
-    const vehicle = await prisma.vehicle.update({
+    const vehicle = await this.prisma.vehicle.update({
       where: { id },
       data,
     });
@@ -165,7 +170,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
     data: CreateMaintenanceScheduleDto
   ): Promise<MaintenanceSchedule> {
     try {
-      const schedule = await prisma.maintenanceSchedule.create({
+      const schedule = await this.prisma.maintenanceSchedule.create({
         data: {
           vehicleId: data.vehicleId,
           intervalMonths: data.intervalMonths,
@@ -184,11 +189,13 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
 
   async getVehicleCurrentMileage(vehicleId: string): Promise<number | null> {
     try {
-      const latestFuelConsumption = await prisma.fuelConsumption.findFirst({
-        where: { vehicleId },
-        orderBy: { consumedAt: "desc" },
-        select: { mileage: true },
-      });
+      const latestFuelConsumption = await this.prisma.fuelConsumption.findFirst(
+        {
+          where: { vehicleId },
+          orderBy: { consumedAt: "desc" },
+          select: { mileage: true },
+        }
+      );
 
       return latestFuelConsumption?.mileage ?? null;
     } catch (error) {
@@ -205,7 +212,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
   ): Promise<VehicleMaintenance> {
     try {
       // Buscar mantenimiento activo para el vehículo
-      const activeMaintenance = await prisma.vehicleMaintenance.findFirst({
+      const activeMaintenance = await this.prisma.vehicleMaintenance.findFirst({
         where: {
           vehicleId: data.vehicleId,
           status: { in: ["PROGRAMADO", "EN_PROGRESO"] },
@@ -242,43 +249,45 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
         status = "PARCIAL";
       }
 
-      const updatedMaintenance = await prisma.$transaction(async (prisma) => {
-        // Actualizar items de mantenimiento
-        for (const procedure of data.completedProcedures) {
-          await prisma.vehicleMaintenanceItem.updateMany({
-            where: {
-              vehicleMaintenanceId: activeMaintenance.id,
-              procedureId: procedure.procedureId,
-            },
+      const updatedMaintenance = await this.prisma.$transaction(
+        async (prisma) => {
+          // Actualizar items de mantenimiento
+          for (const procedure of data.completedProcedures) {
+            await this.prisma.vehicleMaintenanceItem.updateMany({
+              where: {
+                vehicleMaintenanceId: activeMaintenance.id,
+                procedureId: procedure.procedureId,
+              },
+              data: {
+                isCompleted: procedure.isCompleted,
+                cost: procedure.cost,
+                notes: procedure.notes,
+                completedAt: procedure.isCompleted ? new Date() : null,
+              },
+            });
+          }
+
+          // Actualizar mantenimiento principal
+          const maintenance = await this.prisma.vehicleMaintenance.update({
+            where: { id: activeMaintenance.id },
             data: {
-              isCompleted: procedure.isCompleted,
-              cost: procedure.cost,
-              notes: procedure.notes,
-              completedAt: procedure.isCompleted ? new Date() : null,
+              status,
+              performedDate: data.performedDate,
+              totalCost,
+              notes: data.notes,
+              userId,
+            },
+            include: {
+              vehicle: true,
+              maintenanceItems: {
+                include: { procedure: true },
+              },
             },
           });
+
+          return maintenance;
         }
-
-        // Actualizar mantenimiento principal
-        const maintenance = await prisma.vehicleMaintenance.update({
-          where: { id: activeMaintenance.id },
-          data: {
-            status,
-            performedDate: data.performedDate,
-            totalCost,
-            notes: data.notes,
-            userId,
-          },
-          include: {
-            vehicle: true,
-            maintenanceItems: {
-              include: { procedure: true },
-            },
-          },
-        });
-
-        return maintenance;
-      });
+      );
 
       return this.mapVehicleMaintenance(updatedMaintenance);
     } catch (error) {
@@ -293,7 +302,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
     vehicleId: string
   ): Promise<VehicleMaintenance[]> {
     try {
-      const maintenances = await prisma.vehicleMaintenance.findMany({
+      const maintenances = await this.prisma.vehicleMaintenance.findMany({
         where: { vehicleId },
         include: {
           vehicle: true,
@@ -317,7 +326,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
     vehicleId: string
   ): Promise<VehicleMaintenance | null> {
     try {
-      const maintenance = await prisma.vehicleMaintenance.findFirst({
+      const maintenance = await this.prisma.vehicleMaintenance.findFirst({
         where: {
           vehicleId,
           status: { in: ["PROGRAMADO", "EN_PROGRESO", "PARCIAL"] },
@@ -346,7 +355,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
     data: UpdateMaintenanceItemDto
   ): Promise<VehicleMaintenanceItem> {
     try {
-      const item = await prisma.vehicleMaintenanceItem.updateMany({
+      const item = await this.prisma.vehicleMaintenanceItem.updateMany({
         where: {
           vehicleMaintenanceId: maintenanceId,
           procedureId,
@@ -360,7 +369,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
       });
 
       // Obtener el item actualizado
-      const updatedItem = await prisma.vehicleMaintenanceItem.findFirst({
+      const updatedItem = await this.prisma.vehicleMaintenanceItem.findFirst({
         where: {
           vehicleMaintenanceId: maintenanceId,
           procedureId,
@@ -383,7 +392,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
 
   async getVehiclesNeedingMaintenance(): Promise<Vehicle[]> {
     try {
-      const vehicles = await prisma.vehicle.findMany({
+      const vehicles = await this.prisma.vehicle.findMany({
         include: {
           maintenanceSchedule: true,
           maintenances: {
@@ -451,7 +460,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
     vehicleId: string
   ): Promise<VehicleMaintenance> {
     try {
-      const vehicle = await prisma.vehicle.findUnique({
+      const vehicle = await this.prisma.vehicle.findUnique({
         where: { id: vehicleId },
         include: {
           maintenanceSchedule: true,
@@ -484,11 +493,11 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
       );
 
       // Obtener procedimientos activos
-      const procedures = await prisma.maintenanceProcedure.findMany({
+      const procedures = await this.prisma.maintenanceProcedure.findMany({
         where: { isActive: true },
       });
 
-      const maintenance = await prisma.vehicleMaintenance.create({
+      const maintenance = await this.prisma.vehicleMaintenance.create({
         data: {
           vehicleId,
           scheduledDate: nextDate,
@@ -520,10 +529,12 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
 
   async updateVehicleMileageFromFuel(vehicleId: string): Promise<Vehicle> {
     try {
-      const latestFuelConsumption = await prisma.fuelConsumption.findFirst({
-        where: { vehicleId },
-        orderBy: { consumedAt: "desc" },
-      });
+      const latestFuelConsumption = await this.prisma.fuelConsumption.findFirst(
+        {
+          where: { vehicleId },
+          orderBy: { consumedAt: "desc" },
+        }
+      );
 
       if (!latestFuelConsumption) {
         throw CustomError.notFound(
@@ -533,7 +544,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
 
       // Aquí podrías actualizar algún campo del vehículo con el kilometraje actual
       // Por ahora solo retornamos el vehículo
-      const vehicle = await prisma.vehicle.findUnique({
+      const vehicle = await this.prisma.vehicle.findUnique({
         where: { id: vehicleId },
       });
 
@@ -552,7 +563,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
 
   async checkMaintenanceByMileage(vehicleId: string): Promise<boolean> {
     try {
-      const vehicle = await prisma.vehicle.findUnique({
+      const vehicle = await this.prisma.vehicle.findUnique({
         where: { id: vehicleId },
         include: {
           maintenanceSchedule: true,
@@ -593,7 +604,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
     consumedAt: Date;
   } | null> {
     try {
-      const fuelConsumption = await prisma.fuelConsumption.findFirst({
+      const fuelConsumption = await this.prisma.fuelConsumption.findFirst({
         where: { vehicleId },
         orderBy: { consumedAt: "desc" },
         select: {

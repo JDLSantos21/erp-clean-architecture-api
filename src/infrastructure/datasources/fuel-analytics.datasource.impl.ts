@@ -6,19 +6,21 @@ import {
   VehicleMetrics,
   CustomError,
 } from "../../domain";
-import { prisma } from "../../data/postgresql";
 import { DateTime } from "luxon";
 import { buildUtcDateRange } from "../../shared/utils/date-range.util";
+import { PrismaClient } from "@prisma/client";
 
 export class FuelAnalyticsDatasourceImpl {
+  constructor(private readonly prisma: PrismaClient) {}
+
   private readonly userTz = "America/Santo_Domingo";
   private readonly DB_QUERYS = {
     monthlyCost: async (monthlyRange: {
       gte: Date;
       lte: Date;
     }): Promise<any[]> =>
-      await prisma.$queryRaw`
-        SELECT 
+      await this.prisma.$queryRaw`
+        SELECT
           COALESCE(SUM(fc.gallons * fr.price_per_gallon), 0) as total_cost,
           COALESCE(AVG(fr.price_per_gallon), 0) as avg_price_per_gallon
         FROM fuel_consumption fc
@@ -31,7 +33,7 @@ export class FuelAnalyticsDatasourceImpl {
       gte: Date;
       lte: Date;
     }): Promise<any[]> =>
-      await prisma.$queryRaw`
+      await this.prisma.$queryRaw`
         SELECT COALESCE(SUM(fc.gallons * fr.price_per_gallon), 0) as total_cost
         FROM fuel_consumption fc
         LEFT JOIN fuel_refill fr ON fc.tank_refill_id = fr.id
@@ -40,7 +42,7 @@ export class FuelAnalyticsDatasourceImpl {
           AND fr.price_per_gallon IS NOT NULL
       `,
     mileage: async ({ vehicleId, startDate, endDate }: any): Promise<any[]> =>
-      await prisma.$queryRaw`
+      await this.prisma.$queryRaw`
         WITH ordered_consumptions AS (
           SELECT 
             fc.mileage,
@@ -63,7 +65,7 @@ export class FuelAnalyticsDatasourceImpl {
         WHERE mileage_diff > 0
       `,
     costs: async ({ vehicleId, startDate, endDate }: any): Promise<any[]> =>
-      (await prisma.$queryRaw`
+      (await this.prisma.$queryRaw`
         SELECT 
           COALESCE(SUM(fc.gallons * fr.price_per_gallon), 0) as total_cost,
           COALESCE(AVG(fr.price_per_gallon), 0) as avg_price_per_gallon
@@ -195,7 +197,9 @@ export class FuelAnalyticsDatasourceImpl {
   async getDashboardSummary(): Promise<DashboardSummary> {
     try {
       // Obtener estado actual del tanque
-      const tankStatus = await prisma.fuelTank.findUnique({ where: { id: 1 } });
+      const tankStatus = await this.prisma.fuelTank.findUnique({
+        where: { id: 1 },
+      });
 
       // Obtener fechas en zona horaria local
       const nowLocal = DateTime.now().setZone(this.userTz);
@@ -206,14 +210,14 @@ export class FuelAnalyticsDatasourceImpl {
       const todayRange = this.createUtcDayRange(today);
       const yesterdayRange = this.createUtcDayRange(yesterday);
 
-      const todayConsumption = await prisma.fuelConsumption.aggregate({
+      const todayConsumption = await this.prisma.fuelConsumption.aggregate({
         where: {
           consumedAt: todayRange,
         },
         _sum: { gallons: true },
       });
 
-      const yesterdayConsumption = await prisma.fuelConsumption.aggregate({
+      const yesterdayConsumption = await this.prisma.fuelConsumption.aggregate({
         where: {
           consumedAt: yesterdayRange,
         },
@@ -224,7 +228,7 @@ export class FuelAnalyticsDatasourceImpl {
       const weekAgoLocal = nowLocal.minus({ days: 7 }).toJSDate();
       const weeklyRange = this.createUtcDateRange(weekAgoLocal, today);
 
-      const weeklyConsumption = await prisma.fuelConsumption.aggregate({
+      const weeklyConsumption = await this.prisma.fuelConsumption.aggregate({
         where: {
           consumedAt: weeklyRange,
         },
@@ -235,7 +239,7 @@ export class FuelAnalyticsDatasourceImpl {
       const monthAgoLocal = nowLocal.minus({ days: 30 }).toJSDate();
       const monthlyRange = this.createUtcDateRange(monthAgoLocal, today);
 
-      const { _sum: monthlySum } = await prisma.fuelConsumption.aggregate({
+      const { _sum: monthlySum } = await this.prisma.fuelConsumption.aggregate({
         where: {
           consumedAt: monthlyRange,
         },
@@ -294,7 +298,7 @@ export class FuelAnalyticsDatasourceImpl {
 
     try {
       // Verificar que el vehículo existe
-      const vehicle = await prisma.vehicle.findUnique({
+      const vehicle = await this.prisma.vehicle.findUnique({
         where: { id: vehicleId },
       });
 
@@ -312,7 +316,7 @@ export class FuelAnalyticsDatasourceImpl {
         this.calculatePreviousPeriodDates(startDate, endDate);
 
       // Obtener datos de consumo del período actual
-      const currentPeriodData = await prisma.fuelConsumption.aggregate({
+      const currentPeriodData = await this.prisma.fuelConsumption.aggregate({
         where: {
           vehicleId: params.vehicleId,
           consumedAt: {
@@ -338,7 +342,7 @@ export class FuelAnalyticsDatasourceImpl {
       const totalMileage = parseFloat(mileageQuery[0]?.total_mileage || "0");
 
       // Obtener datos del período anterior para comparación
-      const previousPeriodData = await prisma.fuelConsumption.aggregate({
+      const previousPeriodData = await this.prisma.fuelConsumption.aggregate({
         where: {
           vehicleId,
           consumedAt: {

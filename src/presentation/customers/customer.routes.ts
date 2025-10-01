@@ -1,18 +1,16 @@
 import Router, { Router as RouterType } from "express";
-import { PermissionMiddleware } from "../middlewares/permission.middleware";
+import { PermissionMiddleware, AuthMiddleware } from "../middlewares";
 import { CustomerController } from "./customer.controller";
-import { CustomerRepositoryImpl } from "../../infrastructure/repositories/customer.repository.impl";
-import { CustomerDatasourceImpl } from "../../infrastructure/datasources/customer.datasource.impl";
-import { AuthMiddleware } from "../middlewares/auth.middleware";
+import { DIContainer } from "../../infrastructure";
 
 export class CustomerRoutes {
   static get routes(): RouterType {
     const router = Router();
 
-    const customerRepository = new CustomerRepositoryImpl(
-      new CustomerDatasourceImpl()
-    );
-    const controller = new CustomerController(customerRepository);
+    const container = DIContainer.getInstance();
+    const controller =
+      container.resolve<CustomerController>("CustomerController");
+
     router.use(AuthMiddleware.validateJWT);
     const { advancedOperations, readOnly } = PermissionMiddleware;
 

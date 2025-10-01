@@ -8,15 +8,16 @@ import {
   User,
 } from "../../domain";
 
-import { prisma } from "../../data/postgresql";
 import { BcryptAdapter } from "../../config";
 import { UserMapper } from "../mappers/user.mapper";
+import { PrismaClient } from "@prisma/client";
 
 type HashFunction = (password: string) => string;
 type CompareFunction = (password: string, hashed: string) => boolean;
 
 export class AuthDataSourceImpl extends AuthDataSource {
   constructor(
+    private readonly prisma: PrismaClient,
     private readonly hash: HashFunction = BcryptAdapter.hash,
     private readonly compare: CompareFunction = BcryptAdapter.compare
   ) {
@@ -25,13 +26,13 @@ export class AuthDataSourceImpl extends AuthDataSource {
 
   async createRole(createRoleDto: CreateRoleDto): Promise<Role> {
     try {
-      const exist = await prisma.role.findUnique({
+      const exist = await this.prisma.role.findUnique({
         where: { name: createRoleDto.role },
       });
 
       if (exist) throw CustomError.badRequest("Este rol ya existe");
 
-      const newRole = await prisma.role.create({
+      const newRole = await this.prisma.role.create({
         data: { name: createRoleDto.role },
       });
       return new Role(newRole);
@@ -49,7 +50,7 @@ export class AuthDataSourceImpl extends AuthDataSource {
     try {
       const hashedPassword = this.hash(password);
 
-      const newUser = await prisma.user.create({
+      const newUser = await this.prisma.user.create({
         data: {
           name,
           lastName,
@@ -58,7 +59,7 @@ export class AuthDataSourceImpl extends AuthDataSource {
         },
       });
 
-      await prisma.userRole.createMany({
+      await this.prisma.userRole.createMany({
         // Assign roles to the new user
         data: roles.map((roleId) => ({
           userId: newUser.id,
@@ -67,7 +68,7 @@ export class AuthDataSourceImpl extends AuthDataSource {
         skipDuplicates: true,
       });
 
-      const userWithRoles = await prisma.user.findUnique({
+      const userWithRoles = await this.prisma.user.findUnique({
         where: { id: newUser.id },
         include: { roles: { select: { role: { select: { name: true } } } } },
       });
@@ -83,12 +84,12 @@ export class AuthDataSourceImpl extends AuthDataSource {
 
   async setRolesToUser(userId: string, roleIds: number[]): Promise<User> {
     try {
-      await prisma.userRole.createMany({
+      await this.prisma.userRole.createMany({
         data: roleIds.map((roleId) => ({ userId, roleId })),
         skipDuplicates: true,
       });
 
-      const userWithRoles = await prisma.user.findUnique({
+      const userWithRoles = await this.prisma.user.findUnique({
         where: { id: userId },
         include: { roles: { select: { role: { select: { name: true } } } } },
       });
@@ -108,7 +109,7 @@ export class AuthDataSourceImpl extends AuthDataSource {
     const { username, password } = loginUserDto;
 
     try {
-      const user = await prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { username },
         include: {
           roles: {
@@ -133,7 +134,7 @@ export class AuthDataSourceImpl extends AuthDataSource {
 
   async getUsers(): Promise<User[]> {
     try {
-      const dbUsers = await prisma.user.findMany({
+      const dbUsers = await this.prisma.user.findMany({
         include: { roles: { select: { role: { select: { name: true } } } } },
       });
 
@@ -147,7 +148,7 @@ export class AuthDataSourceImpl extends AuthDataSource {
 
   async findById(id: string): Promise<User | null> {
     try {
-      const user = await prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { id },
         include: { roles: { select: { role: { select: { name: true } } } } },
       });
@@ -164,7 +165,7 @@ export class AuthDataSourceImpl extends AuthDataSource {
 
   async findUserByUsername(username: string): Promise<User | null> {
     try {
-      const user = await prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { username },
         include: { roles: { select: { role: { select: { name: true } } } } },
       });
@@ -182,7 +183,7 @@ export class AuthDataSourceImpl extends AuthDataSource {
 
   async findRolesByIds(ids: number[]): Promise<Role[]> {
     try {
-      const roles = await prisma.role.findMany({
+      const roles = await this.prisma.role.findMany({
         where: { id: { in: ids } },
       });
       return roles.map((role) => new Role(role));
@@ -193,7 +194,7 @@ export class AuthDataSourceImpl extends AuthDataSource {
 
   async getUserRoles(userId: string): Promise<Role[]> {
     try {
-      const userRoles = await prisma.userRole.findMany({
+      const userRoles = await this.prisma.userRole.findMany({
         where: { userId },
         include: { role: true },
       });

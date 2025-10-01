@@ -1,4 +1,4 @@
-import { prisma } from "../../data/postgresql";
+import { PrismaClient } from "@prisma/client";
 import {
   CreateCustomerAddressDTO,
   CreateCustomerPhoneDTO,
@@ -16,11 +16,14 @@ import {
 import { buildWhere, CustomerMapper } from "../mappers";
 
 export class CustomerDatasourceImpl extends CustomerDatasource {
+  constructor(private readonly prisma: PrismaClient) {
+    super();
+  }
   async create(data: RegisterCustomerDTO): Promise<Customer> {
     const { phones, addresses, ...customerData } = data;
 
     try {
-      const newCustomer = await prisma.$transaction(async (tx) => {
+      const newCustomer = await this.prisma.$transaction(async (tx) => {
         const createdCustomer = await tx.customer.create({
           data: {
             ...customerData,
@@ -48,7 +51,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
         return createdCustomer;
       });
 
-      const customerWithRelations = await prisma.customer.findUnique({
+      const customerWithRelations = await this.prisma.customer.findUnique({
         where: { id: newCustomer.id },
         include: {
           phones: true,
@@ -70,7 +73,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
 
   async update(id: string, data: UpdateCustomerDTO): Promise<Customer> {
-    const updatedCustomer = await prisma.customer.update({
+    const updatedCustomer = await this.prisma.customer.update({
       where: { id },
       data: {
         ...data,
@@ -93,7 +96,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
     ]);
 
     const [customers, total] = await Promise.all([
-      await prisma.customer.findMany({
+      await this.prisma.customer.findMany({
         where,
         skip,
         take: limit,
@@ -102,7 +105,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
           addresses: true,
         },
       }),
-      await prisma.customer.count({ where }),
+      await this.prisma.customer.count({ where }),
     ]);
 
     const customersWithRelations = customers.map((customer) =>
@@ -113,7 +116,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
 
   async findById(id: string): Promise<Customer | null> {
-    const customer = await prisma.customer.findUnique({
+    const customer = await this.prisma.customer.findUnique({
       where: { id },
       include: {
         phones: true,
@@ -127,7 +130,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
 
   async findByEmail(email: string): Promise<Customer | null> {
-    const customer = await prisma.customer.findFirst({
+    const customer = await this.prisma.customer.findFirst({
       where: { email },
       include: {
         phones: true,
@@ -140,7 +143,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
 
   async findByRnc(rnc: string): Promise<Customer | null> {
-    const customer = await prisma.customer.findFirst({
+    const customer = await this.prisma.customer.findFirst({
       where: { rnc },
       include: {
         phones: true,
@@ -152,21 +155,21 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
 
   async active(customerId: string): Promise<void> {
-    await prisma.customer.update({
+    await this.prisma.customer.update({
       where: { id: customerId },
       data: { isActive: true },
     });
   }
 
   async deactive(customerId: string): Promise<void> {
-    await prisma.customer.update({
+    await this.prisma.customer.update({
       where: { id: customerId },
       data: { isActive: false },
     });
   }
 
   async delete(customerId: string): Promise<void> {
-    await prisma.customer.delete({
+    await this.prisma.customer.delete({
       where: { id: customerId },
     });
   }
@@ -175,7 +178,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
     customerId: string,
     data: CreateCustomerPhoneDTO
   ): Promise<CustomerPhone> {
-    const createdPhone = await prisma.customerPhone.create({
+    const createdPhone = await this.prisma.customerPhone.create({
       data: {
         ...data,
         customerId,
@@ -189,7 +192,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
     phoneId: number,
     phone: Partial<UpdateCustomerPhoneDto>
   ): Promise<CustomerPhone> {
-    const updatedPhone = await prisma.customerPhone.update({
+    const updatedPhone = await this.prisma.customerPhone.update({
       where: { id: phoneId },
       data: {
         ...phone,
@@ -199,7 +202,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
 
   async listPhones(customerId: string): Promise<CustomerPhone[]> {
-    const phones = await prisma.customerPhone.findMany({
+    const phones = await this.prisma.customerPhone.findMany({
       where: { customerId },
     });
     return phones.map((phone) =>
@@ -208,13 +211,13 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
 
   async deletePhone(phoneId: number): Promise<void> {
-    await prisma.customerPhone.delete({
+    await this.prisma.customerPhone.delete({
       where: { id: phoneId },
     });
   }
 
   async findPhoneById(id: number): Promise<CustomerPhone | null> {
-    const phone = await prisma.customerPhone.findUnique({
+    const phone = await this.prisma.customerPhone.findUnique({
       where: { id },
     });
     if (!phone) return null;
@@ -222,7 +225,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
 
   async findPhoneByNumber(phoneNumber: string): Promise<CustomerPhone | null> {
-    const phone = await prisma.customerPhone.findFirst({
+    const phone = await this.prisma.customerPhone.findFirst({
       where: { phoneNumber },
     });
     if (!phone) return null;
@@ -230,7 +233,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
 
   async setPrimaryPhone(customerId: string, phoneId: number): Promise<void> {
-    await prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx) => {
       await tx.customerPhone.updateMany({
         where: { customerId, isPrimary: true },
         data: { isPrimary: false },
@@ -246,7 +249,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
     customerId: string,
     address: CreateCustomerAddressDTO
   ): Promise<CustomerAddress> {
-    const createdAddress = await prisma.customerAddress.create({
+    const createdAddress = await this.prisma.customerAddress.create({
       data: {
         ...address,
         customerId,
@@ -259,7 +262,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
     addressId: number,
     address: Partial<CreateCustomerAddressDTO>
   ): Promise<CustomerAddress> {
-    const updatedAddress = await prisma.customerAddress.update({
+    const updatedAddress = await this.prisma.customerAddress.update({
       where: { id: addressId },
       data: {
         ...address,
@@ -269,7 +272,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
 
   async listAddresses(customerId: string): Promise<CustomerAddress[]> {
-    const addresses = await prisma.customerAddress.findMany({
+    const addresses = await this.prisma.customerAddress.findMany({
       where: { customerId },
     });
     return addresses.map((address) =>
@@ -278,13 +281,13 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
 
   async deleteAddress(addressId: number): Promise<void> {
-    await prisma.customerAddress.delete({
+    await this.prisma.customerAddress.delete({
       where: { id: addressId },
     });
   }
 
   async findAddressById(id: number): Promise<CustomerAddress | null> {
-    const address = await prisma.customerAddress.findUnique({
+    const address = await this.prisma.customerAddress.findUnique({
       where: { id },
     });
     if (!address) return null;
@@ -295,7 +298,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
     customerId: string,
     addressId: number
   ): Promise<void> {
-    await prisma.$transaction(async (tx) => {
+    await this.prisma.$transaction(async (tx) => {
       await tx.customerAddress.updateMany({
         where: { customerId, isPrimary: true },
         data: { isPrimary: false },

@@ -1,25 +1,10 @@
 import { Router } from "express";
-import { PostgresVehicleMaintenanceDatasource } from "../../infrastructure/datasources/postgres-vehicle-maintenance.datasource";
-import { VehicleMaintenanceRepositoryImpl } from "../../infrastructure/repositories/vehicle-maintenance.repository.impl";
 import { MaintenanceProcedureController } from "./maintenance-procedure.controller";
+import { DIContainer } from "../../infrastructure";
 
-import { prisma } from "../../data/postgresql";
-import { CreateMaintenanceProcedure } from "../../domain";
-
-// Crear instancias
-const vehicleMaintenanceDatasource = new PostgresVehicleMaintenanceDatasource(
-  prisma
-);
-const vehicleMaintenanceRepository = new VehicleMaintenanceRepositoryImpl(
-  vehicleMaintenanceDatasource
-);
-const createMaintenanceProcedureUseCase = new CreateMaintenanceProcedure(
-  vehicleMaintenanceRepository
-);
-const maintenanceProcedureController = new MaintenanceProcedureController(
-  createMaintenanceProcedureUseCase,
-  vehicleMaintenanceRepository,
-  prisma
+const container = DIContainer.getInstance();
+const controller = container.resolve<MaintenanceProcedureController>(
+  "VehicleMaintenanceController"
 );
 
 export class MaintenanceRoutes {
@@ -27,76 +12,40 @@ export class MaintenanceRoutes {
     const router = Router();
 
     // Rutas de Procedimientos de Mantenimiento
-    router.post("/procedures", maintenanceProcedureController.create);
-    router.get("/procedures", maintenanceProcedureController.getAll);
-    router.put("/procedures/:id", maintenanceProcedureController.update);
-    router.delete("/procedures/:id", maintenanceProcedureController.delete);
+    router.post("/procedures", controller.create);
+    router.get("/procedures", controller.getAll);
+    router.put("/procedures/:id", controller.update);
+    router.delete("/procedures/:id", controller.delete);
 
     // Rutas de Mantenimientos
-    router.post(
-      "/maintenances",
-      maintenanceProcedureController.createMaintenance
-    );
-    router.get("/maintenances", maintenanceProcedureController.getMaintenances);
-    router.get(
-      "/maintenances/:id",
-      maintenanceProcedureController.getMaintenanceById
-    );
-    router.put(
-      "/maintenances/:id/status",
-      maintenanceProcedureController.updateMaintenanceStatus
-    );
+    router.post("/maintenances", controller.createMaintenance);
+    router.get("/maintenances", controller.getMaintenances);
+    router.get("/maintenances/:id", controller.getMaintenanceById);
+    router.put("/maintenances/:id/status", controller.updateMaintenanceStatus);
 
     // Rutas de Alertas
-    router.post(
-      "/alerts/generate",
-      maintenanceProcedureController.generateAlerts
-    );
-    router.get("/alerts", maintenanceProcedureController.getAlerts);
-    router.put(
-      "/alerts/:id/read",
-      maintenanceProcedureController.markAlertAsRead
-    );
-    router.delete("/alerts/:id", maintenanceProcedureController.dismissAlert);
+    router.post("/alerts/generate", controller.generateAlerts);
+    router.get("/alerts", controller.getAlerts);
+    router.put("/alerts/:id/read", controller.markAlertAsRead);
+    router.delete("/alerts/:id", controller.dismissAlert);
 
     // Rutas de Reportes
-    router.get(
-      "/reports/incomplete",
-      maintenanceProcedureController.getIncompleteMaintenances
-    );
-    router.get(
-      "/reports/overdue",
-      maintenanceProcedureController.getOverdueMaintenances
-    );
-    router.get(
-      "/reports/upcoming/:days",
-      maintenanceProcedureController.getUpcomingMaintenances
-    );
+    router.get("/reports/incomplete", controller.getIncompleteMaintenances);
+    router.get("/reports/overdue", controller.getOverdueMaintenances);
+    router.get("/reports/upcoming/:days", controller.getUpcomingMaintenances);
 
     // Rutas de Jobs/Automatización
     router.post(
       "/jobs/schedule-maintenances",
-      maintenanceProcedureController.runMaintenanceScheduler
+      controller.runMaintenanceScheduler
     );
-    router.post(
-      "/jobs/generate-alerts",
-      maintenanceProcedureController.runAlertsGenerator
-    );
-    router.delete(
-      "/jobs/clean-alerts",
-      maintenanceProcedureController.cleanOldAlerts
-    );
+    router.post("/jobs/generate-alerts", controller.runAlertsGenerator);
+    router.delete("/jobs/clean-alerts", controller.cleanOldAlerts);
 
     // Rutas de Configuración de Schedules
-    router.post(
-      "/setup/schedules",
-      maintenanceProcedureController.setupMaintenanceSchedules
-    );
-    router.post(
-      "/setup/schedules/:vehicleId",
-      maintenanceProcedureController.setupCustomSchedule
-    );
-    router.get("/setup/stats", maintenanceProcedureController.getScheduleStats);
+    router.post("/setup/schedules", controller.setupMaintenanceSchedules);
+    router.post("/setup/schedules/:vehicleId", controller.setupCustomSchedule);
+    router.get("/setup/stats", controller.getScheduleStats);
 
     return router;
   }

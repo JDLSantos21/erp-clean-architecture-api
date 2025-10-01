@@ -11,7 +11,6 @@ import {
   SetRolesToUserDto,
 } from "../../domain";
 import { Request, Response } from "express";
-import { StatusCode } from "../../domain/constants";
 import { BaseController } from "../shared/base.controller";
 
 export class AuthController extends BaseController {

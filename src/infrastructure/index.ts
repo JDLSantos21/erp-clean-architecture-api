@@ -10,3 +10,4 @@ export * from "./datasources/employee.datasource.impl";
 export * from "./repositories/employee.repository.impl";
 export * from "./services/cron.service";
 export * from "./jobs/maintenance-scheduler.job";
+export * from "./di/container";

@@ -1,20 +1,16 @@
 import Router, { Router as RouterType } from "express";
-
 import { InventoryController } from "./controller";
-import { InventoryDatasourceImpl } from "../../infrastructure/datasources/inventory.datasource.impl";
-import { InventoryRepositoryImpl } from "../../infrastructure/repositories/inventory.repository.impl";
-import { PermissionMiddleware } from "../middlewares/permission.middleware";
-import { AuthMiddleware } from "../middlewares/auth.middleware";
+import { AuthMiddleware, PermissionMiddleware } from "../middlewares";
+import { DIContainer } from "../../infrastructure";
 
 export class InventoryRoutes {
   static get routes(): RouterType {
     const router = Router();
 
-    const inventoryRepository = new InventoryRepositoryImpl(
-      new InventoryDatasourceImpl()
+    const container = DIContainer.getInstance();
+    const controller = container.resolve<InventoryController>(
+      "InventoryController"
     );
-
-    const controller = new InventoryController(inventoryRepository);
 
     router.use(AuthMiddleware.validateJWT);
 
