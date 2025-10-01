@@ -9,6 +9,8 @@ import {
   VehicleMaintenance,
   VehicleMaintenanceItem,
   MaintenanceSchedule,
+  FilterParams,
+  VehicleQueryDto,
 } from "../../domain";
 
 export class VehicleRepositoryImpl implements VehicleRepository {
@@ -18,16 +20,11 @@ export class VehicleRepositoryImpl implements VehicleRepository {
     return this.vehicleDatasource.createVehicle(data);
   }
 
-  getVehicles({
-    skip,
-    limit,
-    filters,
-  }: {
-    skip: number;
-    limit: number;
-    filters?: Partial<Vehicle>;
-  }): Promise<{ vehicles: Vehicle[]; total: number }> {
-    return this.vehicleDatasource.getVehicles(skip, limit, filters);
+  getVehicles(params: FilterParams<VehicleQueryDto>): Promise<{
+    vehicles: Vehicle[];
+    total: number;
+  }> {
+    return this.vehicleDatasource.getVehicles(params);
   }
 
   getVehicleById(id: string): Promise<Vehicle | null> {

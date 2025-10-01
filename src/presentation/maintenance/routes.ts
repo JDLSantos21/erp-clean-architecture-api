@@ -2,14 +2,14 @@ import { Router } from "express";
 import { MaintenanceProcedureController } from "./maintenance-procedure.controller";
 import { DIContainer } from "../../infrastructure";
 
-const container = DIContainer.getInstance();
-const controller = container.resolve<MaintenanceProcedureController>(
-  "VehicleMaintenanceController"
-);
-
 export class MaintenanceRoutes {
   static get routes(): Router {
     const router = Router();
+
+    const container = DIContainer.getInstance();
+    const controller = container.resolve<MaintenanceProcedureController>(
+      "VehicleMaintenanceController"
+    );
 
     // Rutas de Procedimientos de Mantenimiento
     router.post("/procedures", controller.create);

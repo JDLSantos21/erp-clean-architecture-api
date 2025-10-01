@@ -3,6 +3,7 @@ import {
   CreateMaintenanceScheduleDto,
   ProcessMaintenanceDto,
   UpdateMaintenanceItemDto,
+  VehicleQueryDto,
 } from "../dtos";
 import { Vehicle } from "../entities/vehicle/Vehicle";
 import {
@@ -10,13 +11,12 @@ import {
   VehicleMaintenanceItem,
 } from "../entities/vehicle/maintenance/VehicleMaintenance";
 import { MaintenanceSchedule } from "../entities/vehicle/maintenance/MaintenanceSchedule";
+import { FilterParams } from "../types";
 
 export abstract class VehicleDatasource {
   abstract createVehicle(data: RegisterVehicleDto): Promise<Vehicle>;
   abstract getVehicles(
-    skip: number,
-    limit: number,
-    filters?: Partial<Vehicle>
+    params: FilterParams<VehicleQueryDto>
   ): Promise<{ vehicles: Vehicle[]; total: number }>;
   abstract getVehicleById(id: string): Promise<Vehicle | null>;
   abstract updateVehicle(

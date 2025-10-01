@@ -3,6 +3,7 @@ import {
   CreateMaintenanceScheduleDto,
   ProcessMaintenanceDto,
   UpdateMaintenanceItemDto,
+  VehicleQueryDto,
 } from "../dtos";
 import { Vehicle } from "../entities/vehicle/Vehicle";
 import {
@@ -10,6 +11,7 @@ import {
   VehicleMaintenanceItem,
 } from "../entities/vehicle/maintenance/VehicleMaintenance";
 import { MaintenanceSchedule } from "../entities/vehicle/maintenance/MaintenanceSchedule";
+import { FilterParams } from "../types";
 
 interface getVehiclesParams {
   filters?: Partial<Vehicle>;
@@ -19,11 +21,9 @@ interface getVehiclesParams {
 
 export abstract class VehicleRepository {
   abstract createVehicle(data: RegisterVehicleDto): Promise<Vehicle>;
-  abstract getVehicles({
-    filters,
-    skip,
-    limit,
-  }: getVehiclesParams): Promise<{ vehicles: Vehicle[]; total: number }>;
+  abstract getVehicles(
+    params: FilterParams<VehicleQueryDto>
+  ): Promise<{ vehicles: Vehicle[]; total: number }>;
   abstract getVehicleById(id: string): Promise<Vehicle | null>;
   abstract updateVehicle(
     id: string,

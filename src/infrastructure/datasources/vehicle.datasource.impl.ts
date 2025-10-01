@@ -9,6 +9,8 @@ import {
   VehicleMaintenance,
   VehicleMaintenanceItem,
   MaintenanceSchedule,
+  FilterParams,
+  VehicleQueryDto,
 } from "../../domain";
 
 import { buildWhere } from "../mappers/prisma-where.mapper";
@@ -46,10 +48,10 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
   }
 
   async getVehicles(
-    skip: number,
-    limit: number,
-    filters?: Partial<Vehicle>
+    params: FilterParams<VehicleQueryDto>
   ): Promise<{ vehicles: Vehicle[]; total: number }> {
+    const { filters, skip, limit } = params;
+
     const where = buildWhere(filters!, [
       "brand",
       "model",
