@@ -82,8 +82,6 @@ export class Validators {
 
   static isValidDate(value: any): boolean {
     const date = new Date(value);
-    console.log("Validating date:", value, date);
-    console.log("Is valid date:", !isNaN(date.getTime()));
     return !isNaN(date.getTime());
   }
 

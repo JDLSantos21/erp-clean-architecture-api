@@ -1,8 +1,8 @@
 import {
-  getErrorMessage,
   getHttpStatusCode,
   createErrorMessage,
 } from "../constants/error-codes.constants";
+import { Logger } from "../utils";
 
 export class CustomError extends Error {
   constructor(
@@ -38,7 +38,6 @@ export class CustomError extends Error {
     message: string = "Internal Server Error",
     error?: any
   ) {
-    if (error) console.log(error);
     return new CustomError(500, message);
   }
 
@@ -79,7 +78,6 @@ export class CustomError extends Error {
     customMessage?: string,
     error?: any
   ) {
-    if (error) console.log(error);
     const message = createErrorMessage(
       errorCode,
       customMessage || "Internal Server Error"

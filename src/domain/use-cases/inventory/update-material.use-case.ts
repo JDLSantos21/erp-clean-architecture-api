@@ -21,15 +21,11 @@ export class UpdateMaterial implements UpdateMaterialUseCase {
       throw new CustomError(StatusCode.NOT_FOUND, "Material no encontrado");
     }
 
-    console.log("Current material data:", material);
-
     if (updateMaterialDto.name && updateMaterialDto.name !== material.name) {
       const materialNameExists =
         await this.inventoryRepository.getMaterialByName(
           updateMaterialDto.name
         );
-
-      console.log("Material Name exists:", materialNameExists);
 
       if (materialNameExists && materialNameExists.id !== id) {
         throw new CustomError(
@@ -43,7 +39,6 @@ export class UpdateMaterial implements UpdateMaterialUseCase {
       updateMaterialDto.categoryId &&
       updateMaterialDto.categoryId !== material.categoryId
     ) {
-      console.log("Material Category ID exists:", updateMaterialDto.categoryId);
       const materialCategory =
         await this.inventoryRepository.getMaterialCategoryById(
           updateMaterialDto.categoryId

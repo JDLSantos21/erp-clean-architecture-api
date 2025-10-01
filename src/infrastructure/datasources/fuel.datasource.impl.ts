@@ -110,8 +110,6 @@ export class FuelDatasourceImpl extends FuelDatasource {
       const consumptionEntity =
         FuelMapper.fuelConsumptionEntityFromObject(insertedConsumption);
 
-      console.log("este es el objeto: ", consumptionEntity);
-
       return consumptionEntity;
     } catch (error) {
       if (error instanceof CustomError) {
@@ -391,7 +389,6 @@ export class FuelDatasourceImpl extends FuelDatasource {
         return refill;
       });
 
-      console.log(tankRefill);
       return FuelMapper.fuelRefillEntityFromObject(tankRefill);
     } catch (error) {
       if (error instanceof CustomError) {

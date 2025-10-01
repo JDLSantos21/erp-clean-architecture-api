@@ -41,7 +41,6 @@ export function buildWhere<T extends Record<string, any>>(
   // Handle date range filters
   if (startDate || endDate) {
     where[dateRangeField] = buildUtcDateRange(startDate, endDate);
-    console.log(startDate, endDate, where[dateRangeField]);
   }
 
   // Handle search filters

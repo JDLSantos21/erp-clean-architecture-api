@@ -1,6 +1,6 @@
 import Router, { Router as RouterType } from "express";
 import { PermissionMiddleware, AuthMiddleware } from "../middlewares";
-import { CustomerController } from "./customer.controller";
+import { CustomerController } from "./controller";
 import { DIContainer } from "../../infrastructure";
 
 export class CustomerRoutes {

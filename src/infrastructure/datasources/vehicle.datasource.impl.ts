@@ -34,11 +34,7 @@ export class VehicleDatasourceImpl extends VehicleDatasource {
         }
       );
 
-      console.log("vehiculo registrado", registeredVehicle);
-
       const vehicle = new Vehicle(registeredVehicle);
-
-      console.log("vehiculo registrado - entity", vehicle);
 
       return vehicle;
     } catch (error) {

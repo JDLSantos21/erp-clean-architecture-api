@@ -13,8 +13,6 @@ export class RegisterVehicleDto {
   }): [string?, RegisterVehicleDto?] {
     const { chasis, license_plate, brand, model, year, current_tag } = object;
 
-    console.log(object);
-
     if (
       !license_plate ||
       !chasis ||

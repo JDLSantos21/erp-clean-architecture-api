@@ -8,8 +8,6 @@ export class UserMapper {
       throw CustomError.badRequest("Invalid user object");
     }
 
-    console.log("Object UserMapper:", object);
-
     const userMapped: Partial<User> = {
       id,
       username,
@@ -17,8 +15,6 @@ export class UserMapper {
       lastName,
       roles: roles.map((role: any) => role.role.name),
     };
-
-    console.log("Mapped User From Mapper:", userMapped);
 
     return userMapped as User;
   }

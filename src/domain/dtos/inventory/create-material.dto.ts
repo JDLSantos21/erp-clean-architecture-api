@@ -17,7 +17,6 @@ export class CreateMaterialDto {
     const stockNum = Number(stock);
     const minimumStockNum = Number(minimum_stock);
 
-    console.log(name, category_id, unit_id, stock, minimum_stock);
     if (
       !name ||
       !category_id ||

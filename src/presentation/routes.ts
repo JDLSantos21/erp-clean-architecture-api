@@ -7,7 +7,7 @@ import { FuelAnalyticsRoutes } from "./fuel/analytics-routes";
 import { InventoryRoutes } from "./inventory/routes";
 import { MaintenanceRoutes } from "./maintenance/routes";
 import { EquipmentReportRoutes } from "./equipment-reports/equipment-report.routes";
-import { CustomerRoutes } from "./customers/customer.routes";
+import { CustomerRoutes } from "./customers/routes";
 
 export class AppRoutes {
   static get routes(): Router {

@@ -1,10 +1,17 @@
 export * from "./auth/routes";
 export * from "./vehicles/routes";
+export * from "./employee/routes";
+export * from "./fuel/routes";
+export * from "./fuel/analytics-routes";
+export * from "./inventory/routes";
+export * from "./maintenance/routes";
+export * from "./equipment-reports/equipment-report.routes";
+export * from "./customers/routes";
 
 //controllers
 export * from "./auth/controller";
 export * from "./vehicles/controller";
-export * from "./customers/customer.controller";
+export * from "./customers/controller";
 export * from "./employee/controller";
 export * from "./fuel/controller";
 export * from "./fuel/analytics-controller";

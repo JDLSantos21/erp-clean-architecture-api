@@ -12,8 +12,6 @@ export class SetRolesToUser implements SetRolesToUserUseCase {
   async execute(userId: string, roles: number[]): Promise<void> {
     const existingRoles = await this.authRepository.findRolesByIds(roles);
 
-    console.log("existingRoles", existingRoles);
-    console.log("roles", roles);
     if (existingRoles.length !== roles.length)
       throw new CustomError(
         StatusCode.BAD_REQUEST,

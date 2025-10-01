@@ -9,8 +9,9 @@ import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
 import { MaintenanceSchedulerJob } from "../../infrastructure/jobs/maintenance-scheduler.job";
 import { MaintenanceSetupService } from "../../infrastructure/services/maintenance-setup.service";
 import { PrismaClient } from "@prisma/client";
+import { BaseController } from "../shared/base.controller";
 
-export class MaintenanceProcedureController {
+export class MaintenanceProcedureController extends BaseController {
   private maintenanceSchedulerJob: MaintenanceSchedulerJob;
   private maintenanceSetupService: MaintenanceSetupService;
 
@@ -19,22 +20,10 @@ export class MaintenanceProcedureController {
     private readonly vehicleMaintenanceRepository: VehicleMaintenanceRepository,
     private readonly prisma: PrismaClient
   ) {
+    super();
     this.maintenanceSchedulerJob = new MaintenanceSchedulerJob(prisma);
     this.maintenanceSetupService = new MaintenanceSetupService(prisma);
   }
-
-  private handleError = (error: unknown, res: Response, req: Request) => {
-    console.log("Maintenance Controller Error: ", error);
-    if (error instanceof CustomError) {
-      return res
-        .status(error.statusCode)
-        .json(ResponseBuilder.error(error.statusCode, error.message, req));
-    }
-
-    return res
-      .status(500)
-      .json(ResponseBuilder.error(500, "Ocurrió un error inesperado", req));
-  };
 
   createMaintenanceProcedure = async (req: Request, res: Response) => {
     const [error, createMaintenanceProcedureDto] =

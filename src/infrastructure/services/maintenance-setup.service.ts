@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { Logger } from "../../domain";
 
 /**
  * Script para configurar schedules de mantenimiento para vehículos existentes
@@ -11,8 +12,6 @@ export class MaintenanceSetupService {
    * Configurar schedules de mantenimiento para todos los vehículos
    */
   async setupMaintenanceSchedulesForAllVehicles(): Promise<void> {
-    console.log("🔧 Configurando schedules de mantenimiento para vehículos...");
-
     // Obtener vehículos sin schedule
     const vehiclesWithoutSchedule = await this.prisma.vehicle.findMany({
       where: {
@@ -20,7 +19,7 @@ export class MaintenanceSetupService {
       },
     });
 
-    console.log(
+    Logger.info(
       `📋 Encontrados ${vehiclesWithoutSchedule.length} vehículos sin schedule`
     );
 
@@ -42,7 +41,7 @@ export class MaintenanceSetupService {
         skipDuplicates: true,
       });
 
-      console.log(
+      Logger.info(
         `✅ ${defaultSchedules.length} schedules creados exitosamente`
       );
     }
@@ -70,8 +69,6 @@ export class MaintenanceSetupService {
         isActive: true,
       },
     });
-
-    console.log(`✅ Schedule configurado para vehículo ${vehicleId}`);
   }
 
   /**

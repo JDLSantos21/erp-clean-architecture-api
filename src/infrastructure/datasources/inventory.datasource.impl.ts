@@ -139,7 +139,6 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
       return !!material;
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      console.log("6");
       throw new CustomError(
         StatusCode.INTERNAL_ERROR,
         "Ocurrió un error inesperado, el material no pudo ser eliminado"

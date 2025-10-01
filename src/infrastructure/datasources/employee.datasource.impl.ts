@@ -18,7 +18,6 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
       const registeredEmployee = await this.prisma.employee.create({ data });
       return new Employee(registeredEmployee);
     } catch (error) {
-      console.log(error);
       if (error instanceof CustomError) {
         throw error;
       }
@@ -141,7 +140,6 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
       });
       return employee ? new Employee(employee) : null;
     } catch (error) {
-      console.log("Aqui eh la vaina: ", error);
       if (error instanceof CustomError) {
         throw error;
       }

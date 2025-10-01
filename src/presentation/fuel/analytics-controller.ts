@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import {
-  CustomError,
   FuelAnalyticsRepository,
   GetDashboardSummary,
   GetDashboardMetrics,
@@ -10,24 +9,14 @@ import {
 } from "../../domain";
 
 import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
+import { BaseController } from "../shared/base.controller";
 
-export class FuelAnalyticsController {
+export class FuelAnalyticsController extends BaseController {
   constructor(
     private readonly fuelAnalyticsRepository: FuelAnalyticsRepository
-  ) {}
-
-  private handleError = (error: unknown, res: Response, req: Request) => {
-    console.log("Error:", error);
-    if (error instanceof CustomError) {
-      return res
-        .status(error.statusCode)
-        .json(ResponseBuilder.error(error.statusCode, error.message, req));
-    }
-
-    return res
-      .status(500)
-      .json(ResponseBuilder.error(500, "Internal server error", req));
-  };
+  ) {
+    super();
+  }
 
   // GET /api/fuel/dashboard/summary
   getDashboardSummary = async (req: Request, res: Response) => {

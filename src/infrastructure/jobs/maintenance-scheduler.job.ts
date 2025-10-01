@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { CustomError } from "../../domain";
+import { CustomError, Logger } from "../../domain";
 
 export class MaintenanceSchedulerJob {
   constructor(private prisma: PrismaClient) {}
@@ -9,7 +9,7 @@ export class MaintenanceSchedulerJob {
    * Revisa todos los vehículos y programa mantenimientos automáticamente
    */
   async executeDaily(): Promise<void> {
-    console.log("🔄 Iniciando programación automática de mantenimientos...");
+    Logger.info("🔄 Iniciando programación automática de mantenimientos...");
 
     try {
       // 1. Obtener vehículos activos con schedule
@@ -19,11 +19,10 @@ export class MaintenanceSchedulerJob {
 
       for (const vehicle of vehicles) {
         const wasScheduled = await this.checkAndScheduleMaintenance(vehicle);
-        console.log(wasScheduled);
         if (wasScheduled) scheduledCount++;
       }
 
-      console.log(`✅ Mantenimientos programados: ${scheduledCount}`);
+      Logger.info(`✅ Mantenimientos programados: ${scheduledCount}`);
 
       // 2. Generar alertas automáticamente
       await this.generateAutomaticAlerts();
@@ -31,7 +30,7 @@ export class MaintenanceSchedulerJob {
       // 3. Actualizar estados de mantenimientos vencidos
       await this.updateOverdueMaintenances();
     } catch (error) {
-      console.error("❌ Error en programación automática:", error);
+      Logger.error("❌ Ocurrió un error en la programación automática:", error);
       throw error;
     }
   }
@@ -83,7 +82,7 @@ export class MaintenanceSchedulerJob {
       (nextDateByTime.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    console.log(
+    Logger.info(
       `- Vehículo ${vehicle.licensePlate}: Próximo mantenimiento en ${daysDifference} días`
     );
 
@@ -116,7 +115,7 @@ export class MaintenanceSchedulerJob {
 
       if (!existingScheduled) {
         await this.createScheduledMaintenance(vehicle, nextDateByTime);
-        console.log(
+        Logger.info(
           `📅 Mantenimiento programado para vehículo ${vehicle.licensePlate}`
         );
         return true;
@@ -165,7 +164,7 @@ export class MaintenanceSchedulerJob {
    * Genera alertas automáticas para mantenimientos próximos
    */
   async generateAutomaticAlerts(): Promise<void> {
-    console.log("🚨 Generando alertas automáticas...");
+    Logger.info("🚨 Generando alertas automáticas...");
 
     const today = new Date();
     const in15Days = new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000);
@@ -239,7 +238,7 @@ export class MaintenanceSchedulerJob {
         data: alerts,
         skipDuplicates: true,
       });
-      console.log(`🚨 ${alerts.length} nuevas alertas generadas`);
+      Logger.info(`🚨 ${alerts.length} nuevas alertas generadas`);
     }
   }
 
@@ -261,7 +260,7 @@ export class MaintenanceSchedulerJob {
     });
 
     if (overdueCount.count > 0) {
-      console.log(
+      Logger.info(
         `⚠️ ${overdueCount.count} mantenimientos marcados como VENCIDOS`
       );
     }
@@ -281,6 +280,6 @@ export class MaintenanceSchedulerJob {
       },
     });
 
-    console.log(`🧹 ${deletedCount.count} alertas antiguas eliminadas`);
+    Logger.info(`🧹 ${deletedCount.count} alertas antiguas eliminadas`);
   }
 }

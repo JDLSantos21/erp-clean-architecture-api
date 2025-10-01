@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { CustomError } from "../../domain";
+import { CustomError, Logger } from "../../domain";
 import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
 
 export abstract class BaseController {
   protected handleError = (error: unknown, res: Response, req: Request) => {
-    console.log("Controller Error:", error);
+    Logger.error("Controller Error: ", error);
 
     if (error instanceof CustomError) {
       return res

@@ -36,9 +36,10 @@ export class LoginUser implements LoginUserUseCase {
 
     const token = await this.signToken({ id }, TOKEN_DURATION_IN_MILISECONS);
 
-    console.log(token);
     if (!token)
-      throw CustomError.internalServer("Error register user ErrC:Ax01");
+      throw CustomError.internalServer(
+        "Ocurrio un error al generar el token ErrC:Ax01"
+      );
 
     return {
       user: {

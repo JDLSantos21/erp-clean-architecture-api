@@ -1,4 +1,5 @@
 import { PrismaClient, Prisma } from "@prisma/client";
+import { Logger } from "../../domain";
 
 const prisma = new PrismaClient({
   log: [
@@ -25,15 +26,15 @@ let currentOperation = "";
 // Event listener para queries
 prisma.$on("query", (e) => {
   queryCount++;
-  console.log(
+  Logger.info(
     `🔍 Query #${queryCount} [${currentOperation}]: ${e.query.substring(
       0,
       100
     )}${e.query.length > 100 ? "..." : ""}`
   );
-  console.log(`📝 Params: ${e.params}`);
-  console.log(`⏱️  Duration: ${e.duration}ms`);
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  Logger.info(`📝 Params: ${e.params}`);
+  Logger.info(`⏱️  Duration: ${e.duration}ms`);
+  Logger.info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 });
 
 // Middleware para contar queries y trackear operaciones
@@ -52,8 +53,8 @@ prisma.$extends({
           queryCount = 0; // Reset counter para nueva operación
           requestStartTime = Date.now();
           currentOperation = `${model.toUpperCase()}.${operation}`;
-          console.log(`\n🆕 NEW INVENTORY OPERATION: ${currentOperation}`);
-          console.log("═══════════════════════════════════════════════════");
+          Logger.info(`\n🆕 NEW INVENTORY OPERATION: ${currentOperation}`);
+          Logger.info("═══════════════════════════════════════════════════");
         }
 
         const result = await query(args);
@@ -63,21 +64,21 @@ prisma.$extends({
           // Esperar un momento para capturar todas las queries relacionadas
           setTimeout(() => {
             const totalTime = Date.now() - requestStartTime;
-            console.log("═══════════════════════════════════════════════════");
-            console.log(`📊 INVENTORY OPERATION SUMMARY: ${currentOperation}`);
-            console.log(`🔢 Total Queries: ${queryCount}`);
-            console.log(`⏱️  Total Time: ${totalTime}ms`);
-            console.log(
+            Logger.info("═══════════════════════════════════════════════════");
+            Logger.info(`📊 INVENTORY OPERATION SUMMARY: ${currentOperation}`);
+            Logger.info(`🔢 Total Queries: ${queryCount}`);
+            Logger.info(`⏱️  Total Time: ${totalTime}ms`);
+            Logger.info(
               `${queryCount > 2 ? "❌" : "✅"} N+1 Status: ${
                 queryCount > 2 ? "DETECTED - Consider optimization" : "OPTIMAL"
               }`
             );
             if (queryCount > 2) {
-              console.log(
+              Logger.info(
                 "💡 Expected: 1 query (materials with includes) + 1 query (count) = 2 total"
               );
             }
-            console.log(
+            Logger.info(
               "═══════════════════════════════════════════════════\n"
             );
           }, 100);
