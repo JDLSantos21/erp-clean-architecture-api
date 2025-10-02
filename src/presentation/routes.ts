@@ -5,7 +5,7 @@ import { EmployeeRoutes } from "./employee/routes";
 import { FuelRoutes } from "./fuel/routes";
 import { FuelAnalyticsRoutes } from "./fuel/analytics-routes";
 import { InventoryRoutes } from "./inventory/routes";
-import { MaintenanceRoutes } from "./maintenance/routes";
+import { MaintenanceRoutes } from "./vehicles/maintenance/routes";
 import { EquipmentReportRoutes } from "./equipment-reports/equipment-report.routes";
 import { CustomerRoutes } from "./customers/routes";
 
