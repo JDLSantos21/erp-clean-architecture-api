@@ -1,5 +1,5 @@
-import { DashboardSummary } from "../../entities/FuelAnalytics";
-import { FuelAnalyticsRepository } from "../../repositories/fuel-analytics.repository";
+import { DashboardSummary } from "../../entities";
+import { FuelAnalyticsRepository } from "../../repositories";
 
 interface GetDashboardSummaryUseCase {
   execute(): Promise<DashboardSummary>;

@@ -1,6 +1,6 @@
-import { CreateMaintenanceProcedureDto } from "../../dtos";
-import { VehicleMaintenanceRepository } from "../../repositories/vehicle-maintenance.repository";
-import { MaintenanceProcedure } from "../../entities/vehicle/maintenance/MaintenanceProcedure";
+import { CreateMaintenanceProcedureDto } from "../../../dtos";
+import { VehicleMaintenanceRepository } from "../../../repositories";
+import { MaintenanceProcedure } from "../../../entities";
 
 interface CreateMaintenanceProcedureUseCase {
   execute(data: CreateMaintenanceProcedureDto): Promise<MaintenanceProcedure>;

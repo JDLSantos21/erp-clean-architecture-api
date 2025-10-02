@@ -1,6 +1,6 @@
 import { VehicleMetricsDto } from "../../dtos";
-import { VehicleMetrics } from "../../entities/vehicle/VehicleAnalytics";
-import { FuelAnalyticsRepository } from "../../repositories/fuel-analytics.repository";
+import { VehicleMetrics } from "../../entities";
+import { FuelAnalyticsRepository } from "../../repositories";
 
 interface GetVehicleMetricsUseCase {
   execute(params: VehicleMetricsDto): Promise<VehicleMetrics>;

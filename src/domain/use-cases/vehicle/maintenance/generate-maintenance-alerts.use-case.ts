@@ -1,5 +1,5 @@
-import { VehicleMaintenanceRepository } from "../../repositories/vehicle-maintenance.repository";
-import { MaintenanceAlert } from "../../entities/vehicle/maintenance/MaintenanceAlert";
+import { VehicleMaintenanceRepository } from "../../../repositories";
+import { MaintenanceAlert } from "../../../entities";
 
 interface GenerateMaintenanceAlertsUseCase {
   execute(): Promise<MaintenanceAlert[]>;
@@ -17,7 +17,7 @@ export class GenerateMaintenanceAlerts
     const alerts =
       await this.vehicleMaintenanceRepository.generateMaintenanceAlerts();
 
-    // Opcional: Aquí podrías agregar lógica para enviar notificaciones
+    // Opcional: agregar lógica para enviar notificaciones
     // por email, push notifications, etc.
 
     return alerts;

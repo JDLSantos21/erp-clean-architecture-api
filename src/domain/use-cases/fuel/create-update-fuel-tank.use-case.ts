@@ -1,6 +1,6 @@
 import { CreateUpdateFuelTankDto } from "../../dtos";
-import { FuelTank } from "../../entities/Fuel";
-import { FuelRepository } from "../../repositories/fuel.repository";
+import { FuelTank } from "../../entities";
+import { FuelRepository } from "../../repositories";
 
 interface CreateUpdateFuelTankUseCaseI {
   execute(params: CreateUpdateFuelTankDto): Promise<FuelTank>;

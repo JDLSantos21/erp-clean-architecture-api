@@ -1,7 +1,7 @@
 import { CreateStockMoveDto } from "../../dtos";
-import { StockMove, StockMoveType } from "../../entities/Inventory";
-import { CustomError } from "../../errors/custom.errors";
-import { InventoryRepository } from "../../repositories/inventory.repository";
+import { StockMove } from "../../entities";
+import { CustomError } from "../../errors";
+import { InventoryRepository } from "../../repositories";
 
 interface CreateStockMoveUseCase {
   execute(data: CreateStockMoveDto): Promise<StockMove | null>;

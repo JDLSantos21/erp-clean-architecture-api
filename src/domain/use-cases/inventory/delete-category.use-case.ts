@@ -1,5 +1,5 @@
-import { CustomError } from "../../errors/custom.errors";
-import { InventoryRepository } from "../../repositories/inventory.repository";
+import { CustomError } from "../../errors";
+import { InventoryRepository } from "../../repositories";
 
 interface DeleteCategoryUseCase {
   execute(id: number): Promise<boolean>;
@@ -13,13 +13,11 @@ export class DeleteCategory implements DeleteCategoryUseCase {
 
     if (!category) throw new CustomError(404, "Categoría no encontrada");
 
-    const materials = await this.inventoryRepository.getMaterials(
-      {
-        categoryId: id,
-      },
-      10, //limit
-      0 //offset
-    );
+    const materials = await this.inventoryRepository.getMaterials({
+      filters: { categoryId: id },
+      limit: 10,
+      skip: 0,
+    });
 
     if (materials.total > 0) {
       throw new CustomError(

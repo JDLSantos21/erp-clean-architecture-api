@@ -1,7 +1,7 @@
 import { UpdateFuelConsumptionDto } from "../../dtos";
-import { FuelConsumption } from "../../entities/Fuel";
-import { CustomError } from "../../errors/custom.errors";
-import { FuelRepository } from "../../repositories/fuel.repository";
+import { FuelConsumption } from "../../entities";
+import { CustomError } from "../../errors";
+import { FuelRepository } from "../../repositories";
 
 interface UpdateFuelConsumptionUseCase {
   execute(

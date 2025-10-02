@@ -1,10 +1,11 @@
 import { CreateFuelConsumptionDto } from "../../dtos";
-import { FuelConsumption } from "../../entities/Fuel";
-import { CustomError } from "../../errors/custom.errors";
-import { FuelRepository } from "../../repositories/fuel.repository";
-import { VehicleRepository } from "../../repositories/vehicle.repository";
-import { EmployeeRepository } from "../../repositories/employee.repository";
-import { FuelTank } from "../../entities/Fuel";
+import { FuelConsumption, FuelTank } from "../../entities";
+import { CustomError } from "../../errors";
+import {
+  FuelRepository,
+  VehicleRepository,
+  EmployeeRepository,
+} from "../../repositories";
 
 interface CreateFuelConsumptionUseCase {
   execute(data: CreateFuelConsumptionDto): Promise<FuelConsumption>;

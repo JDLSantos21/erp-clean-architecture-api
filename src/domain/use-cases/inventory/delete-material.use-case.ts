@@ -1,5 +1,5 @@
-import { CustomError } from "../../errors/custom.errors";
-import { InventoryRepository } from "../../repositories/inventory.repository";
+import { CustomError } from "../../errors";
+import { InventoryRepository } from "../../repositories";
 
 interface DeleteMaterialUseCase {
   execute(id: number): Promise<boolean>;

@@ -1,6 +1,6 @@
-import { ProcessMaintenanceDto } from "../../dtos";
-import { VehicleRepository } from "../../repositories/vehicle.repository";
-import { VehicleMaintenance } from "../../entities/vehicle/maintenance/VehicleMaintenance";
+import { ProcessMaintenanceDto } from "../../../dtos";
+import { VehicleRepository } from "../../../repositories";
+import { VehicleMaintenance } from "../../../entities";
 
 interface ProcessMaintenanceCompletionUseCase {
   execute(

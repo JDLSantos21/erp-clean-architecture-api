@@ -1,6 +1,6 @@
 import { FuelMetricsDto } from "../../dtos";
-import { FuelMetrics } from "../../entities/FuelAnalytics";
-import { FuelAnalyticsRepository } from "../../repositories/fuel-analytics.repository";
+import { FuelMetrics } from "../../entities";
+import { FuelAnalyticsRepository } from "../../repositories";
 
 interface GetDashboardMetricsUseCase {
   execute(params: FuelMetricsDto): Promise<FuelMetrics>;

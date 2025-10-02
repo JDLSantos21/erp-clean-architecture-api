@@ -1,5 +1,5 @@
 import { DIContainer } from "../../infrastructure/di/container";
-import { ILogger } from "../services/logger.service";
+import { ILogger } from "../services";
 
 export class Logger {
   private static getLoggerInstance(): ILogger {

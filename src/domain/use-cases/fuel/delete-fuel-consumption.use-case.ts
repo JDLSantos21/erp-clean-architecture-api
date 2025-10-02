@@ -1,5 +1,5 @@
-import { CustomError } from "../../errors/custom.errors";
-import { FuelRepository } from "../../repositories/fuel.repository";
+import { CustomError } from "../../errors";
+import { FuelRepository } from "../../repositories";
 
 interface DeleteFuelConsumptionUseCase {
   execute(id: number): Promise<void>;

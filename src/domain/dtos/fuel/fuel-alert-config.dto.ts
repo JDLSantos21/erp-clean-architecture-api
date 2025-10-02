@@ -1,5 +1,3 @@
-import { Validators } from "../../../config";
-
 export class FuelAlertConfigDto {
   constructor(
     public lowFuelThreshold: number,

@@ -1,7 +1,7 @@
 import { CreateFuelTankRefillDto } from "../../dtos";
-import { FuelRefill } from "../../entities/Fuel";
-import { CustomError } from "../../errors/custom.errors";
-import { FuelRepository } from "../../repositories/fuel.repository";
+import { FuelRefill } from "../../entities";
+import { CustomError } from "../../errors";
+import { FuelRepository } from "../../repositories";
 
 interface CreateFuelTankRefillUseCase {
   execute(data: CreateFuelTankRefillDto): Promise<FuelRefill>;

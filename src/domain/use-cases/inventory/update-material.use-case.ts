@@ -1,7 +1,7 @@
-import { InventoryRepository } from "../../repositories/inventory.repository";
-import { CustomError } from "../../errors/custom.errors";
+import { InventoryRepository } from "../../repositories";
+import { CustomError } from "../../errors";
 import { UpdateMaterialDto } from "../../dtos";
-import { Material } from "../../entities/Inventory";
+import { Material } from "../../entities";
 import { StatusCode } from "../../constants";
 
 interface UpdateMaterialUseCase {
