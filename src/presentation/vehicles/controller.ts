@@ -10,7 +10,11 @@ import { Request, Response } from "express";
 import { BaseController } from "../shared/base.controller";
 
 export class VehicleController extends BaseController {
-  constructor(private readonly vehicleRepository: VehicleRepository) {
+  constructor(
+    private readonly createVehicleUseCase: CreateVehicle,
+    private readonly updateVehicleUseCase: UpdateVehicle,
+    private readonly vehicleRepository: VehicleRepository
+  ) {
     super();
   }
 
@@ -22,7 +26,7 @@ export class VehicleController extends BaseController {
         return this.handleError(CustomError.badRequest(error), res, req);
       }
 
-      const vehicle = await new CreateVehicle(this.vehicleRepository).execute(
+      const vehicle = await this.createVehicleUseCase.execute(
         registerVehicleDto!
       );
       this.handleCreated(res, vehicle, req);
@@ -79,7 +83,7 @@ export class VehicleController extends BaseController {
         return this.handleError(CustomError.badRequest(error), res, req);
       }
 
-      const vehicle = await new UpdateVehicle(this.vehicleRepository).execute(
+      const vehicle = await this.updateVehicleUseCase.execute(
         id,
         registerVehicleDto!
       );

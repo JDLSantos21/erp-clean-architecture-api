@@ -12,6 +12,7 @@ import {
   UpdateMaterialDto,
   MaterialQueryDto,
   StatusCode,
+  FilterParams,
 } from "../../domain";
 import { buildWhere, InventoryMapper } from "../mappers";
 import { PrismaClient } from "@prisma/client";
@@ -274,10 +275,9 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
   }
 
   async getMaterials(
-    filters: Omit<MaterialQueryDto, "page" | "limit">,
-    limit: number,
-    skip: number
+    filterParams: FilterParams<MaterialQueryDto>
   ): Promise<{ materials: Material[]; total: number }> {
+    const { filters, limit, skip } = filterParams;
     const { stockLessThan, stockGreaterThan, ...DbFieldsFilters } = filters;
     const where = buildWhere(DbFieldsFilters, ["name"]);
 
@@ -316,10 +316,9 @@ export class InventoryDatasourceImpl extends InventoryDatasource {
   }
 
   async getStockMoves(
-    filters: Omit<StockMoveQueryDto, "page" | "limit">,
-    limit: number,
-    skip: number
+    filterParams: FilterParams<StockMoveQueryDto>
   ): Promise<{ stockMoves: StockMove[]; total: number }> {
+    const { filters, limit, skip } = filterParams;
     const { materialName, ...DbFieldsFilters } = filters;
     const where = buildWhere(DbFieldsFilters, ["type", "description"], "date");
 

@@ -12,13 +12,12 @@ import {
   StockMove,
   Unit,
 } from "../entities/Inventory";
+import { FilterParams } from "../types";
 
 export abstract class InventoryRepository {
   abstract createMaterial(data: CreateMaterialDto): Promise<Material>;
   abstract getMaterials(
-    filters: Omit<MaterialQueryDto, "page" | "limit">,
-    limit: number,
-    skip: number
+    filterParams: FilterParams<MaterialQueryDto>
   ): Promise<{ materials: Material[]; total: number }>;
   abstract getMaterialById(
     id: number,
@@ -31,9 +30,7 @@ export abstract class InventoryRepository {
   abstract deleteMaterial(id: number): Promise<boolean>;
   abstract createStockMove(data: CreateStockMoveDto): Promise<StockMove | null>;
   abstract getStockMoves(
-    filters: Omit<StockMoveQueryDto, "page" | "limit">,
-    limit: number,
-    skip: number
+    filterParams: FilterParams<StockMoveQueryDto>
   ): Promise<{ stockMoves: StockMove[]; total: number }>;
   abstract getStockMoveById(id: number): Promise<StockMove | null>;
   abstract getMaterialByName(name: string): Promise<Material | null>;

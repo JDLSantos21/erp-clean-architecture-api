@@ -14,7 +14,13 @@ import { Request, Response } from "express";
 import { BaseController } from "../shared/base.controller";
 
 export class AuthController extends BaseController {
-  constructor(private readonly authRepository: AuthRepository) {
+  constructor(
+    private readonly registerUserUseCase: RegisterUser,
+    private readonly loginUserUseCase: LoginUser,
+    private readonly createRoleUseCase: CreateRole,
+    private readonly setRolesToUserUseCase: SetRolesToUser,
+    private readonly authRepository: AuthRepository
+  ) {
     super();
   }
 
@@ -23,12 +29,11 @@ export class AuthController extends BaseController {
       const [error, createRoleDto] = CreateRoleDto.create(req.body.role_name);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const role = await new CreateRole(this.authRepository).execute(
-        createRoleDto!
-      );
+      const role = await this.createRoleUseCase.execute(createRoleDto!);
       this.handleCreated(res, role, req);
     } catch (error) {
       this.handleError(error, res, req);
@@ -40,10 +45,11 @@ export class AuthController extends BaseController {
       const [error, registerUserDto] = RegisterUserDto.create(req.body);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const userToken = await new RegisterUser(this.authRepository).execute(
+      const userToken = await this.registerUserUseCase.execute(
         registerUserDto!
       );
       this.handleCreated(res, userToken, req);
@@ -57,12 +63,11 @@ export class AuthController extends BaseController {
       const [error, loginUserDto] = LoginUserDto.create(req.body);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const sessionData = await new LoginUser(this.authRepository).execute(
-        loginUserDto!
-      );
+      const sessionData = await this.loginUserUseCase.execute(loginUserDto!);
       this.handleSuccess(res, sessionData, req);
     } catch (error) {
       this.handleError(error, res, req);
@@ -96,12 +101,13 @@ export class AuthController extends BaseController {
       const [error, dto] = SetRolesToUserDto.create(roles, paramUserId);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
       const { roleIds, userId } = dto!;
 
-      await new SetRolesToUser(this.authRepository).execute(userId, roleIds);
+      await this.setRolesToUserUseCase.execute(userId, roleIds);
       this.handleNoContent(res);
     } catch (error) {
       this.handleError(error, res, req);

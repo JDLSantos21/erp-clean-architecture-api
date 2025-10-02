@@ -9,7 +9,7 @@ import {
   CustomerRepository,
   CustomError,
   DeleteCustomer,
-  Logger,
+  DeleteCustomerAddress,
   RegisterCustomerDTO,
   UpdateCustomer,
   UpdateCustomerAddress,
@@ -18,12 +18,21 @@ import {
   UpdateCustomerPhone,
   UpdateCustomerPhoneDto,
 } from "../../domain";
-import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
 import { Validators } from "../../config";
 import { BaseController } from "../shared/base.controller";
 
 export class CustomerController extends BaseController {
-  constructor(private readonly customerRepository: CustomerRepository) {
+  constructor(
+    private readonly createCustomerUseCase: CreateCustomer,
+    private readonly updateCustomerUseCase: UpdateCustomer,
+    private readonly deleteCustomerUseCase: DeleteCustomer,
+    private readonly createCustomerAddressUseCase: CreateCustomerAddress,
+    private readonly updateCustomerAddressUseCase: UpdateCustomerAddress,
+    private readonly deleteCustomerAddressUseCase: DeleteCustomerAddress,
+    private readonly createCustomerPhoneUseCase: CreateCustomerPhone,
+    private readonly updateCustomerPhoneUseCase: UpdateCustomerPhone,
+    private readonly customerRepository: CustomerRepository
+  ) {
     super();
   }
 
@@ -32,12 +41,11 @@ export class CustomerController extends BaseController {
       const [error, dto] = RegisterCustomerDTO.create(req.body);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const customer = await new CreateCustomer(
-        this.customerRepository
-      ).execute(dto!);
+      const customer = await this.createCustomerUseCase.execute(dto!);
       this.handleCreated(res, customer, req);
     } catch (error) {
       this.handleError(error, res, req);
@@ -49,25 +57,21 @@ export class CustomerController extends BaseController {
       const [error, dto] = CustomerQueryDTO.create(req.query);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
       const { page, limit, ...filters } = dto!;
       const skip = (page - 1) * limit;
 
-      const response = await this.customerRepository.list({
-        filters,
-        limit,
-        skip,
-      });
-      const { customers, total } = response;
+      const filterParams = { filters, limit, skip };
 
-      this.handleSuccessWithPagination(
-        res,
-        customers,
-        { page, limit, total },
-        req
+      const { customers, total } = await this.customerRepository.list(
+        filterParams
       );
+
+      const pagination = { page, limit, total };
+      this.handleSuccessWithPagination(res, customers, pagination, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
@@ -78,21 +82,15 @@ export class CustomerController extends BaseController {
       const customerId = req.params.id;
 
       if (!Validators.uuid.test(customerId)) {
-        return this.handleError(
-          CustomError.badRequest("ID de cliente inválido"),
-          res,
-          req
-        );
+        const customError = CustomError.badRequest("ID de cliente inválido");
+        return this.handleError(customError, res, req);
       }
 
       const customer = await this.customerRepository.findById(customerId);
 
       if (!customer) {
-        return this.handleError(
-          CustomError.notFound("Cliente no encontrado"),
-          res,
-          req
-        );
+        const customError = CustomError.notFound("Cliente no encontrado");
+        return this.handleError(customError, res, req);
       }
 
       this.handleSuccess(res, customer, req);
@@ -107,13 +105,15 @@ export class CustomerController extends BaseController {
       const [error, dto] = UpdateCustomerDTO.create(req.body, customerId);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const response = await new UpdateCustomer(
-        this.customerRepository
-      ).execute(customerId, dto!);
-      this.handleSuccess(res, response, req);
+      const customer = await this.updateCustomerUseCase.execute(
+        customerId,
+        dto!
+      );
+      this.handleSuccess(res, customer, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
@@ -124,14 +124,11 @@ export class CustomerController extends BaseController {
       const customerId = req.params.id;
 
       if (!Validators.uuid.test(customerId)) {
-        return this.handleError(
-          CustomError.badRequest("ID de cliente inválido"),
-          res,
-          req
-        );
+        const customError = CustomError.badRequest("ID de cliente inválido");
+        return this.handleError(customError, res, req);
       }
 
-      await new DeleteCustomer(this.customerRepository).execute(customerId);
+      await this.deleteCustomerUseCase.execute(customerId);
       this.handleNoContent(res);
     } catch (error) {
       this.handleError(error, res, req);
@@ -148,12 +145,14 @@ export class CustomerController extends BaseController {
       );
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const address = await new CreateCustomerAddress(
-        this.customerRepository
-      ).execute(customerId, dto!);
+      const address = await this.createCustomerAddressUseCase.execute(
+        customerId,
+        dto!
+      );
       this.handleSuccess(res, address, req);
     } catch (error) {
       this.handleError(error, res, req);
@@ -165,11 +164,8 @@ export class CustomerController extends BaseController {
       const customerId = req.params.id;
 
       if (!Validators.uuid.test(customerId)) {
-        return this.handleError(
-          CustomError.badRequest("ID de cliente inválido"),
-          res,
-          req
-        );
+        const customError = CustomError.badRequest("ID de cliente inválido");
+        return this.handleError(customError, res, req);
       }
 
       const addresses = await this.customerRepository.listAddresses(customerId);
@@ -185,12 +181,14 @@ export class CustomerController extends BaseController {
       const [error, dto] = UpdateCustomerAddressDTO.create(req.body, addressId);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const response = await new UpdateCustomerAddress(
-        this.customerRepository
-      ).execute(addressId, dto!);
+      const response = await this.updateCustomerAddressUseCase.execute(
+        addressId,
+        dto!
+      );
       this.handleSuccess(res, response, req);
     } catch (error) {
       this.handleError(error, res, req);
@@ -198,19 +196,16 @@ export class CustomerController extends BaseController {
   };
 
   deleteCustomerAddress = async (req: Request, res: Response) => {
+    //todo
     try {
       const addressId = Number(req.params.addressId);
 
       if (!Validators.isPositiveInteger(addressId)) {
-        return this.handleError(
-          CustomError.badRequest("ID de dirección inválido"),
-          res,
-          req
-        );
+        const customError = CustomError.badRequest("ID de dirección inválido");
+        return this.handleError(customError, res, req);
       }
 
-      // Implementar el caso de uso para eliminar dirección
-      // await new DeleteCustomerAddress(this.customerRepository).execute(addressId);
+      await this.deleteCustomerAddressUseCase.execute(addressId);
       this.handleNoContent(res);
     } catch (error) {
       this.handleError(error, res, req);
@@ -225,12 +220,14 @@ export class CustomerController extends BaseController {
       const [error, dto] = CreateCustomerPhoneDTO.create(req.body, customerId);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const phone = await new CreateCustomerPhone(
-        this.customerRepository
-      ).execute(customerId, dto!);
+      const phone = await this.createCustomerPhoneUseCase.execute(
+        customerId,
+        dto!
+      );
       this.handleSuccess(res, phone, req);
     } catch (error) {
       this.handleError(error, res, req);
@@ -242,11 +239,8 @@ export class CustomerController extends BaseController {
       const customerId = req.params.id;
 
       if (!Validators.uuid.test(customerId)) {
-        return this.handleError(
-          CustomError.badRequest("ID de cliente inválido"),
-          res,
-          req
-        );
+        const customError = CustomError.badRequest("ID de cliente inválido");
+        return this.handleError(customError, res, req);
       }
 
       const phones = await this.customerRepository.listPhones(customerId);
@@ -262,12 +256,14 @@ export class CustomerController extends BaseController {
       const [error, dto] = UpdateCustomerPhoneDto.create(req.body, phoneId);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const response = await new UpdateCustomerPhone(
-        this.customerRepository
-      ).execute(phoneId, dto!);
+      const response = await this.updateCustomerPhoneUseCase.execute(
+        phoneId,
+        dto!
+      );
       this.handleSuccess(res, response, req);
     } catch (error) {
       this.handleError(error, res, req);

@@ -11,6 +11,7 @@ import {
   Unit,
   UpdateMaterialDto,
   MaterialQueryDto,
+  FilterParams,
 } from "../../domain";
 
 export class InventoryRepositoryImpl implements InventoryRepository {
@@ -65,19 +66,15 @@ export class InventoryRepositoryImpl implements InventoryRepository {
   }
 
   getMaterials(
-    filters: Omit<MaterialQueryDto, "page" | "limit">,
-    limit: number,
-    skip: number
+    filterParams: FilterParams<MaterialQueryDto>
   ): Promise<{ materials: Material[]; total: number }> {
-    return this.InventoryDatasource.getMaterials(filters, limit, skip);
+    return this.InventoryDatasource.getMaterials(filterParams);
   }
 
   getStockMoves(
-    filters: Omit<StockMoveQueryDto, "page" | "limit">,
-    limit: number,
-    skip: number
+    filterParams: FilterParams<StockMoveQueryDto>
   ): Promise<{ stockMoves: StockMove[]; total: number }> {
-    return this.InventoryDatasource.getStockMoves(filters, limit, skip);
+    return this.InventoryDatasource.getStockMoves(filterParams);
   }
 
   getStockMoveById(id: number): Promise<StockMove | null> {

@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { MaintenanceProcedureController } from "./maintenance-procedure.controller";
-import { DIContainer } from "../../infrastructure";
+import { MaintenanceProcedureController } from "./controller";
+import { DIContainer } from "../../../infrastructure";
 
 export class MaintenanceRoutes {
   static get routes(): Router {

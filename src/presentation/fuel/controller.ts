@@ -1,4 +1,4 @@
-import { BcryptAdapter } from "../../config";
+import { BcryptAdapter, Validators } from "../../config";
 import {
   CreateFuelConsumption,
   CreateFuelConsumptionDto,
@@ -22,6 +22,10 @@ import { BaseController } from "../shared/base.controller";
 
 export class FuelController extends BaseController {
   constructor(
+    private readonly createFuelConsumptionUseCase: CreateFuelConsumption,
+    private readonly updateFuelConsumptionUseCase: UpdateFuelConsumption,
+    private readonly deleteFuelConsumptionUseCase: DeleteFuelConsumption,
+    private readonly createFuelTankRefillUseCase: CreateFuelTankRefill,
     private readonly fuelRepository: FuelRepository,
     private readonly vehicleRepository: VehicleRepository,
     private readonly employeeRepository: EmployeeRepository
@@ -34,13 +38,17 @@ export class FuelController extends BaseController {
       const [error, dto] = CreateFuelTankDto.create(req.body);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
       const currentTank = await this.fuelRepository.getTankCurrentStatus();
 
       if (currentTank) {
-        throw CustomError.badRequest("Ya existe un tanque de combustible");
+        const customError = CustomError.conflict(
+          "Ya existe un tanque de combustible"
+        );
+        this.handleError(customError, res, req);
       }
 
       const fuelTank = await this.fuelRepository.createFuelTank(dto!);
@@ -57,14 +65,11 @@ export class FuelController extends BaseController {
       const [error, dto] = CreateFuelConsumptionDto.create(req.body, user!.id);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const consumption = await new CreateFuelConsumption(
-        this.fuelRepository,
-        this.vehicleRepository,
-        this.employeeRepository
-      ).execute(dto!);
+      const consumption = await this.createFuelConsumptionUseCase.execute(dto!);
 
       this.handleCreated(res, consumption, req);
     } catch (error) {
@@ -77,23 +82,24 @@ export class FuelController extends BaseController {
       const { id } = req.params;
       const idNum = Number(id);
 
-      if (!id || isNaN(idNum) || idNum <= 0) {
-        return this.handleError(
-          CustomError.badRequest("El ID de consumo no es válido"),
-          res,
-          req
+      if (!Validators.isPositiveInteger(idNum)) {
+        const customError = CustomError.badRequest(
+          "El ID de consumo no es válido"
         );
+        return this.handleError(customError, res, req);
       }
 
       const [error, dto] = UpdateFuelConsumptionDto.create(req.body);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const consumption = await new UpdateFuelConsumption(
-        this.fuelRepository
-      ).execute(idNum, dto!);
+      const consumption = await this.updateFuelConsumptionUseCase.execute(
+        idNum,
+        dto!
+      );
 
       this.handleSuccess(res, consumption, req);
     } catch (error) {
@@ -107,12 +113,11 @@ export class FuelController extends BaseController {
       const [error, dto] = CreateFuelTankRefillDto.create(req.body, user!.id);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const refill = await new CreateFuelTankRefill(
-        this.fuelRepository
-      ).execute(dto!);
+      const refill = await this.createFuelTankRefillUseCase.execute(dto!);
 
       this.handleCreated(res, refill, req);
     } catch (error) {
@@ -136,14 +141,20 @@ export class FuelController extends BaseController {
       const [error, dto] = ResetFuelTankDto.create(req.body, user!.id);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
       const { password, userId } = dto!;
 
       const isValid = BcryptAdapter.compare(password, user!.password);
 
-      if (!isValid) throw new CustomError(401, "La contraseña es incorrecta");
+      if (!isValid) {
+        const customError = CustomError.unauthorized(
+          "La contraseña es incorrecta"
+        );
+        return this.handleError(customError, res, req);
+      }
 
       const reset = await this.fuelRepository.resetFuelTankLevel(userId);
       this.handleSuccess(res, reset, req);
@@ -157,25 +168,19 @@ export class FuelController extends BaseController {
       const [error, dto] = FuelTankRefillQueryDto.create(req.query);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
       const { page, limit, ...filters } = dto!;
       const skip = (page - 1) * limit;
 
+      const filterParams = { filters, limit, skip };
       const { refills, totalPages } =
-        await this.fuelRepository.findAllTankRefills({
-          skip,
-          limit,
-          filters,
-        });
+        await this.fuelRepository.findAllTankRefills(filterParams);
 
-      this.handleSuccessWithPagination(
-        res,
-        refills,
-        { page, limit, total: totalPages },
-        req
-      );
+      const pagination = { page, limit, total: totalPages };
+      this.handleSuccessWithPagination(res, refills, pagination, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
@@ -190,7 +195,8 @@ export class FuelController extends BaseController {
       );
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
       const refill = await this.fuelRepository.getFuelTankRefillById(
@@ -199,11 +205,10 @@ export class FuelController extends BaseController {
       );
 
       if (!refill) {
-        return this.handleError(
-          CustomError.notFound("Reabastecimiento no encontrado"),
-          res,
-          req
+        const customError = CustomError.notFound(
+          "Reabastecimiento no encontrado"
         );
+        return this.handleError(customError, res, req);
       }
 
       this.handleSuccess(res, refill, req);
@@ -217,25 +222,20 @@ export class FuelController extends BaseController {
       const [error, dto] = FuelConsumptionQueryDto.create(req.query);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
       const { page, limit, ...filters } = dto!;
       const skip = (page - 1) * limit;
 
-      const { consumptions, totalPages } =
-        await this.fuelRepository.findAllFuelConsumptions({
-          skip,
-          limit,
-          filters,
-        });
+      const filterParams = { filters, limit, skip };
 
-      this.handleSuccessWithPagination(
-        res,
-        consumptions,
-        { page, limit, total: totalPages },
-        req
-      );
+      const { consumptions, totalPages } =
+        await this.fuelRepository.findAllFuelConsumptions(filterParams);
+
+      const pagination = { page, limit, total: totalPages };
+      this.handleSuccessWithPagination(res, consumptions, pagination, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
@@ -245,7 +245,7 @@ export class FuelController extends BaseController {
     try {
       const { id } = req.params;
 
-      await new DeleteFuelConsumption(this.fuelRepository).execute(Number(id));
+      await this.deleteFuelConsumptionUseCase.execute(Number(id));
 
       this.handleNoContent(res);
     } catch (error) {

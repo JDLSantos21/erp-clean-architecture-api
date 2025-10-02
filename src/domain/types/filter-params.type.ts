@@ -1,5 +1,5 @@
 export interface FilterParams<T> {
-  filters?: Partial<T>;
-  skip?: number;
-  limit?: number;
+  filters: Partial<T>;
+  skip: number;
+  limit: number;
 }

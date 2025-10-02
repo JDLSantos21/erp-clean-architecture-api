@@ -17,9 +17,18 @@ import {
 import { Request, Response } from "express";
 import { Validators } from "../../config";
 import { BaseController } from "../shared/base.controller";
+import { error } from "console";
 
 export class InventoryController extends BaseController {
-  constructor(private readonly inventoryRepository: InventoryRepository) {
+  constructor(
+    private readonly createMaterialUseCase: CreateMaterial,
+    private readonly updateMaterialUseCase: UpdateMaterial,
+    private readonly deleteMaterialUseCase: DeleteMaterial,
+    private readonly createStockMoveUseCase: CreateStockMove,
+    private readonly deleteUnitUseCase: DeleteUnit,
+    private readonly deleteCategoryUseCase: DeleteCategory,
+    private readonly inventoryRepository: InventoryRepository
+  ) {
     super();
   }
 
@@ -30,12 +39,11 @@ export class InventoryController extends BaseController {
       const [error, dto] = CreateStockMoveDto.create(req.body, userId);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const movement = await new CreateStockMove(
-        this.inventoryRepository
-      ).execute(dto!);
+      const movement = await this.createStockMoveUseCase.execute(dto!);
 
       this.handleCreated(res, movement, req);
     } catch (error) {
@@ -47,12 +55,11 @@ export class InventoryController extends BaseController {
       const [error, dto] = CreateMaterialDto.create(req.body);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const material = await new CreateMaterial(
-        this.inventoryRepository
-      ).execute(dto!);
+      const material = await this.createMaterialUseCase.execute(dto!);
 
       this.handleCreated(res, material, req);
     } catch (error) {
@@ -66,12 +73,11 @@ export class InventoryController extends BaseController {
       const [error, dto] = UpdateMaterialDto.create(req.body);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const material = await new UpdateMaterial(
-        this.inventoryRepository
-      ).execute(id, dto!);
+      const material = await this.updateMaterialUseCase.execute(id, dto!);
 
       this.handleSuccess(res, material, req);
     } catch (error) {
@@ -83,15 +89,14 @@ export class InventoryController extends BaseController {
     try {
       const id = Number(req.params.id);
 
-      if (isNaN(id) || id <= 0) {
-        return this.handleError(
-          CustomError.badRequest("El ID del material no es válido"),
-          res,
-          req
+      if (!Validators.isPositiveInteger(id)) {
+        const customError = CustomError.badRequest(
+          "El ID del material no es válido"
         );
+        return this.handleError(customError, res, req);
       }
 
-      await new DeleteMaterial(this.inventoryRepository).execute(id);
+      await this.deleteMaterialUseCase.execute(id);
       this.handleNoContent(res);
     } catch (error) {
       this.handleError(error, res, req);
@@ -103,11 +108,8 @@ export class InventoryController extends BaseController {
       const { name } = req.body;
 
       if (!name) {
-        return this.handleError(
-          CustomError.badRequest("El nombre es requerido"),
-          res,
-          req
-        );
+        const customError = CustomError.badRequest("El nombre es requerido");
+        return this.handleError(customError, res, req);
       }
 
       const category = await this.inventoryRepository.getMaterialCategoryByName(
@@ -115,11 +117,8 @@ export class InventoryController extends BaseController {
       );
 
       if (category) {
-        return this.handleError(
-          CustomError.badRequest("La categoría ya existe"),
-          res,
-          req
-        );
+        const customError = CustomError.badRequest("La categoría ya existe");
+        return this.handleError(customError, res, req);
       }
 
       const newCategory = await this.inventoryRepository.createMaterialCategory(
@@ -136,7 +135,8 @@ export class InventoryController extends BaseController {
       const [error, dto] = CreateUnitDto.create(req.body);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
       const unit = await this.inventoryRepository.createUnit(dto!);
@@ -151,20 +151,20 @@ export class InventoryController extends BaseController {
       const [error, dto] = MaterialQueryDto.create(req.query);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
       const { page, limit, ...filters } = dto!;
       const skip = (page - 1) * limit;
 
+      const filterParams = { filters, limit, skip };
+
       const { materials, total } = await this.inventoryRepository.getMaterials(
-        filters,
-        limit,
-        skip
+        filterParams
       );
 
       const pagination = { limit, page, total };
-
       this.handleSuccessWithPagination(res, materials, pagination, req);
     } catch (error) {
       this.handleError(error, res, req);
@@ -175,12 +175,11 @@ export class InventoryController extends BaseController {
     try {
       const id = Number(req.params.id);
 
-      if (isNaN(id) || id <= 0) {
-        return this.handleError(
-          CustomError.badRequest("El ID del material no es válido"),
-          res,
-          req
+      if (!Validators.isPositiveInteger(id)) {
+        const customError = CustomError.badRequest(
+          "El ID del material no es válido"
         );
+        return this.handleError(customError, res, req);
       }
 
       const { moves } = req.query;
@@ -201,17 +200,18 @@ export class InventoryController extends BaseController {
       const [error, dto] = StockMoveQueryDto.create(req.query);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
       const { page, limit, ...filters } = dto!;
       const skip = (page - 1) * limit;
 
+      const filterParams = { filters, limit, skip };
       const { stockMoves, total } =
-        await this.inventoryRepository.getStockMoves(filters, limit, skip);
+        await this.inventoryRepository.getStockMoves(filterParams);
 
       const pagination = { limit, page, total };
-
       this.handleSuccessWithPagination(res, stockMoves, pagination, req);
     } catch (error) {
       this.handleError(error, res, req);
@@ -223,13 +223,10 @@ export class InventoryController extends BaseController {
       const id = Number(req.params.id);
 
       if (!Validators.isPositiveInteger(id)) {
-        return this.handleError(
-          CustomError.badRequest(
-            "El ID del movimiento de inventario no es válido"
-          ),
-          res,
-          req
+        const customError = CustomError.badRequest(
+          "El ID del movimiento de inventario no es válido"
         );
+        return this.handleError(customError, res, req);
       }
 
       const stockMove = await this.inventoryRepository.getStockMoveById(id);
@@ -253,14 +250,12 @@ export class InventoryController extends BaseController {
       const id = Number(req.params.id);
 
       if (!Validators.isPositiveInteger(id)) {
-        return this.handleError(
-          CustomError.badRequest("El ID de la unidad no es válido"),
-          res,
-          req
+        const customError = CustomError.badRequest(
+          "El ID de la unidad no es válido"
         );
+        return this.handleError(customError, res, req);
       }
-
-      await new DeleteUnit(this.inventoryRepository).execute(id);
+      await this.deleteUnitUseCase.execute(id);
       this.handleNoContent(res);
     } catch (error) {
       this.handleError(error, res, req);
@@ -281,14 +276,13 @@ export class InventoryController extends BaseController {
       const id = Number(req.params.id);
 
       if (!Validators.isPositiveInteger(id)) {
-        return this.handleError(
-          CustomError.badRequest("El ID de la categoría no es válido"),
-          res,
-          req
+        const customError = CustomError.badRequest(
+          "El ID de la categoría no es válido"
         );
+        return this.handleError(customError, res, req);
       }
 
-      await new DeleteCategory(this.inventoryRepository).execute(id);
+      await this.deleteCategoryUseCase.execute(id);
       this.handleNoContent(res);
     } catch (error) {
       this.handleError(error, res, req);

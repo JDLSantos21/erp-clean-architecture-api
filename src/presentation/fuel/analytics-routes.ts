@@ -16,14 +16,9 @@ export class FuelAnalyticsRoutes {
 
     router.use(authMiddleware.validateJWT);
     router.use(PermissionMiddleware.elevateRole);
-
-    // Dashboard Summary - métricas principales
     router.get("/dashboard/summary", controller.getDashboardSummary);
-
-    // Dashboard Metrics - métricas por período
     router.get("/dashboard/metrics", controller.getDashboardMetrics);
 
-    // Vehicle-specific metrics
     router.get(
       "/dashboard/vehicle/:vehicleId/metrics",
       controller.getVehicleMetrics

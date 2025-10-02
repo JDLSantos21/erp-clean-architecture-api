@@ -22,8 +22,6 @@ export class EmployeeRoutes {
     router.get("/:id", controller.findById);
     router.delete("/:id", controller.deleteEmployee);
 
-    // Public routes
-
     return router;
   }
 }

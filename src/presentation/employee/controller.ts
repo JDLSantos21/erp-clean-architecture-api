@@ -12,7 +12,11 @@ import { Validators } from "../../config/validators";
 import { BaseController } from "../shared/base.controller";
 
 export class EmployeeController extends BaseController {
-  constructor(private readonly employeeRepository: EmployeeRepository) {
+  constructor(
+    private readonly createEmployeeUseCase: CreateEmployee,
+    private readonly updateEmployeeUseCase: UpdateEmployeeUseCase,
+    private readonly employeeRepository: EmployeeRepository
+  ) {
     super();
   }
 
@@ -21,12 +25,11 @@ export class EmployeeController extends BaseController {
       const [error, dto] = CreateEmployeeDto.create(req.body);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const employee = await new CreateEmployee(
-        this.employeeRepository
-      ).execute(dto!);
+      const employee = await this.createEmployeeUseCase.execute(dto!);
       this.handleCreated(res, employee, req);
     } catch (error) {
       this.handleError(error, res, req);
@@ -38,24 +41,21 @@ export class EmployeeController extends BaseController {
       const [error, dto] = EmployeeQueryDto.create(req.query);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
       const { page, limit, ...filters } = dto!;
       const skip = (page - 1) * limit;
 
-      const { employees, total } = await this.employeeRepository.findAll({
-        skip,
-        limit,
-        filters,
-      });
+      const filterParams = { filters, limit, skip };
 
-      this.handleSuccessWithPagination(
-        res,
-        employees,
-        { limit, page, total },
-        req
+      const { employees, total } = await this.employeeRepository.findAll(
+        filterParams
       );
+
+      const pagination = { page, limit, total };
+      this.handleSuccessWithPagination(res, employees, pagination, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
@@ -66,21 +66,17 @@ export class EmployeeController extends BaseController {
       const { id } = req.params;
 
       if (!id || !Validators.uuid.test(id)) {
-        return this.handleError(
-          CustomError.badRequest("Código de empleado no válido"),
-          res,
-          req
+        const customError = CustomError.badRequest(
+          "Código de empleado no válido"
         );
+        return this.handleError(customError, res, req);
       }
 
       const employee = await this.employeeRepository.findById(id);
 
       if (!employee) {
-        return this.handleError(
-          CustomError.notFound("Empleado no encontrado"),
-          res,
-          req
-        );
+        const customError = CustomError.notFound("Empleado no encontrado");
+        return this.handleError(customError, res, req);
       }
 
       this.handleSuccess(res, employee, req);
@@ -94,11 +90,10 @@ export class EmployeeController extends BaseController {
       const { id } = req.params;
 
       if (!id || !Validators.uuid.test(id)) {
-        return this.handleError(
-          CustomError.badRequest("Código de empleado no válido"),
-          res,
-          req
+        const customError = CustomError.badRequest(
+          "Código de empleado no válido"
         );
+        return this.handleError(customError, res, req);
       }
 
       await this.employeeRepository.delete(id);
@@ -113,22 +108,20 @@ export class EmployeeController extends BaseController {
       const { id } = req.params;
 
       if (!id || !Validators.uuid.test(id)) {
-        return this.handleError(
-          CustomError.badRequest("Código de empleado no válido"),
-          res,
-          req
+        const customError = CustomError.badRequest(
+          "Código de empleado no válido"
         );
+        return this.handleError(customError, res, req);
       }
 
       const [error, dto] = UpdateEmployeeDto.create(req.body);
 
       if (error) {
-        return this.handleError(CustomError.badRequest(error), res, req);
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
       }
 
-      const employee = await new UpdateEmployeeUseCase(
-        this.employeeRepository
-      ).execute(id, dto!);
+      const employee = await this.updateEmployeeUseCase.execute(id, dto!);
       this.handleSuccess(res, employee, req);
     } catch (error) {
       this.handleError(error, res, req);
