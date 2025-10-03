@@ -1,6 +1,5 @@
 import { FuelMetricsDto, VehicleMetricsDto } from "../dtos";
-import { FuelMetrics, DashboardSummary } from "../entities";
-import { VehicleMetrics } from "../entities/vehicle/VehicleAnalytics";
+import { FuelMetrics, DashboardSummary, VehicleMetrics } from "../entities";
 
 export abstract class FuelAnalyticsRepository {
   abstract getDashboardSummary(): Promise<DashboardSummary>;

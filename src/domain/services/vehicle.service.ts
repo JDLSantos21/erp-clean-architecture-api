@@ -1,5 +1,5 @@
-import { VehicleRepository } from "../repositories/vehicle.repository";
-import { CustomError } from "../errors/custom.errors";
+import { VehicleRepository } from "../repositories";
+import { CustomError } from "../errors";
 
 export class VehicleService {
   constructor(private readonly vehicleRepository: VehicleRepository) {}

@@ -1,5 +1,5 @@
 import { Validators } from "../../../config";
-import { StockMoveType } from "../../entities/Inventory";
+import { StockMoveType } from "../../entities";
 
 export class CreateStockMoveDto {
   constructor(

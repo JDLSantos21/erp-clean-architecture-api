@@ -1,4 +1,4 @@
-import { Validators } from "../../../config/validators";
+import { Validators } from "../../../config";
 import { EMPLOYEE_POSITION } from "../../constants";
 import { EmployeePosition as EmployeePositionT } from "../../entities";
 

@@ -1,9 +1,6 @@
-import { start } from "repl";
 import { Validators } from "../../../config";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "../../constants";
-import { StockMoveType } from "../../entities/Inventory";
-import { CustomError } from "../../errors/custom.errors";
-import e from "express";
+import { StockMoveType } from "../../entities";
 
 export class StockMoveQueryDto {
   constructor(
@@ -37,7 +34,7 @@ export class StockMoveQueryDto {
     const materialId = Number(material_id);
 
     if (userId && !Validators.uuid.test(userId))
-      throw CustomError.badRequest("El ID de usuario no es válido");
+      return ["El ID de usuario no es válido", undefined];
 
     if (materialId && !Validators.isPositiveInteger(materialId))
       return ["El ID de material no es válido", undefined];

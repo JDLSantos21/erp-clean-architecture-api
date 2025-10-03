@@ -1,7 +1,6 @@
-import { Customer } from "../customer/Customer";
-import { CustomerAddress } from "../customer/CustomerAddress";
+import { Customer, CustomerAddress } from "../customer";
 import Entity from "../entity";
-import { User } from "../Users";
+import { User } from "../auth";
 
 export enum OrderStatus {
   PENDIENTE = "PENDIENTE",

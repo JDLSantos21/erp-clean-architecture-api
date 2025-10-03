@@ -1,5 +1,5 @@
 import AUTH_CONSTANTS from "../../constants/auth.contants";
-import { RoleName } from "../../entities/Users";
+import { RoleName } from "../../entities";
 
 export class CreateRoleDto {
   private constructor(public role: RoleName) {}

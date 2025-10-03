@@ -1,5 +1,5 @@
 import Entity from "../entity";
-import { User } from "../Users";
+import { User } from "../auth";
 
 export class EquipmentLocation extends Entity<EquipmentLocation> {
   id!: number;

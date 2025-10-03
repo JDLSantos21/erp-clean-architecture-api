@@ -1,7 +1,5 @@
-import { CreateRoleDto } from "../dtos/user/create-role.dto";
-import { LoginUserDto } from "../dtos/user/login-user.dto";
-import { RegisterUserDto } from "../dtos/user/register-user.dto";
-import { Role, User } from "../entities/Users";
+import { RegisterUserDto, LoginUserDto, CreateRoleDto } from "../dtos";
+import { Role, User } from "../entities";
 
 export abstract class AuthDataSource {
   abstract createRole(dto: CreateRoleDto): Promise<Role>;

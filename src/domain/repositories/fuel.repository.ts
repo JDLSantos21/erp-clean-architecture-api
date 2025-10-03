@@ -5,9 +5,9 @@ import {
   FuelConsumptionQueryDto,
   FuelTankRefillQueryDto,
   UpdateFuelConsumptionDto,
+  CreateFuelTankDto,
+  UpdateFuelTankDto,
 } from "../dtos";
-import { CreateFuelTankDto } from "../dtos/fuel/create-fuel-tank.dto";
-import { UpdateFuelTankDto } from "../dtos/fuel/update-fuel-tank.dto";
 import {
   FuelConsumption,
   FuelRefill,

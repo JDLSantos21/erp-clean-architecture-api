@@ -1,7 +1,7 @@
 import { UpdateCustomerPhoneDto } from "../../dtos";
 import { CustomerPhone } from "../../entities";
 import { CustomerRepository } from "../../repositories";
-import { CustomError } from "../../errors/custom.errors";
+import { CustomError } from "../../errors";
 
 interface UpdateCustomerPhoneUseCase {
   execute(

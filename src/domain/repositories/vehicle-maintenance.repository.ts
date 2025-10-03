@@ -4,11 +4,12 @@ import {
   CreateMaintenanceDto,
   MaintenanceQueryDto,
 } from "../dtos";
-import { MaintenanceProcedure } from "../entities/vehicle/maintenance/MaintenanceProcedure";
-import { VehicleMaintenance } from "../entities/vehicle/maintenance/VehicleMaintenance";
-import { MaintenanceAlert } from "../entities/vehicle/maintenance/MaintenanceAlert";
-import { MaintenanceSchedule } from "../entities/vehicle/maintenance/MaintenanceSchedule";
-import { Vehicle } from "../entities/vehicle/Vehicle";
+import {
+  MaintenanceProcedure,
+  VehicleMaintenance,
+  MaintenanceAlert,
+  MaintenanceSchedule,
+} from "../entities";
 
 export abstract class VehicleMaintenanceRepository {
   // Procedimientos de Mantenimiento

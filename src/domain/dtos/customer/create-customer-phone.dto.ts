@@ -1,5 +1,5 @@
 import { Validators } from "../../../config";
-import { PhoneTypes } from "../../constants/customer.constants";
+import { PhoneTypes } from "../../constants";
 import { PhoneType } from "../../entities";
 
 export class CreateCustomerPhoneDTO {

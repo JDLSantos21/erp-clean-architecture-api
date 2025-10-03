@@ -5,12 +5,12 @@ import {
   UpdateMaintenanceItemDto,
   VehicleQueryDto,
 } from "../dtos";
-import { Vehicle } from "../entities/vehicle/Vehicle";
 import {
   VehicleMaintenance,
   VehicleMaintenanceItem,
-} from "../entities/vehicle/maintenance/VehicleMaintenance";
-import { MaintenanceSchedule } from "../entities/vehicle/maintenance/MaintenanceSchedule";
+  MaintenanceSchedule,
+  Vehicle,
+} from "../entities";
 import { FilterParams } from "../types";
 
 export abstract class VehicleDatasource {

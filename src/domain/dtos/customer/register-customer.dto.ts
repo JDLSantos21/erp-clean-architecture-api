@@ -1,6 +1,5 @@
 import { Validators } from "../../../config";
-import { CreateCustomerPhoneDTO } from "./create-customer-phone.dto";
-import { CreateCustomerAddressDTO } from "./create-customer-address.dto";
+import { CreateCustomerPhoneDTO, CreateCustomerAddressDTO } from "../../dtos";
 
 export class RegisterCustomerDTO {
   private constructor(

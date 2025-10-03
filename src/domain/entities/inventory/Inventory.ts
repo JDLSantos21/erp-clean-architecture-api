@@ -1,5 +1,5 @@
-import Entity from "./entity";
-import { User } from "./Users";
+import Entity from "../entity";
+import { User } from "../auth";
 
 export class MaterialCategory extends Entity<MaterialCategory> {
   id!: number;

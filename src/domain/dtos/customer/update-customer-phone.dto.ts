@@ -1,7 +1,7 @@
 import { Validators } from "../../../config";
-import { PhoneTypes } from "../../constants/customer.constants";
+import { PhoneTypes } from "../../constants";
 import { PhoneType } from "../../entities";
-import { CustomError } from "../../errors/custom.errors";
+import { CustomError } from "../../errors";
 
 export class UpdateCustomerPhoneDto {
   private constructor(

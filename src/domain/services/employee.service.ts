@@ -1,6 +1,6 @@
-import { Employee } from "../entities/Employee";
-import { CustomError } from "../errors/custom.errors";
-import { EmployeeRepository } from "../repositories/employee.repository";
+import { Employee } from "../entities";
+import { CustomError } from "../errors";
+import { EmployeeRepository } from "../repositories";
 
 export class EmployeeService {
   private readonly excludeId: string | undefined;

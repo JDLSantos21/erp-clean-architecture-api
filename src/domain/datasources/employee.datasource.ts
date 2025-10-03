@@ -3,7 +3,7 @@ import {
   EmployeeQueryDto,
   UpdateEmployeeDto,
 } from "../dtos";
-import { Employee } from "../entities/Employee";
+import { Employee } from "../entities";
 import { FilterParams } from "../types";
 
 export abstract class EmployeeDatasource {

@@ -1,6 +1,6 @@
 import { StatusCode } from "../../constants";
-import { CustomError } from "../../errors/custom.errors";
-import { AuthRepository } from "../../repositories/auth.repository";
+import { CustomError } from "../../errors";
+import { AuthRepository } from "../../repositories";
 
 interface SetRolesToUserUseCase {
   execute(userId: string, roles: number[]): Promise<void>;

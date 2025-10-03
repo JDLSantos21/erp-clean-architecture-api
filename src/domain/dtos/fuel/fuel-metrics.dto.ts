@@ -1,5 +1,5 @@
 import { periodOptions } from "../../constants";
-import { Period } from "../../entities/vehicle/VehicleAnalytics";
+import { Period } from "../../entities";
 
 export class FuelMetricsDto {
   constructor(

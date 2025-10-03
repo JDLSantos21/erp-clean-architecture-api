@@ -1,6 +1,6 @@
-import { Customer } from "../customer/Customer";
+import { Customer } from "../customer";
 import Entity from "../entity";
-import { User } from "../Users";
+import { User } from "../auth";
 import { EquipmentModel } from "./EquipmentModel";
 
 export type RequestStatus =

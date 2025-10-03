@@ -5,19 +5,13 @@ import {
   UpdateMaintenanceItemDto,
   VehicleQueryDto,
 } from "../dtos";
-import { Vehicle } from "../entities/vehicle/Vehicle";
 import {
+  MaintenanceSchedule,
   VehicleMaintenance,
   VehicleMaintenanceItem,
-} from "../entities/vehicle/maintenance/VehicleMaintenance";
-import { MaintenanceSchedule } from "../entities/vehicle/maintenance/MaintenanceSchedule";
+  Vehicle,
+} from "../entities";
 import { FilterParams } from "../types";
-
-interface getVehiclesParams {
-  filters?: Partial<Vehicle>;
-  limit: number;
-  skip: number;
-}
 
 export abstract class VehicleRepository {
   abstract createVehicle(data: RegisterVehicleDto): Promise<Vehicle>;

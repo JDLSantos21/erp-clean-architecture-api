@@ -1,5 +1,3 @@
-import { CustomError } from "../../errors/custom.errors";
-
 export class FuelTankRefillByIdDto {
   constructor(public id: number, public consumptions?: boolean) {}
 
@@ -9,7 +7,7 @@ export class FuelTankRefillByIdDto {
   ): [string?, FuelTankRefillByIdDto?] {
     const { id } = object;
 
-    if (!id) throw CustomError.badRequest("Falta el ID del llenado");
+    if (!id) return ["El ID es obligatorio", undefined];
 
     const refill_id = Number(id);
 

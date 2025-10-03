@@ -4,14 +4,9 @@ import {
   CreateMaterialDto,
   CreateUnitDto,
   MaterialQueryDto,
+  StockMoveQueryDto,
 } from "../dtos";
-import { StockMoveQueryDto } from "../dtos/inventory/stock-move-query.dto";
-import {
-  Material,
-  MaterialCategory,
-  StockMove,
-  Unit,
-} from "../entities/Inventory";
+import { Material, MaterialCategory, StockMove, Unit } from "../entities";
 import { FilterParams } from "../types";
 
 export abstract class InventoryRepository {

@@ -1,4 +1,4 @@
-import { RoleName } from "../entities/Users";
+import { RoleName } from "../entities";
 
 export const ROLE_HIERARCHY = {
   ADMIN: 6,

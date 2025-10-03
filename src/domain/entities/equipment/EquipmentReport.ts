@@ -1,6 +1,6 @@
-import { Customer } from "../customer/Customer";
+import { Customer } from "../customer";
 import Entity from "../entity";
-import { User } from "../Users";
+import { User } from "../auth";
 import { Equipment } from "./Equipment";
 
 export type ReportType = "PREVENTIVO" | "CORRECTIVO" | "FALLA";

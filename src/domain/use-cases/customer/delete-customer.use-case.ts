@@ -1,4 +1,4 @@
-import { CustomError } from "../../errors/custom.errors";
+import { CustomError } from "../../errors";
 import { CustomerRepository } from "../../repositories";
 
 interface DeleteCustomerUseCase {

@@ -1,4 +1,4 @@
-import { Validators } from "../../../../config/validators";
+import { Validators } from "../../../../config";
 
 export class GetVehicleCurrentMileageDto {
   constructor(public vehicleId: string) {}

@@ -32,6 +32,7 @@ export class LoginUser implements LoginUserUseCase {
     const TOKEN_DURATION_IN_MILISECONS = 7200;
 
     const user = await this.authRepository.login(loginUserDto);
+
     const { id, name, lastName, roles } = user;
 
     const token = await this.signToken({ id }, TOKEN_DURATION_IN_MILISECONS);

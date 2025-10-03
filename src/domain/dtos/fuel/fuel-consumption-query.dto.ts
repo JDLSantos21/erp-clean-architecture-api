@@ -1,5 +1,3 @@
-// filters for search (vehicle_tag), vehicle_id, driver_id, consumed_at (date range, [start_at, end_at]), limit, page.
-
 import { Validators } from "../../../config";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "../../constants";
 

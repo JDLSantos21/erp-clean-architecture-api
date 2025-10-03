@@ -1,7 +1,7 @@
 import {
   getHttpStatusCode,
   createErrorMessage,
-} from "../constants/error-codes.constants";
+} from "../../domain/constants/error-codes.constants";
 
 export class CustomError extends Error {
   constructor(
