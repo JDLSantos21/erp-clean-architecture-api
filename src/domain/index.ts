@@ -28,3 +28,6 @@ export * from "./utils/logger.helper";
 
 //constants
 export * from "./constants/index";
+
+//value objects
+export * from "./value-object/index";

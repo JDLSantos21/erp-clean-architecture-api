@@ -17,10 +17,15 @@
     "allowImportingTsExtensions": false,
     "noEmit": false
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "dev/examples/create-employee-with-vo.example.ts",
+    "dev/examples/__tests__"
+  ],
   "exclude": [
     "node_modules",
     "dist",
+    "dev/",
     "**/__tests__/**",
     "**/_tests_/**",
     "**/*.test.ts",
