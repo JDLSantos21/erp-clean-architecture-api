@@ -7,3 +7,4 @@ export * from "./vehicle.datasource";
 export * from "./inventory.datasource";
 export * from "./fuel.datasource";
 export * from "./vehicle-maintenance.datasource";
+export * from "./order.datasource";

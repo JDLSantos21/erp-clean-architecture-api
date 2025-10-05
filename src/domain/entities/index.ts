@@ -14,5 +14,6 @@ export * from "./customer/index";
 export * from "./auth/index";
 export * from "./employee/index";
 export * from "./vehicle/index";
+export * from "./order/index";
 
 export { default as Entity } from "./entity";

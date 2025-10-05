@@ -47,3 +47,11 @@ export * from "./customer/update-customer.dto";
 export * from "./customer/update-customer-phone.dto";
 export * from "./customer/customer-query.dto";
 export * from "./customer/update-customer-address.dto";
+
+//Orders
+
+export * from "./order/create-order-item.dto";
+export * from "./order/create-order.dto";
+export * from "./order/order-query.dto";
+export * from "./order/update-order.dto";
+export * from "./order/assign-order-to-employee.dto";

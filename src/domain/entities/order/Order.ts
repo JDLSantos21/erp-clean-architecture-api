@@ -1,19 +1,19 @@
 import { Customer, CustomerAddress } from "../customer";
 import Entity from "../entity";
 import { User } from "../auth";
+import { IntegerId, TrackingCode } from "../../value-object";
 
-export enum OrderStatus {
-  PENDIENTE = "PENDIENTE",
-  PREPARANDO = "PREPARANDO",
-  DESPACHADO = "DESPACHADO",
-  ENTREGADO = "ENTREGADO",
-  CANCELADO = "CANCELADO",
-  DEVUELTO = "DEVUELTO",
-}
+export type OrderStatus =
+  | "PENDIENTE"
+  | "PREPARANDO"
+  | "DESPACHADO"
+  | "ENTREGADO"
+  | "CANCELADO"
+  | "DEVUELTO";
 
 export class Order extends Entity<Order> {
-  id!: number;
-  trackingCode!: string;
+  id!: IntegerId;
+  trackingCode!: TrackingCode;
   customerId!: string;
   customer?: Customer;
   customerAddressId!: number;
@@ -33,27 +33,27 @@ export class Order extends Entity<Order> {
 
   // Métodos de negocio
   public isPending(): boolean {
-    return this.getCurrentStatus() === OrderStatus.PENDIENTE;
+    return this.getCurrentStatus() === "PENDIENTE";
   }
 
   public isPreparing(): boolean {
-    return this.getCurrentStatus() === OrderStatus.PREPARANDO;
+    return this.getCurrentStatus() === "PREPARANDO";
   }
 
   public isDispatched(): boolean {
-    return this.getCurrentStatus() === OrderStatus.DESPACHADO;
+    return this.getCurrentStatus() === "DESPACHADO";
   }
 
   public isDelivered(): boolean {
-    return this.getCurrentStatus() === OrderStatus.ENTREGADO;
+    return this.getCurrentStatus() === "ENTREGADO";
   }
 
   public isCancelled(): boolean {
-    return this.getCurrentStatus() === OrderStatus.CANCELADO;
+    return this.getCurrentStatus() === "CANCELADO";
   }
 
   public isReturned(): boolean {
-    return this.getCurrentStatus() === OrderStatus.DEVUELTO;
+    return this.getCurrentStatus() === "DEVUELTO";
   }
 
   public isScheduled(): boolean {
@@ -192,8 +192,8 @@ export class Order extends Entity<Order> {
   // Este método requeriría acceso a la relación statusHistory
   // Por ahora retorna un estado por defecto basado en las fechas
   private getCurrentStatus(): OrderStatus {
-    if (this.deliveredDate) return OrderStatus.ENTREGADO;
-    if (this.assignedToId) return OrderStatus.DESPACHADO;
-    return OrderStatus.PENDIENTE;
+    if (this.deliveredDate) return "ENTREGADO";
+    if (this.assignedToId) return "DESPACHADO";
+    return "PENDIENTE";
   }
 }

@@ -6,3 +6,4 @@ export * from "./fuel.repository";
 export * from "./fuel-analytics.repository";
 export * from "./inventory.repository";
 export * from "./vehicle-maintenance.repository";
+export * from "./order.repository";
