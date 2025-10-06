@@ -7,6 +7,7 @@ export * from "./inventory/routes";
 export * from "./vehicles/maintenance/routes";
 export * from "./equipment-reports/equipment-report.routes";
 export * from "./customers/routes";
+export * from "./order/routes";
 
 //controllers
 export * from "./auth/controller";
@@ -17,5 +18,6 @@ export * from "./fuel/controller";
 export * from "./fuel/analytics-controller";
 export * from "./inventory/controller";
 export * from "./vehicles/maintenance/controller";
+export * from "./order/controller";
 
 export * from "./middlewares/index";

@@ -12,6 +12,7 @@ import {
   registerEmployeeModule,
   registerInventoryModule,
   registerMaintenanceModule,
+  registerOrderModule,
 } from "./modules";
 
 export class DIContainer implements IDIContainer {
@@ -63,6 +64,7 @@ export class DIContainer implements IDIContainer {
     registerEmployeeModule(this);
     registerInventoryModule(this);
     registerMaintenanceModule(this);
+    registerOrderModule(this);
   }
 
   // Registro de servicios core de infraestructura

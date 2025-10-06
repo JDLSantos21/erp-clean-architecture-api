@@ -17,6 +17,10 @@ export class OrderStatusHistory extends Entity<OrderStatusHistory> {
 
   // Métodos de negocio
 
+  public getStatus(): OrderStatus {
+    return this.status;
+  }
+
   public wasChangedTo(newStatus: OrderStatus): boolean {
     return this.status === newStatus;
   }

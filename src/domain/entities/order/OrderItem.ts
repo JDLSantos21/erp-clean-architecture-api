@@ -1,22 +1,27 @@
 import { IntegerId } from "../../value-object";
 import Entity from "../entity";
+import { Product } from "./Product";
 
 export class OrderItem extends Entity<OrderItem> {
   id!: IntegerId;
   orderId!: IntegerId;
   productId!: IntegerId;
   requestedQuantity!: number;
-  deliveredQuantity?: number;
-  notes?: string;
+  deliveredQuantity?: number | null;
+  notes?: string | null;
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
+
+  // Relaciones
+  product?: Product;
 
   // Métodos de negocio
 
   public isFullyDelivered(): boolean {
     return (
       this.deliveredQuantity !== undefined &&
+      this.deliveredQuantity !== null &&
       this.deliveredQuantity >= this.requestedQuantity
     );
   }

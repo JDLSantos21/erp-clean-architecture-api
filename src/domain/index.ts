@@ -20,8 +20,7 @@ export * from "./use-cases/index";
 export * from "./errors/custom.errors";
 
 //services
-export * from "./services/vehicle.service";
-export * from "./services/logger.service";
+export * from "./services/index";
 
 //utils
 export * from "./utils/logger.helper";

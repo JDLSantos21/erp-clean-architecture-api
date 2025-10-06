@@ -42,3 +42,7 @@ export * from "./customer/update-customer-phone.use-case";
 export * from "./customer/update-customer.use-case";
 export * from "./customer/update-customer-address.use-case";
 export * from "./customer/delete-customer-address.use-case";
+
+//orders
+export * from "./order/create-order.use-case";
+export * from "./order/update-order.use-case";

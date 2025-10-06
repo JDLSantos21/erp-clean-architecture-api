@@ -45,9 +45,24 @@ export function buildWhere<T extends Record<string, any>>(
 
   // Handle search filters
   if (search && searchFields.length > 0) {
-    where.OR = searchFields.map((field) => ({
-      [field]: { contains: search, mode: "insensitive" },
-    }));
+    where.OR = searchFields.map((field) => {
+      const parts = field.split(".");
+
+      if (parts.length === 1) {
+        return {
+          [field]: { contains: search, mode: "insensitive" },
+        };
+      }
+
+      const [relation, ...nestedPath] = parts;
+      let condition: any = { contains: search, mode: "insensitive" };
+
+      for (let i = nestedPath.length - 1; i >= 0; i--) {
+        condition = { [nestedPath[i]]: condition };
+      }
+
+      return { [relation]: condition };
+    });
   }
 
   return where;

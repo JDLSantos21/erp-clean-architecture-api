@@ -2,6 +2,8 @@ import { Customer, CustomerAddress } from "../customer";
 import Entity from "../entity";
 import { User } from "../auth";
 import { IntegerId, TrackingCode } from "../../value-object";
+import { OrderStatusHistory } from "./OrderStatusHistory";
+import { OrderItem } from "./OrderItem";
 
 export type OrderStatus =
   | "PENDIENTE"
@@ -16,20 +18,24 @@ export class Order extends Entity<Order> {
   trackingCode!: TrackingCode;
   customerId!: string;
   customer?: Customer;
-  customerAddressId!: number;
-  customerAddress?: CustomerAddress;
+  customerAddressId!: number | null;
+  customerAddress?: CustomerAddress | null;
   orderDate!: Date;
-  scheduledDate?: Date;
-  deliveredDate?: Date;
+  scheduledDate?: Date | null;
+  deliveredDate?: Date | null;
   createdById!: string;
-  createdByUser?: User;
-  assignedToId?: string;
-  assignedToUser?: User;
-  notes?: string;
-  deliveryNotes?: string;
+  createdByUser?: User | null;
+  assignedToId?: string | null;
+  assignedToUser?: User | null;
+  notes?: string | null;
+  deliveryNotes?: string | null;
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
+
+  // Relaciones
+  statusHistory?: OrderStatusHistory[];
+  orderItems?: OrderItem[];
 
   // Métodos de negocio
   public isPending(): boolean {
@@ -189,11 +195,9 @@ export class Order extends Entity<Order> {
     return summary;
   }
 
-  // Este método requeriría acceso a la relación statusHistory
-  // Por ahora retorna un estado por defecto basado en las fechas
-  private getCurrentStatus(): OrderStatus {
-    if (this.deliveredDate) return "ENTREGADO";
-    if (this.assignedToId) return "DESPACHADO";
-    return "PENDIENTE";
+  public getCurrentStatus(): OrderStatus | undefined {
+    if (this.statusHistory !== undefined && this.statusHistory.length > 0) {
+      return this.statusHistory[0].status;
+    }
   }
 }

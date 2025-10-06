@@ -8,18 +8,23 @@ import { Order, OrderStatus } from "../entities";
 import { FilterParams, OrderStatusUpdate } from "../types";
 import { IntegerId } from "../value-object";
 
+export interface CreateOrderI extends CreateOrderDto {
+  trackingCode: string;
+}
+
 export abstract class OrderDatasource {
-  abstract create(data: CreateOrderDto): Promise<Order>;
-  abstract update(id: IntegerId, data: UpdateOrderDto): Promise<Order | null>;
+  abstract create(data: CreateOrderI): Promise<Order>;
+  abstract update(id: IntegerId, data: UpdateOrderDto): Promise<Order>;
   abstract delete(id: IntegerId): Promise<void>;
-  abstract list(filterParams: FilterParams<OrderQueryDto>): Promise<Order[]>;
-  abstract findOne(id: IntegerId): Promise<Order | null>;
-  abstract findOneByTrackingCode(trackingCode: string): Promise<Order | null>;
-  abstract generateTrackingCode(year: number): Promise<string>;
+  abstract list(
+    filterParams: FilterParams<OrderQueryDto>
+  ): Promise<{ orders: Order[]; total: number }>;
+  abstract findOne(id: IntegerId): Promise<Order>;
+  abstract findOneByTrackingCode(trackingCode: string): Promise<Order>;
   abstract updateStatus(
     id: IntegerId,
     status: OrderStatusUpdate
-  ): Promise<Order | null>;
+  ): Promise<void>;
   abstract getOrderCurrentStatus(id: IntegerId): Promise<OrderStatus | null>;
   abstract assignOrderToEmployee(data: AssignOrderToEmployeeDto): Promise<void>;
   abstract unassignOrder(orderId: IntegerId): Promise<void>;
@@ -28,5 +33,4 @@ export abstract class OrderDatasource {
     filterParams: FilterParams<OrderQueryDto>
   ): Promise<Order[]>;
   abstract trackingCodeExists(trackingCode: string): Promise<boolean>;
-  abstract cancelOrder(id: IntegerId): Promise<Order | null>;
 }
