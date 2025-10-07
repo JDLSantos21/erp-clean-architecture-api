@@ -1,7 +1,7 @@
 import { OrderStatus } from "../entities";
 
 export interface OrderStatusUpdate {
-  status: OrderStatus;
+  name: OrderStatus;
   description?: string;
-  changedById: string;
+  userId: string;
 }

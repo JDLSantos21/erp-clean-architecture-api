@@ -7,3 +7,4 @@ export * from "./customer.repository.impl";
 export * from "./inventory.repository.impl";
 export * from "./employee.repository.impl";
 export * from "./order.repository.impl";
+export * from "./product.repository.impl";

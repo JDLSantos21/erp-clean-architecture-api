@@ -10,6 +10,7 @@ import {
   OrderStatus,
   OrderStatusUpdate,
   UpdateOrderDto,
+  UpdateOrderStatusDto,
 } from "../../domain";
 
 export class OrderRepositoryImpl implements OrderRepository {
@@ -47,8 +48,8 @@ export class OrderRepositoryImpl implements OrderRepository {
     return this.orderDatasource.trackingCodeExists(trackingCode);
   }
 
-  async updateStatus(id: IntegerId, status: OrderStatusUpdate): Promise<void> {
-    return this.orderDatasource.updateStatus(id, status);
+  async updateStatus(data: UpdateOrderStatusDto): Promise<void> {
+    return this.orderDatasource.updateStatus(data);
   }
 
   async getOrderCurrentStatus(id: IntegerId): Promise<OrderStatus | null> {

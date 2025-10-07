@@ -1,2 +1,3 @@
 export * from "./Order";
-export * from "./Orderitem";
+export * from "./OrderItem";
+export * from "./Product";

@@ -47,6 +47,7 @@ export class OrderResponseDto {
   }
 
   static fromEntity(entity: Order): OrderResponseDto {
+    console.log(entity.statusHistory);
     return new OrderResponseDto({
       id: entity.id.value,
       trackingCode: entity.trackingCode.value,

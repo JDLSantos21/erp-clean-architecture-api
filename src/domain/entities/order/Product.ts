@@ -4,10 +4,10 @@ import Entity from "../entity";
 export class Product extends Entity<Product> {
   id!: IntegerId;
   name!: string;
-  description?: string;
+  description?: string | null;
   unit!: string;
-  size?: string;
-  sku?: string;
+  size?: string | null;
+  sku?: string | null;
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;

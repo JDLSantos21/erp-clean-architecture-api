@@ -8,12 +8,13 @@ export class OrderStatusHistory extends Entity<OrderStatusHistory> {
   orderId!: UUID;
   status!: OrderStatus;
   description?: string;
-  changedAt!: Date;
-  changedById!: UUID;
+  userId!: UUID;
+  createdAt!: Date;
+  updatedAt!: Date;
 
   // relations
   order?: Order;
-  changedByUser?: User;
+  createdByUser?: User;
 
   // Métodos de negocio
 
@@ -26,15 +27,15 @@ export class OrderStatusHistory extends Entity<OrderStatusHistory> {
   }
 
   public wasChangedBy(userId: UUID): boolean {
-    return this.changedById === userId;
+    return this.userId === userId;
   }
 
   public wasChangedBefore(date: Date): boolean {
-    return this.changedAt < date;
+    return this.createdAt < date;
   }
 
   public wasChangedAfter(date: Date): boolean {
-    return this.changedAt > date;
+    return this.createdAt > date;
   }
 
   public hasDescription(): boolean {

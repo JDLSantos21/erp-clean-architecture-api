@@ -669,9 +669,9 @@ model Product {
   id            Int      @id @default(autoincrement())
   name          String   @db.VarChar(100)
   description   String?  @db.Text
-  unit          String   @db.VarChar(50) // unidad (fundas, litros, kilos, etc.)
-  size          String?  @db.VarChar(50) // tamaño (1kg, 500ml, etc.)
-  sku           String?  @unique @db.VarChar(50) // código del producto
+  unit          String   @db.VarChar(50)
+  size          String?  @db.VarChar(50)
+  sku           String?  @unique @db.VarChar(50)
   isActive      Boolean  @default(true) @map("is_active")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
@@ -746,13 +746,14 @@ model OrderStatusHistory {
   id          Int         @id @default(autoincrement())
   orderId     Int         @map("order_id")
   status      OrderStatus
-  description String?     @db.Text // Descripción o nota del cambio de estado
-  changedBy   String      @map("changed_by") @db.Uuid // Usuario que cambió el estado
-  changedAt   DateTime    @default(now()) @map("changed_at")
+  description String?     @db.Text
+  userId   String      @map("user_id") @db.Uuid
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
 
   // Relaciones
   order       Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  changedByUser User      @relation("OrderStatusChangedBy", fields: [changedBy], references: [id])
+  changedByUser User      @relation("OrderStatusChangedBy", fields: [userId], references: [id])
 
   @@map("order_status_history")
 }

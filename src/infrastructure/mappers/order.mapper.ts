@@ -12,7 +12,7 @@ import { CustomerMapper } from "./customer.mapper";
 export class OrderMapper {
   static OrderFromDtoToPersistence(order: CreateOrderI) {
     const {
-      createdById,
+      userId,
       customerAddressId,
       customerId,
       orderItems,
@@ -25,7 +25,7 @@ export class OrderMapper {
     const mainOrderInfo = {
       customerId: customerId.value,
       customerAddressId: customerAddressId.value,
-      createdById: createdById.value,
+      createdById: userId.value,
       scheduledDate: scheduledDate ? scheduledDate.toDate() : undefined,
       deliveryNotes,
       notes,

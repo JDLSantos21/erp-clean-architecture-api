@@ -1,27 +1,32 @@
 import { OrderStatusArray } from "../../constants";
 import { OrderStatusUpdate } from "../../types";
-import { IntegerId } from "../../value-object";
+import { IntegerId, UUID } from "../../value-object";
 
 export class UpdateOrderStatusDto {
-  constructor(public order_id: IntegerId, public status: OrderStatusUpdate) {}
+  constructor(
+    public orderId: IntegerId,
+    public status: OrderStatusUpdate,
+    public userId: UUID
+  ) {}
 
   static create(object: {
     [key: string]: any;
   }): [error?: string, dto?: UpdateOrderStatusDto] {
-    const { order_id, status } = object;
+    const { order_id, status, user_id } = object;
 
     if (!order_id) return ["El ID del pedido es requerido", undefined];
     if (!status) return ["El estado es requerido", undefined];
+    if (!user_id) return ["El ID del usuario es requerido", undefined];
 
     if (typeof status !== "object" || Array.isArray(status)) {
       return ["El formato del estado es inválido", undefined];
     }
 
-    if (!status.status) {
+    if (!status.name) {
       return ["El campo 'status' es requerido", undefined];
     }
 
-    if (!OrderStatusArray.includes(status.status)) {
+    if (!OrderStatusArray.includes(status.name)) {
       return [
         `El estado debe ser uno de los siguientes: ${OrderStatusArray.join(
           ", "
@@ -45,7 +50,9 @@ export class UpdateOrderStatusDto {
 
     try {
       const orderIdVO = IntegerId.create(order_id);
-      const dto = new UpdateOrderStatusDto(orderIdVO, status);
+      const userId = UUID.create(user_id);
+
+      const dto = new UpdateOrderStatusDto(orderIdVO, status, userId);
       return [undefined, dto];
     } catch (error: any) {
       return [error.message, undefined];

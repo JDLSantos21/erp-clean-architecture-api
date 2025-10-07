@@ -4,13 +4,13 @@ import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
 
 export abstract class BaseController {
   protected handleError = (error: unknown, res: Response, req: Request) => {
-    Logger.error("Controller Error: ", error);
-
     if (error instanceof CustomError) {
       return res
         .status(error.statusCode)
         .json(ResponseBuilder.error(error.statusCode, error.message, req));
     }
+
+    Logger.error("Controller Error:", error);
 
     return res
       .status(500)

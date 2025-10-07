@@ -90,6 +90,13 @@ export class Order extends Entity<Order> {
     this.assignedToId = userId;
   }
 
+  public canBeUnassigned(): boolean {
+    return (
+      this.isAssigned() &&
+      (this.isPending() || this.isPreparing() || this.isDispatched())
+    );
+  }
+
   public unassign(): void {
     if (!this.isAssigned()) {
       throw new Error("El pedido no está asignado");
@@ -121,7 +128,12 @@ export class Order extends Entity<Order> {
   }
 
   public canBeAssigned(): boolean {
-    return (this.isPending() || this.isPreparing()) && this.isActive;
+    const canAssign =
+      (this.isPending() || this.isPreparing() || this.isDispatched()) &&
+      this.isActive &&
+      !this.isAssigned();
+
+    return canAssign;
   }
 
   public canBeDelivered(): boolean {

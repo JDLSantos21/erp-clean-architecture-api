@@ -11,13 +11,14 @@ import {
   OrderStatus,
   OrderStatusUpdate,
   UpdateOrderDto,
+  UpdateOrderStatusDto,
 } from "../../domain";
 import { buildWhere, OrderMapper } from "../mappers";
 
 export class OrderDatasourceImpl extends OrderDatasource {
   private static readonly ORDER_INCLUDE: Prisma.OrderInclude = {
     statusHistory: {
-      orderBy: { changedAt: "desc" },
+      orderBy: { createdAt: "desc" },
     },
     orderItems: {
       include: {
@@ -51,17 +52,17 @@ export class OrderDatasourceImpl extends OrderDatasource {
           data: mainOrderInfo,
         });
 
-        prisma.orderItem.createMany({
+        await prisma.orderItem.createMany({
           data: orderItems.map((item) => ({
             ...item,
             orderId: createdOrder.id,
           })),
         });
 
-        prisma.orderStatusHistory.create({
+        await prisma.orderStatusHistory.create({
           data: {
             description: "Orden creada",
-            changedBy: data.createdById.value,
+            userId: data.userId.value,
             orderId: createdOrder.id,
             status: "PENDIENTE",
           },
@@ -82,6 +83,7 @@ export class OrderDatasourceImpl extends OrderDatasource {
 
       return OrderMapper.toDomain(createdOrder);
     } catch (error) {
+      console.log("error", error);
       throw CustomError.internalServer("Error al crear el pedido");
     }
   }
@@ -169,6 +171,7 @@ export class OrderDatasourceImpl extends OrderDatasource {
 
       return OrderMapper.toDomain(orderData);
     } catch (error) {
+      if (error instanceof CustomError) throw error;
       throw CustomError.internalServer("Ocurrió un error al buscar el pedido");
     }
   }
@@ -204,14 +207,15 @@ export class OrderDatasourceImpl extends OrderDatasource {
     }
   }
 
-  async updateStatus(id: IntegerId, status: OrderStatusUpdate): Promise<void> {
+  async updateStatus(data: UpdateOrderStatusDto): Promise<void> {
+    const { status: statusData, userId, orderId } = data;
     try {
       await this.prisma.orderStatusHistory.create({
         data: {
-          orderId: id.value,
-          changedBy: status.changedById,
-          description: status.description,
-          status: status.status,
+          orderId: orderId.value,
+          userId: userId.value,
+          status: statusData.name,
+          description: statusData.description,
         },
       });
     } catch (error) {
@@ -225,7 +229,7 @@ export class OrderDatasourceImpl extends OrderDatasource {
     try {
       const order = await this.prisma.order.findUnique({
         where: { id: id.value },
-        select: { statusHistory: { orderBy: { changedAt: "desc" }, take: 1 } },
+        select: { statusHistory: { orderBy: { createdAt: "desc" }, take: 1 } },
       });
 
       if (!order || order.statusHistory.length === 0) return null;
@@ -242,7 +246,7 @@ export class OrderDatasourceImpl extends OrderDatasource {
     try {
       await this.prisma.order.update({
         where: { id: data.orderId.value },
-        data: { assignedToId: data.employeeId.value },
+        data: { assignedToId: data.userId.value },
       });
     } catch (error) {
       throw CustomError.internalServer("Error al asignar el pedido");

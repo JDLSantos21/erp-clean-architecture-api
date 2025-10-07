@@ -20,4 +20,22 @@ export class Employee extends Entity<Employee> {
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
+
+  // Metodos de negocio
+
+  public getFullName(): string {
+    return `${this.name} ${this.lastName}`;
+  }
+
+  public activate(): void {
+    this.isActive = true;
+  }
+
+  public deactivate(): void {
+    this.isActive = false;
+  }
+
+  public isDriver(): boolean {
+    return this.position === "CHOFER";
+  }
 }

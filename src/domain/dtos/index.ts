@@ -54,4 +54,8 @@ export * from "./order/create-order-item.dto";
 export * from "./order/create-order.dto";
 export * from "./order/order-query.dto";
 export * from "./order/update-order.dto";
+export * from "./order/update-order-status.dto";
 export * from "./order/assign-order-to-employee.dto";
+
+// Order Products
+export * from "./order/product/create-order-product.dto";

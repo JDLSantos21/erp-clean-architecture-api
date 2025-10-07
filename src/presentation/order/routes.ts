@@ -13,8 +13,13 @@ export class OrderRoutes {
     router.use(authMiddleware.validateJWT);
 
     router.post("/", controller.createOrder);
+    router.get("/", controller.listOrders);
     router.patch("/:id", controller.updateOrder);
     router.get("/:id", controller.getOrderById);
+    router.post("/:id/assign", controller.assignOrderToEmployee);
+    router.post("/:id/clear-assignation", controller.clearOrderAssignation);
+    router.post("/:id/status", controller.updateOrderStatus);
+    router.get("/tracking/:trackingCode", controller.findOrderByTrackingCode);
     return router;
   }
 }

@@ -7,3 +7,4 @@ export * from "./inventory.datasource.impl";
 export * from "./vehicle.datasource.impl";
 export * from "./postgres-vehicle-maintenance.datasource";
 export * from "./order.datasource.impl";
+export * from "./product.datasource.impl";

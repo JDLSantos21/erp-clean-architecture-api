@@ -9,6 +9,7 @@ import { MaintenanceRoutes } from "./vehicles/maintenance/routes";
 import { EquipmentReportRoutes } from "./equipment-reports/equipment-report.routes";
 import { CustomerRoutes } from "./customers/routes";
 import { OrderRoutes } from "./order/routes";
+import { ProductRoutes } from "./order/product/routes";
 
 export class AppRoutes {
   static get routes(): Router {
@@ -38,6 +39,8 @@ export class AppRoutes {
 
     // Sistema de gestión de pedidos
     router.use("/orders", OrderRoutes.routes);
+
+    router.use("/products", ProductRoutes.routes);
 
     return router;
   }

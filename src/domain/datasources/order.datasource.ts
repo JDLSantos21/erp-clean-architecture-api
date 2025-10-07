@@ -3,6 +3,7 @@ import {
   CreateOrderDto,
   OrderQueryDto,
   UpdateOrderDto,
+  UpdateOrderStatusDto,
 } from "../dtos";
 import { Order, OrderStatus } from "../entities";
 import { FilterParams, OrderStatusUpdate } from "../types";
@@ -21,10 +22,7 @@ export abstract class OrderDatasource {
   ): Promise<{ orders: Order[]; total: number }>;
   abstract findOne(id: IntegerId): Promise<Order>;
   abstract findOneByTrackingCode(trackingCode: string): Promise<Order>;
-  abstract updateStatus(
-    id: IntegerId,
-    status: OrderStatusUpdate
-  ): Promise<void>;
+  abstract updateStatus(data: UpdateOrderStatusDto): Promise<void>;
   abstract getOrderCurrentStatus(id: IntegerId): Promise<OrderStatus | null>;
   abstract assignOrderToEmployee(data: AssignOrderToEmployeeDto): Promise<void>;
   abstract unassignOrder(orderId: IntegerId): Promise<void>;

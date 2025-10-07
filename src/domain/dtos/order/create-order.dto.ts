@@ -6,7 +6,7 @@ export class CreateOrderDto {
     public customerId: UUID,
     public customerAddressId: IntegerId,
     public orderItems: CreateOrderItemDto[],
-    public createdById: UUID,
+    public userId: UUID,
     public scheduledDate?: FutureDate,
     public deliveryNotes?: string,
     public notes?: string
