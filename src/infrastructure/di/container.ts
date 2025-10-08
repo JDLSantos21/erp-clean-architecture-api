@@ -13,6 +13,7 @@ import {
   registerInventoryModule,
   registerMaintenanceModule,
   registerOrderModule,
+  registerCacheModule,
 } from "./modules";
 
 export class DIContainer implements IDIContainer {
@@ -54,9 +55,10 @@ export class DIContainer implements IDIContainer {
 
   // Registro de todas las dependencias
   private registerDefaults(): void {
-    this.registerCoreServices(); // Infrastructure Services (Core)
+    this.registerCoreServices();
 
     // Domain Modules
+    registerCacheModule(this);
     registerAuthModule(this);
     registerVehicleModule(this);
     registerFuelModule(this);

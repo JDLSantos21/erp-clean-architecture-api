@@ -1,8 +1,14 @@
 import { Response, Request, NextFunction } from "express";
 import { JwtAdapter } from "../../config/jwt";
-import { AuthRepository, User, Logger, CustomError } from "../../domain";
+import {
+  AuthRepository,
+  User,
+  Logger,
+  CustomError,
+  CacheService,
+} from "../../domain";
 
-//Extendiendo el tipo Request de express para agregar user
+//Extendiendo Request de express para agregar user
 declare global {
   namespace Express {
     interface Request {
@@ -12,7 +18,13 @@ declare global {
 }
 
 export class AuthMiddleware {
-  constructor(private readonly authRepository: AuthRepository) {}
+  private static readonly USER_CACHE_TTL = 300; // 5 minutos
+  private static readonly USER_CACHE_PREFIX = "auth:user:";
+
+  constructor(
+    private readonly authRepository: AuthRepository,
+    private readonly cacheService: CacheService
+  ) {}
 
   validateJWT = async (req: Request, res: Response, next: NextFunction) => {
     const token = this.extractToken(req);
@@ -28,11 +40,30 @@ export class AuthMiddleware {
         return next(CustomError.unauthorized("Token no válido"));
       }
 
+      // Intentar obtener usuario del cache
+      const cacheKey = `${AuthMiddleware.USER_CACHE_PREFIX}${payload.id}`;
+      const cachedUser = await this.cacheService.get<User>(cacheKey);
+
+      if (cachedUser) {
+        Logger.debug(`User loaded from cache: ${payload.id}`);
+        req.user = cachedUser;
+        return next();
+      }
+
+      // Si no está en cache, buscar en la base de datos
       const user = await this.authRepository.findById(payload.id);
 
       if (!user) {
         return next(CustomError.notFound("Usuario no encontrado"));
       }
+
+      // Guardar en cache para futuras peticiones
+      await this.cacheService.set(
+        cacheKey,
+        user,
+        AuthMiddleware.USER_CACHE_TTL
+      );
+      Logger.debug(`User cached: ${payload.id}`);
 
       req.user = user;
       next();

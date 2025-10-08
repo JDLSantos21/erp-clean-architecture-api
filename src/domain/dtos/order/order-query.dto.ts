@@ -11,9 +11,9 @@ export class OrderQueryDto {
     public trackingCode?: TrackingCode,
     public customerId?: UUID,
     public status?: string,
-    public startDate?: Date,
-    public endDate?: Date,
-    public scheduledDate?: Date,
+    public startDate?: string,
+    public endDate?: string,
+    public scheduledDate?: string,
     public searchTerm?: string
   ) {}
 
@@ -124,9 +124,9 @@ export class OrderQueryDto {
         tracking_code ? TrackingCode.create(tracking_code) : undefined,
         customer_id ? UUID.create(customer_id) : undefined,
         status,
-        start_date ? new Date(start_date) : undefined,
-        end_date ? new Date(end_date) : undefined,
-        scheduled_date ? new Date(scheduled_date) : undefined,
+        start_date ? start_date : undefined,
+        end_date ? end_date : undefined,
+        scheduled_date ? scheduled_date : undefined,
         search_term ? search_term.trim() : undefined
       ),
     ];

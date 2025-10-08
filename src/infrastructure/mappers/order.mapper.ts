@@ -4,6 +4,7 @@ import {
   IntegerId,
   Order,
   OrderItem,
+  Product,
   TrackingCode,
   UpdateOrderDto,
 } from "../../domain";
@@ -63,6 +64,7 @@ export class OrderMapper {
       customerId: orderData.customerId,
       customerAddressId: orderData.customerAddressId,
       orderDate: orderData.orderDate,
+      status: orderData.status,
       scheduledDate: orderData.scheduledDate,
       deliveredDate: orderData.deliveredDate,
       createdById: orderData.createdById,
@@ -94,6 +96,20 @@ export class OrderMapper {
       isActive: item.isActive,
       createdAt: item.createdAt,
       updatedAt: item.updatedAt,
+    });
+  }
+
+  static productToDomain(data: any): Product {
+    return new Product({
+      id: IntegerId.create(data.id),
+      name: data.name,
+      description: data.description,
+      unit: data.unit,
+      size: data.size,
+      sku: data.sku,
+      isActive: data.isActive,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
     });
   }
 

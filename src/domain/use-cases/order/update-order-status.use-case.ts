@@ -14,7 +14,7 @@ export class UpdateOrderStatus implements UpdateOrderStatusUseCase {
 
     if (!order) throw CustomError.notFound("El pedido seleccionado no existe");
 
-    if (data.status.name === order.getCurrentStatus())
+    if (data.status.name === order.status)
       throw CustomError.forbidden(
         "No se puede cambiar el estado de un pedido a su estado actual"
       );

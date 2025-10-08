@@ -52,10 +52,6 @@ export class OrderRepositoryImpl implements OrderRepository {
     return this.orderDatasource.updateStatus(data);
   }
 
-  async getOrderCurrentStatus(id: IntegerId): Promise<OrderStatus | null> {
-    return this.orderDatasource.getOrderCurrentStatus(id);
-  }
-
   async assignOrderToEmployee(data: AssignOrderToEmployeeDto): Promise<void> {
     return this.orderDatasource.assignOrderToEmployee(data);
   }

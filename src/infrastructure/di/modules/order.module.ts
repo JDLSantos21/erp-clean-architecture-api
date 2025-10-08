@@ -4,9 +4,11 @@ import {
   ClearOrderAssignation,
   CreateOrder,
   CreateProduct,
+  DeleteProduct,
   TrackingCodeGenerator,
   UpdateOrder,
   UpdateOrderStatus,
+  UpdateProduct,
 } from "../../../domain";
 import { OrderController, ProductController } from "../../../presentation";
 import { OrderDatasourceImpl, ProductDatasourceImpl } from "../../datasources";
@@ -34,12 +36,20 @@ function registerOrderServices(container: IDIContainer): void {
 function registerOrderDatasources(container: IDIContainer): void {
   container.register(
     "OrderDatasource",
-    () => new OrderDatasourceImpl(container.resolve("PrismaClient"))
+    () =>
+      new OrderDatasourceImpl(
+        container.resolve("PrismaClient"),
+        container.resolve("CacheService")
+      )
   );
 
   container.register(
     "ProductDatasource",
-    () => new ProductDatasourceImpl(container.resolve("PrismaClient"))
+    () =>
+      new ProductDatasourceImpl(
+        container.resolve("PrismaClient"),
+        container.resolve("CacheService")
+      )
   );
 }
 
@@ -98,9 +108,15 @@ function registerOrderUseCases(container: IDIContainer): void {
     () => new CreateProduct(container.resolve("ProductRepository"))
   );
 
-  // TODO: Registrar otros use cases cuando se implementen
-  // container.register("UpdateOrderUseCase", () => new UpdateOrder(...));
-  // container.register("DeleteOrderUseCase", () => new DeleteOrder(...));
+  container.register(
+    "UpdateProductUseCase",
+    () => new UpdateProduct(container.resolve("ProductRepository"))
+  );
+
+  container.register(
+    "DeleteProductUseCase",
+    () => new DeleteProduct(container.resolve("ProductRepository"))
+  );
 }
 
 /**
@@ -127,6 +143,8 @@ function registerProductControllers(container: IDIContainer): void {
     () =>
       new ProductController(
         container.resolve("CreateProductUseCase"),
+        container.resolve("UpdateProductUseCase"),
+        container.resolve("DeleteProductUseCase"),
         container.resolve("ProductRepository")
       )
   );

@@ -34,7 +34,6 @@ export class UpdateOrderDto {
     let orderItemsArray: CreateOrderItemDto[] = [];
 
     if (order_items !== undefined && order_items.length > 0) {
-      console.log(order_items);
       if (!Array.isArray(order_items)) {
         return [
           "El formato de los productos del pedido es inválido",

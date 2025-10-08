@@ -690,6 +690,7 @@ model Order {
   customerAddressId Int?   @map("customer_address_id") // Dirección de entrega del cliente
   
   // Información del pedido
+  status          OrderStatus @default(PENDIENTE)
   orderDate       DateTime @default(now()) @map("order_date")
   scheduledDate   DateTime? @map("scheduled_date") // Fecha programada de entrega
   deliveredDate   DateTime? @map("delivered_date") // Fecha real de entrega

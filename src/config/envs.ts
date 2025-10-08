@@ -20,4 +20,17 @@ export const envs = {
   // Logging
   LOG_LEVEL: env.get("LOG_LEVEL").default("info").asString(),
   ENABLE_FILE_LOGGING: env.get("ENABLE_FILE_LOGGING").default("true").asBool(),
+
+  // Cache Configuration
+  CACHE_PROVIDER: env.get("CACHE_PROVIDER").default("ioredis").asString(), // "ioredis" | "upstash"
+
+  // Redis (IORedis) - Para desarrollo local o producción con Redis nativo
+  REDIS_HOST: env.get("REDIS_HOST").default("localhost").asString(),
+  REDIS_PORT: env.get("REDIS_PORT").default("6379").asPortNumber(),
+  REDIS_PASSWORD: env.get("REDIS_PASSWORD").asString(),
+  REDIS_DB: env.get("REDIS_DB").default("0").asIntPositive(),
+
+  // Upstash Redis - Para serverless/cloud
+  UPSTASH_REDIS_REST_URL: env.get("UPSTASH_REDIS_REST_URL").asString(),
+  UPSTASH_REDIS_REST_TOKEN: env.get("UPSTASH_REDIS_REST_TOKEN").asString(),
 };

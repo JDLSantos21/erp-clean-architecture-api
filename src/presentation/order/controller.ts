@@ -45,7 +45,6 @@ export class OrderController extends BaseController {
       const orderResponse = OrderResponseDto.fromEntity(order);
       this.handleSuccess(res, orderResponse, req);
     } catch (error) {
-      console.log(error);
       this.handleError(error, res, req);
     }
   };
@@ -79,6 +78,7 @@ export class OrderController extends BaseController {
       const orderResponse = OrderResponseDto.fromEntity(order);
       this.handleSuccess(res, orderResponse, req);
     } catch (error) {
+      console.log(error);
       this.handleError(error, res, req);
     }
   };

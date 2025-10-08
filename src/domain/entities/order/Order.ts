@@ -20,6 +20,7 @@ export class Order extends Entity<Order> {
   customer?: Customer;
   customerAddressId!: number | null;
   customerAddress?: CustomerAddress | null;
+  status!: OrderStatus;
   orderDate!: Date;
   scheduledDate?: Date | null;
   deliveredDate?: Date | null;
@@ -39,27 +40,27 @@ export class Order extends Entity<Order> {
 
   // Métodos de negocio
   public isPending(): boolean {
-    return this.getCurrentStatus() === "PENDIENTE";
+    return this.status === "PENDIENTE";
   }
 
   public isPreparing(): boolean {
-    return this.getCurrentStatus() === "PREPARANDO";
+    return this.status === "PREPARANDO";
   }
 
   public isDispatched(): boolean {
-    return this.getCurrentStatus() === "DESPACHADO";
+    return this.status === "DESPACHADO";
   }
 
   public isDelivered(): boolean {
-    return this.getCurrentStatus() === "ENTREGADO";
+    return this.status === "ENTREGADO";
   }
 
   public isCancelled(): boolean {
-    return this.getCurrentStatus() === "CANCELADO";
+    return this.status === "CANCELADO";
   }
 
   public isReturned(): boolean {
-    return this.getCurrentStatus() === "DEVUELTO";
+    return this.status === "DEVUELTO";
   }
 
   public isScheduled(): boolean {
@@ -193,7 +194,7 @@ export class Order extends Entity<Order> {
   }
 
   public getStatusSummary(): string {
-    const status = this.getCurrentStatus();
+    const status = this.status;
     let summary = `Estado: ${status}`;
 
     if (this.isScheduled()) {
@@ -205,11 +206,5 @@ export class Order extends Entity<Order> {
     }
 
     return summary;
-  }
-
-  public getCurrentStatus(): OrderStatus | undefined {
-    if (this.statusHistory !== undefined && this.statusHistory.length > 0) {
-      return this.statusHistory[0].status;
-    }
   }
 }

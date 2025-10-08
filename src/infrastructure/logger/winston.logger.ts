@@ -1,5 +1,5 @@
 import winston from "winston";
-import { ILogger, LogContext } from "../../domain/services/logger.service";
+import { ILogger, LogContext } from "../../domain";
 import { envs } from "../../config";
 
 export class WinstonLogger implements ILogger {
@@ -10,8 +10,8 @@ export class WinstonLogger implements ILogger {
   }
 
   private createLogger(): winston.Logger {
-    const isDevelopment = process.env.NODE_ENV !== "production";
-    const logLevel = process.env.LOG_LEVEL || (isDevelopment ? "warn" : "info");
+    const isDevelopment = envs.NODE_ENV !== "production";
+    const logLevel = envs.LOG_LEVEL || (isDevelopment ? "debug" : "info");
 
     return winston.createLogger({
       level: logLevel,
@@ -75,6 +75,22 @@ export class WinstonLogger implements ILogger {
   }
 
   private formatMessage(message: string, context?: LogContext): any {
+    if (!context) {
+      return { message };
+    }
+
+    if (context instanceof Error) {
+      return {
+        message,
+        error: {
+          name: context.name,
+          message: context.message,
+          stack: context.stack,
+          ...(context as any),
+        },
+      };
+    }
+
     return { message, ...context };
   }
 
@@ -96,13 +112,13 @@ export class WinstonLogger implements ILogger {
 
   // Inicializar el logger según el entorno
   initialize(): void {
-    const isDevelopment = process.env.NODE_ENV !== "production";
+    const isDevelopment = envs.NODE_ENV !== "production";
 
     if (isDevelopment) {
       this.addConsoleTransport();
-      this.info("Logger initialized in development mode");
+      this.info("✅ Logger initialized in development mode");
     } else {
-      this.info("Logger initialized in production mode");
+      this.info("✅ Logger initialized in production mode");
     }
   }
 }

@@ -1,5 +1,6 @@
 import {
   CreateProductDTO,
+  IntegerId,
   Product,
   ProductDatasource,
   ProductRepository,
@@ -10,5 +11,21 @@ export class ProductRepositoryImpl implements ProductRepository {
 
   create(data: CreateProductDTO): Promise<Product> {
     return this.datasource.create(data);
+  }
+
+  update(id: IntegerId, data: Partial<CreateProductDTO>): Promise<Product> {
+    return this.datasource.update(id, data);
+  }
+
+  findOne(id: IntegerId): Promise<Product> {
+    return this.datasource.findOne(id);
+  }
+
+  list(): Promise<Product[]> {
+    return this.datasource.list();
+  }
+
+  delete(id: IntegerId): Promise<void> {
+    return this.datasource.delete(id);
   }
 }

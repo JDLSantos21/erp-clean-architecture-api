@@ -15,13 +15,20 @@ interface FilterRules {
   [key: string]: (value: FilterValue) => any;
 }
 
+interface FieldTypeConfig {
+  enumFields?: string[];
+}
+
 export function buildWhere<T extends Record<string, any>>(
   filters: T,
   searchFields: string[] = [],
-  dateRangeField: string = "createdAt"
+  dateRangeField: string = "createdAt",
+  fieldConfig?: FieldTypeConfig
 ) {
   const where: Record<string, any> = {};
   const { search, startDate, endDate, ...rest } = filters;
+
+  const enumFields = fieldConfig?.enumFields || [];
 
   const defaultRules: FilterRules = {
     string: (value) => ({ contains: value as string, mode: "insensitive" }),
@@ -33,6 +40,13 @@ export function buildWhere<T extends Record<string, any>>(
   // Handle regular filters
   for (const [key, value] of Object.entries(rest)) {
     if (value === undefined || value === null || value === "") continue;
+
+    // Special handling for enum fields
+    if (enumFields.includes(key)) {
+      where[key] = Array.isArray(value) ? { in: value } : { equals: value };
+      continue;
+    }
+
     const type = Array.isArray(value) ? "object" : typeof value;
     const mapper = defaultRules[type];
     if (mapper) where[key] = mapper(value);

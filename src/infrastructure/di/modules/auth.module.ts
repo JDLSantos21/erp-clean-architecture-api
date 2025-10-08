@@ -94,6 +94,10 @@ function registerAuthControllers(container: IDIContainer): void {
 function registerAuthMiddlewares(container: IDIContainer): void {
   container.register(
     "AuthMiddleware",
-    () => new AuthMiddleware(container.resolve("AuthRepository"))
+    () =>
+      new AuthMiddleware(
+        container.resolve("AuthRepository"),
+        container.resolve("CacheService")
+      )
   );
 }

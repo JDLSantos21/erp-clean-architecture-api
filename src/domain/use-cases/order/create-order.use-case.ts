@@ -30,7 +30,7 @@ export class CreateOrder implements CreateOrderUseCase {
     if (!addresses!.find((a) => a.id === data.customerAddressId.value))
       throw CustomError.notFound("La dirección del cliente no existe");
 
-    // ✅ Generar tracking code único con retry logic
+    // Generar trackingCode único
     const trackingCode = await this.generateUniqueTrackingCode();
 
     return await this.orderRepository.create({ ...data, trackingCode });

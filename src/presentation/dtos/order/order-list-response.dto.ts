@@ -18,7 +18,7 @@ export class OrderListResponseDto {
     return new OrderListResponseDto({
       id: order.id.value,
       trackingCode: order.trackingCode.value,
-      status: order.getCurrentStatus(),
+      status: order.status,
       orderDate: order.orderDate.toISOString(),
       scheduledDate: order.scheduledDate
         ? order.scheduledDate.toISOString()

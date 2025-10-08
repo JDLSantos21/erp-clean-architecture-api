@@ -10,7 +10,7 @@ export abstract class BaseController {
         .json(ResponseBuilder.error(error.statusCode, error.message, req));
     }
 
-    Logger.error("Controller Error:", error);
+    Logger.error(`Error de ${this.constructor.name}`, error);
 
     return res
       .status(500)

@@ -52,3 +52,5 @@ export * from "./order/update-order-status.use-case";
 
 //order products
 export * from "./order/product/create-product.use-case";
+export * from "./order/product/update-product.use-case";
+export * from "./order/product/delete-product.use-case";
