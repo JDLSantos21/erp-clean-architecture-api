@@ -7,8 +7,6 @@ import {
   OrderDatasource,
   OrderQueryDto,
   OrderRepository,
-  OrderStatus,
-  OrderStatusUpdate,
   UpdateOrderDto,
   UpdateOrderStatusDto,
 } from "../../domain";
@@ -58,15 +56,5 @@ export class OrderRepositoryImpl implements OrderRepository {
 
   async unassignOrder(orderId: IntegerId): Promise<void> {
     return this.orderDatasource.unassignOrder(orderId);
-  }
-
-  async findOrdersByCustomerId(
-    customerId: string,
-    filterParams: FilterParams<OrderQueryDto>
-  ): Promise<Order[]> {
-    return this.orderDatasource.findOrdersByCustomerId(
-      customerId,
-      filterParams
-    );
   }
 }

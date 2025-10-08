@@ -12,13 +12,18 @@ export class AssignOrderToEmployee implements AssignOrderToEmployeeUseCase {
     private readonly authRepository: AuthRepository
   ) {}
   async execute(data: AssignOrderToEmployeeDto): Promise<void> {
-    const order = await this.orderRepository.findOne(data.orderId);
-    const user = await this.authRepository.findById(data.userId.value);
+    const [order, user] = await Promise.all([
+      this.orderRepository.findOne(data.orderId),
+      this.authRepository.findById(data.userId.value),
+    ]);
 
     if (!order) throw CustomError.notFound("El pedido seleccionado no existe");
 
+    if (order.isAssigned())
+      throw CustomError.conflict("El pedido ya esta asignado");
+
     if (!order.canBeAssigned())
-      throw CustomError.conflict("El pedido no puede ser asignado");
+      throw CustomError.conflict("El estado del pedido no permite asignación");
 
     if (!user) throw CustomError.notFound("El usuario seleccionado no existe");
 

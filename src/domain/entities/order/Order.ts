@@ -92,10 +92,11 @@ export class Order extends Entity<Order> {
   }
 
   public canBeUnassigned(): boolean {
-    return (
+    const canUnassign =
       this.isAssigned() &&
-      (this.isPending() || this.isPreparing() || this.isDispatched())
-    );
+      (this.isPending() || this.isPreparing() || this.isDispatched());
+    console.log("canBeUnassigned:", canUnassign);
+    return canUnassign;
   }
 
   public unassign(): void {

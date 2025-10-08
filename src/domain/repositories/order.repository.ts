@@ -23,9 +23,5 @@ export abstract class OrderRepository {
   abstract updateStatus(data: UpdateOrderStatusDto): Promise<void>;
   abstract assignOrderToEmployee(data: AssignOrderToEmployeeDto): Promise<void>;
   abstract unassignOrder(orderId: IntegerId): Promise<void>;
-  abstract findOrdersByCustomerId(
-    customerId: string,
-    filterParams: FilterParams<OrderQueryDto>
-  ): Promise<Order[]>;
   abstract trackingCodeExists(trackingCode: string): Promise<boolean>;
 }

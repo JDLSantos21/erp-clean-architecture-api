@@ -18,7 +18,7 @@ declare global {
 }
 
 export class AuthMiddleware {
-  private static readonly USER_CACHE_TTL = 300; // 5 minutos
+  private static readonly USER_CACHE_TTL = 900; // 15 minutos
   private static readonly USER_CACHE_PREFIX = "auth:user:";
 
   constructor(
@@ -45,7 +45,6 @@ export class AuthMiddleware {
       const cachedUser = await this.cacheService.get<User>(cacheKey);
 
       if (cachedUser) {
-        Logger.debug(`User loaded from cache: ${payload.id}`);
         req.user = cachedUser;
         return next();
       }
@@ -63,7 +62,6 @@ export class AuthMiddleware {
         user,
         AuthMiddleware.USER_CACHE_TTL
       );
-      Logger.debug(`User cached: ${payload.id}`);
 
       req.user = user;
       next();

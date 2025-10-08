@@ -14,7 +14,7 @@ export class OrderQueryDto {
     public startDate?: string,
     public endDate?: string,
     public scheduledDate?: string,
-    public searchTerm?: string
+    public search?: string
   ) {}
 
   public static create(object: {
@@ -30,7 +30,7 @@ export class OrderQueryDto {
       start_date,
       end_date,
       scheduled_date,
-      search_term,
+      search,
     } = object;
 
     const pageNumber = Number(page) || DEFAULT_PAGE;
@@ -109,8 +109,8 @@ export class OrderQueryDto {
       }
     }
 
-    if (search_term !== undefined) {
-      if (typeof search_term !== "string") {
+    if (search !== undefined) {
+      if (typeof search !== "string") {
         return ["El término de búsqueda es inválido"];
       }
     }
@@ -127,7 +127,7 @@ export class OrderQueryDto {
         start_date ? start_date : undefined,
         end_date ? end_date : undefined,
         scheduled_date ? scheduled_date : undefined,
-        search_term ? search_term.trim() : undefined
+        search ? search.trim() : undefined
       ),
     ];
   }

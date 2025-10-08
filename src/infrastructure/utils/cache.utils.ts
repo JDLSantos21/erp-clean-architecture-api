@@ -1,4 +1,5 @@
-import { CacheService } from "../../domain";
+import { CacheService, FilterParams } from "../../domain";
+import { cleanObject } from "../../shared";
 
 export class CacheKeyBuilder {
   /**
@@ -15,15 +16,25 @@ export class CacheKeyBuilder {
    * Patrón: entity:list:hash(filters)
    * Ejemplo: "order:list:active_status_pending"
    */
-  static list(entityName: string, filters?: Record<string, any>): string {
+  static list<T>(entityName: string, filterParams?: FilterParams<T>): string {
+    const { filters, limit, skip } = filterParams || {};
+
+    const limitString = limit !== undefined ? limit.toString() : "0";
+    const skipString = skip !== undefined ? skip.toString() : "0";
+
+    let cleanFilters: Record<string, any> = {};
+
+    if (filters) cleanFilters = cleanObject(filters);
+
     if (!filters || Object.keys(filters).length === 0) {
-      return `${entityName}:list:all`;
+      return `${entityName}:list:all:limit_${limitString}-skip_${skipString}`;
     }
-    const filterKey = Object.entries(filters)
+
+    const filterKey = Object.entries(cleanFilters)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([key, value]) => `${key}_${value}`)
       .join("_");
-    return `${entityName}:list:${filterKey}`;
+    return `${entityName}:list:${filterKey}:limit_${limitString}-skip_${skipString}`;
   }
 
   /**

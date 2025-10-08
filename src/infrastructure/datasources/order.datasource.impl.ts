@@ -101,6 +101,12 @@ export class OrderDatasourceImpl extends OrderDatasource {
         this.cacheInvalidator.invalidateQueries("order"),
       ]);
 
+      await this.cacheService.set(
+        CacheKeyBuilder.entity("order", createdOrder.id),
+        createdOrder,
+        CacheTTL.DYNAMIC
+      );
+
       return OrderMapper.toDomain(createdOrder);
     } catch (error) {
       Logger.error("Order datasource - create: ", error);
@@ -174,10 +180,10 @@ export class OrderDatasourceImpl extends OrderDatasource {
         enumFields: ["status"],
       });
 
-      console.log("List Order Filters: ", filters);
-      console.log("List Order Where clause: ", where);
-
-      const cacheKey = CacheKeyBuilder.list("order", filterParams);
+      const cacheKey = CacheKeyBuilder.list<OrderQueryDto>(
+        "order",
+        filterParams
+      );
 
       const cached = await this.cacheService.get<{
         orders: Order[];
@@ -335,12 +341,5 @@ export class OrderDatasourceImpl extends OrderDatasource {
       Logger.error("Order datasource - unassignOrder: ", error);
       throw CustomError.internalServer("Error al desasignar el pedido");
     }
-  }
-
-  async findOrdersByCustomerId(
-    customerId: string,
-    filterParams: FilterParams<OrderQueryDto>
-  ): Promise<Order[]> {
-    throw new Error("Method not implemented.");
   }
 }

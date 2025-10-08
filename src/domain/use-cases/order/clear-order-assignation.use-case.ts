@@ -18,7 +18,7 @@ export class ClearOrderAssignation implements ClearOrderAssignationUseCase {
       throw CustomError.badRequest("El pedido no está asignado");
 
     //TODO: revisar, deja desasignar un pedido entregado
-    if (!order.canBeUnassigned)
+    if (!order.canBeUnassigned())
       throw CustomError.badRequest(
         "El pedido no puede ser desasignado en su estado actual"
       );

@@ -129,7 +129,11 @@ export class OrderController extends BaseController {
   };
 
   assignOrderToEmployee = async (req: Request, res: Response) => {
-    const [error, dto] = AssignOrderToEmployeeDto.create(req.body);
+    const order_id = req.params.id;
+    const [error, dto] = AssignOrderToEmployeeDto.create({
+      ...req.body,
+      order_id: Number(order_id),
+    });
 
     if (error) {
       const customError = CustomError.badRequest(error);
