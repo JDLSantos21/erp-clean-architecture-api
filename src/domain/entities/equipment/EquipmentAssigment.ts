@@ -2,6 +2,7 @@ import { Customer, CustomerAddress } from "../customer";
 import Entity from "../entity";
 import { User } from "../auth";
 import { Equipment } from "./Equipment";
+import { ASSIGNMENT_STATUS } from "../../constants";
 
 export type AssignmentStatus =
   | "ASIGNADO"
@@ -9,14 +10,6 @@ export type AssignmentStatus =
   | "DEVUELTO"
   | "MANTENIMIENTO"
   | "DAÑADO";
-
-export const ASSIGNMENT_STATUS = {
-  ASIGNADO: "ASIGNADO" as const,
-  REMOVIDO: "REMOVIDO" as const,
-  DEVUELTO: "DEVUELTO" as const,
-  MANTENIMIENTO: "MANTENIMIENTO" as const,
-  DAÑADO: "DAÑADO" as const,
-} as const;
 
 export class EquipmentAssignment extends Entity<EquipmentAssignment> {
   id!: string;

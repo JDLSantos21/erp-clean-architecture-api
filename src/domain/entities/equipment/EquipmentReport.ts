@@ -2,38 +2,11 @@ import { Customer } from "../customer";
 import Entity from "../entity";
 import { User } from "../auth";
 import { Equipment } from "./Equipment";
+import { REPORT_PRIORITY, REPORT_STATUS, REPORT_TYPE } from "../../constants";
 
-export type ReportType = "PREVENTIVO" | "CORRECTIVO" | "FALLA";
-
-export const REPORT_TYPE = {
-  PREVENTIVO: "PREVENTIVO" as const,
-  CORRECTIVO: "CORRECTIVO" as const,
-  FALLA: "FALLA" as const,
-} as const;
-
-export type ReportPriority = "BAJA" | "MEDIA" | "ALTA" | "CRITICA";
-
-export const REPORT_PRIORITY = {
-  BAJA: "BAJA" as const,
-  MEDIA: "MEDIA" as const,
-  ALTA: "ALTA" as const,
-  CRITICA: "CRITICA" as const,
-} as const;
-
-export type ReportStatus =
-  | "PENDIENTE"
-  | "EN_PROGRESO"
-  | "COMPLETADO"
-  | "CANCELADO"
-  | "RECHAZADO";
-
-export const REPORT_STATUS = {
-  PENDIENTE: "PENDIENTE" as const,
-  EN_PROGRESO: "EN_PROGRESO" as const,
-  COMPLETADO: "COMPLETADO" as const,
-  CANCELADO: "CANCELADO" as const,
-  RECHAZADO: "RECHAZADO" as const,
-} as const;
+export type ReportType = keyof typeof REPORT_TYPE;
+export type ReportPriority = keyof typeof REPORT_PRIORITY;
+export type ReportStatus = keyof typeof REPORT_STATUS;
 
 export class EquipmentReport extends Entity<EquipmentReport> {
   id!: string;

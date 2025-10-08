@@ -1,12 +1,7 @@
+import { EQUIPMENT_TYPE } from "../../constants";
 import Entity from "../entity";
 
 export type EquipmentType = "ANAQUEL" | "NEVERA" | "OTROS";
-
-export const EQUIPMENT_TYPE = {
-  ANAQUEL: "ANAQUEL" as const,
-  NEVERA: "NEVERA" as const,
-  OTROS: "OTROS" as const,
-} as const;
 
 export class EquipmentModel extends Entity<EquipmentModel> {
   id!: number;
