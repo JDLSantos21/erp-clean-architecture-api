@@ -38,6 +38,19 @@ export class ProductDatasourceImpl extends ProductDatasource {
     return productEntity;
   }
 
+  async findOneByName(name: string): Promise<Product> {
+    try {
+      const product = await this.prisma.product.findUnique({
+        where: { name },
+      });
+      if (!product) throw CustomError.notFound("Producto no encontrado");
+      return OrderMapper.productToDomain(product);
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw CustomError.internalServer("Error al obtener el producto");
+    }
+  }
+
   async update(
     id: IntegerId,
     data: Partial<CreateProductDTO>

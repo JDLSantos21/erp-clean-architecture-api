@@ -21,6 +21,10 @@ export class ProductRepositoryImpl implements ProductRepository {
     return this.datasource.findOne(id);
   }
 
+  findOneByName(name: string): Promise<Product> {
+    return this.datasource.findOneByName(name);
+  }
+
   list(): Promise<Product[]> {
     return this.datasource.list();
   }

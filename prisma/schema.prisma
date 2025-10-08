@@ -667,7 +667,7 @@ model EquipmentRequest {
 // Tabla de productos disponibles
 model Product {
   id            Int      @id @default(autoincrement())
-  name          String   @db.VarChar(100)
+  name          String   @db.VarChar(100) @unique
   description   String?  @db.Text
   unit          String   @db.VarChar(50)
   size          String?  @db.VarChar(50)
