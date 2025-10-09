@@ -41,11 +41,11 @@ export class CreateEquipmentAssignmentDto {
           customerId,
           customerAddressId,
           assignedBy,
-          notes
+          notes ? notes.trim() : undefined
         ),
       ];
-    } catch (error) {
-      return [error as string, undefined];
+    } catch (error: any) {
+      return [error.message];
     }
   }
 }
