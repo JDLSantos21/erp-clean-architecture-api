@@ -5,7 +5,7 @@ export * from "./fuel/routes";
 export * from "./fuel/analytics-routes";
 export * from "./inventory/routes";
 export * from "./vehicles/maintenance/routes";
-export * from "./equipment-reports/equipment-report.routes";
+// export * from "./equipment-reports/equipment-report.routes";
 export * from "./customers/routes";
 export * from "./order/routes";
 export * from "./order/product/routes";

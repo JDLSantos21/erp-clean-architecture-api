@@ -8,3 +8,4 @@ export { registerInventoryModule } from "./inventory.module";
 export { registerMaintenanceModule } from "./maintenance.module";
 export { registerOrderModule } from "./order.module";
 export { registerCacheModule } from "./cache.module";
+export { registerEquipmentModule } from "./equipment.module";

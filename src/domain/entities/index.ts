@@ -3,7 +3,7 @@ export * from "./equipment/Equipment";
 export * from "./equipment/EquipmentModel";
 export * from "./equipment/EquipmentLocation";
 export * from "./equipment/EquipmentAssigment";
-export * from "./equipment/EquipmetRequest";
+export * from "./equipment/EquipmentRequest";
 export * from "./equipment/EquipmentReport";
 
 // Fuel Management System

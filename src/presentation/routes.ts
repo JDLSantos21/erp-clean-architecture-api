@@ -6,7 +6,7 @@ import { FuelRoutes } from "./fuel/routes";
 import { FuelAnalyticsRoutes } from "./fuel/analytics-routes";
 import { InventoryRoutes } from "./inventory/routes";
 import { MaintenanceRoutes } from "./vehicles/maintenance/routes";
-import { EquipmentReportRoutes } from "./equipment-reports/equipment-report.routes";
+// import { EquipmentReportRoutes } from "./equipment-reports/equipment-report.routes";
 import { CustomerRoutes } from "./customers/routes";
 import { OrderRoutes } from "./order/routes";
 import { ProductRoutes } from "./order/product/routes";
@@ -35,7 +35,7 @@ export class AppRoutes {
     // Sistema de gestión de clientes
     router.use("/customers", CustomerRoutes.routes);
     // Sistema de reportes de equipos
-    router.use("/equipment-reports", EquipmentReportRoutes.routes);
+    // router.use("/equipment-reports", EquipmentReportRoutes.routes);
 
     // Sistema de gestión de pedidos
     router.use("/orders", OrderRoutes.routes);

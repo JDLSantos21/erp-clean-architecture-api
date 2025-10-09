@@ -67,7 +67,7 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
         await this.prisma.employee.count({ where }),
       ]);
 
-      return { employees, total };
+      return { employees: employees.map((emp) => new Employee(emp)), total };
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
