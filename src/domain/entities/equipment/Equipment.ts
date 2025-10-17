@@ -1,26 +1,28 @@
+import { EQUIPMENT_STATUS } from "../../constants";
+import { EquipmentSerialNumber, IntegerId, UUID } from "../../value-object";
 import Entity from "../entity";
+import { EquipmentAssignment } from "./EquipmentAssigment";
 import { EquipmentLocation } from "./EquipmentLocation";
 import { EquipmentModel } from "./EquipmentModel";
+import { EquipmentReport } from "./EquipmentReport";
 
-export type EquipmentStatus =
-  | "DISPONIBLE"
-  | "ASIGNADO"
-  | "MANTENIMIENTO"
-  | "DAÑADO"
-  | "INHABILITADO";
+export type EquipmentStatus = keyof typeof EQUIPMENT_STATUS;
 
 export class Equipment extends Entity<Equipment> {
-  id!: string;
-  name!: string;
-  serialNumber!: string;
-  modelId!: number;
-  model?: EquipmentModel;
-  locationId?: number;
-  location?: EquipmentLocation;
+  id!: UUID;
+  serialNumber!: EquipmentSerialNumber;
+  modelId!: IntegerId;
+  locationId?: IntegerId;
   status!: EquipmentStatus;
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
+
+  //relaciones
+  model?: EquipmentModel;
+  location?: EquipmentLocation;
+  assignments?: EquipmentAssignment[];
+  reports?: EquipmentReport[];
 
   // Métodos de negocio para gestión de estado
   public isAvailable(): boolean {

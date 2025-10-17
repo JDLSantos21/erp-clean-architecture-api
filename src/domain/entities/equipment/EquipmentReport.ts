@@ -3,19 +3,17 @@ import Entity from "../entity";
 import { User } from "../auth";
 import { Equipment } from "./Equipment";
 import { REPORT_PRIORITY, REPORT_STATUS, REPORT_TYPE } from "../../constants";
+import { IntegerId, UUID } from "../../value-object";
 
 export type ReportType = keyof typeof REPORT_TYPE;
 export type ReportPriority = keyof typeof REPORT_PRIORITY;
 export type ReportStatus = keyof typeof REPORT_STATUS;
 
 export class EquipmentReport extends Entity<EquipmentReport> {
-  id!: string;
-  equipmentId!: string;
-  equipment?: Equipment;
-  customerId?: string;
-  customer?: Customer;
-  reportedById!: string;
-  reportedBy?: User;
+  id!: IntegerId;
+  equipmentId!: UUID;
+  customerId?: UUID;
+  reportedById!: UUID;
   title!: string;
   description!: string;
   type!: ReportType;
@@ -27,6 +25,11 @@ export class EquipmentReport extends Entity<EquipmentReport> {
   isActive!: boolean;
   createdAt!: Date;
   updatedAt!: Date;
+
+  //Relaciones
+  equipment?: Equipment;
+  customer?: Customer;
+  reportedBy?: User;
 
   // Métodos de negocio
   public isPending(): boolean {

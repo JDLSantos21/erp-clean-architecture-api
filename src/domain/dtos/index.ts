@@ -61,6 +61,11 @@ export * from "./order/assign-order-to-employee.dto";
 export * from "./order/product/create-order-product.dto";
 
 // Equipments
+export * from "./equipment/create-equipment.dto";
 export * from "./equipment/model/create-equipment-model.dto";
 export * from "./equipment/model/update-equipment-model.dto";
 export * from "./equipment/create-equipment-assignment.dto";
+export * from "./equipment/unassign-equipment.dto";
+export * from "./equipment/create-equipment-report.dto";
+export * from "./equipment/create-equipment-request.dto";
+export * from "./equipment/equipment-query.dto";

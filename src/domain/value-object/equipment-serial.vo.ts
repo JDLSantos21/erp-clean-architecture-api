@@ -1,19 +1,20 @@
-import { CustomError } from "../errors";
+import { ValueObject } from "./ValueObject";
 
-export class EquipmentSerialNumber {
+export class EquipmentSerialNumber extends ValueObject<string> {
   private static readonly SERIAL_REGEX = /^(ANQ|NEV|EQP)-\d{4}-\d{4}$/;
 
-  private constructor(private readonly value: string) {
+  private constructor(value: string) {
+    super(value);
     this.validate(value);
   }
 
   private validate(value: string): void {
     if (!value || value.trim() === "") {
-      throw CustomError.badRequest("El número de serie es requerido");
+      throw new Error("El número de serie es requerido");
     }
 
     if (!EquipmentSerialNumber.SERIAL_REGEX.test(value)) {
-      throw CustomError.badRequest("Formato de número de serie inválido");
+      throw new Error("Formato de número de serie inválido");
     }
   }
 

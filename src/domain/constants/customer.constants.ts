@@ -6,7 +6,7 @@ export const PhoneTypes = {
 };
 
 export const ASSIGNMENT_STATUS = {
-  ASIGNADO: "ASIGNADO",
+  ACTIVO: "ACTIVO",
   REMOVIDO: "REMOVIDO",
   DEVUELTO: "DEVUELTO",
   MANTENIMIENTO: "MANTENIMIENTO",

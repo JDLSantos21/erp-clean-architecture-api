@@ -13,7 +13,7 @@ export class PhoneNumber extends ValueObject<string> {
   private validate(value: string): void {
     if (!PhoneNumber.PHONE_REGEX.test(value)) {
       throw CustomError.badRequest(
-        "El formato del número de teléfono no es válido. Debe ser (809|829|849) seguido de 7 dígitos"
+        "El formato del número de teléfono no es válido"
       );
     }
   }

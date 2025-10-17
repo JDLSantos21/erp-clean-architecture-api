@@ -5,12 +5,14 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
 }
 
 model User {
@@ -424,7 +426,6 @@ enum RoleName {
 
 model Equipment {
   id           String          @id @default(uuid()) @db.Uuid
-  name         String          @db.VarChar(100)
   serialNumber String          @unique @map("serial_number") @db.VarChar(100)
   modelId      Int             @map("model_id")
   locationId   Int?            @map("location_id") // Referencia a ubicación GPS
@@ -451,7 +452,7 @@ model EquipmentModel {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   equipments Equipment[]
-  equipmentRequests EquipmentRequest[] // Solicitudes para este modelo específico
+  equipmentRequests EquipmentRequest[] 
   
   @@map("equipment_models")
 }
@@ -467,6 +468,7 @@ model EquipmentLocation {
   // Coordenadas GPS del equipo (capturadas desde app móvil)
   latitude     Float    // Latitud GPS
   longitude    Float    // Longitud GPS
+  gpsPoint     Unsupported("geography(Point,4326)")? @map("gps_point") // Tipo geográfico para consultas espaciales
   address      String?  @db.VarChar(255) // Dirección física opcional
   description  String?  @db.VarChar(255)
   gpsUpdatedAt DateTime @default(now()) @map("gps_updated_at") // Cuándo se capturó
@@ -551,7 +553,7 @@ model CustomerAddress {
 }
 
 model EquipmentAssignment {
-  id              String   @id @default(uuid()) @db.Uuid
+  id              Int      @id @default(autoincrement())
   equipmentId     String   @map("equipment_id") @db.Uuid
   customerId      String   @map("customer_id") @db.Uuid
   customerAddressId Int   @map("customer_address_id") // En qué sucursal está

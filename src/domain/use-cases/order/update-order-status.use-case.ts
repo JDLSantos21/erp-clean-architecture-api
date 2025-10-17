@@ -1,4 +1,3 @@
-import { OrderStatus } from "@prisma/client";
 import { UpdateOrderStatusDto } from "../../dtos";
 import { OrderRepository } from "../../repositories";
 import { CustomError } from "../../errors";

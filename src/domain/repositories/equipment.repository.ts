@@ -16,10 +16,12 @@ import {
   EquipmentStatus,
 } from "../entities";
 import { FilterParams } from "../types";
-import { IntegerId, UUID } from "../value-object";
+import { EquipmentSerialNumber, IntegerId, UUID } from "../value-object";
 
-export abstract class EquipmentDatasource {
-  abstract createEquipment(data: CreateEquipmentDto): Promise<Equipment>;
+export abstract class EquipmentRepository {
+  abstract createEquipment(
+    data: CreateEquipmentDto & { serialNumber: EquipmentSerialNumber }
+  ): Promise<Equipment>;
   abstract findOne(id: UUID): Promise<Equipment>;
   abstract delete(id: UUID): Promise<void>;
   abstract update(id: UUID, data: unknown): Promise<Equipment>;
@@ -27,6 +29,7 @@ export abstract class EquipmentDatasource {
     filterParams: FilterParams<EquipmentQueryDto>
   ): Promise<{ equipments: Equipment[]; total: number }>;
   abstract updateStatus(id: UUID, status: EquipmentStatus): Promise<void>;
+
   abstract createEquipmentModel(
     data: CreateEquipmentModelDto
   ): Promise<EquipmentModel>;
@@ -49,6 +52,8 @@ export abstract class EquipmentDatasource {
   abstract findAssignment(id: IntegerId): Promise<EquipmentAssignment>;
 
   abstract unassignEquipment(data: UnassignEquipmentDto): Promise<void>;
+
+  abstract deleteAssignment(id: IntegerId): Promise<void>;
 
   abstract createReport(
     data: CreateEquipmentReportDto

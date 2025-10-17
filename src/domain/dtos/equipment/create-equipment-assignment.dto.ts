@@ -3,8 +3,8 @@ import { IntegerId, UUID } from "../../value-object";
 
 export class CreateEquipmentAssignmentDto {
   private constructor(
-    public equipmentId: IntegerId,
-    public customerId: IntegerId,
+    public equipmentId: UUID,
+    public customerId: UUID,
     public customerAddressId: IntegerId,
     public assignedBy: UUID,
     public notes?: string
@@ -29,8 +29,8 @@ export class CreateEquipmentAssignmentDto {
       return ["Formato de las notas inválidas"];
 
     try {
-      const equipmentId = IntegerId.create(equipment_id);
-      const customerId = IntegerId.create(customer_id);
+      const equipmentId = UUID.create(equipment_id);
+      const customerId = UUID.create(customer_id);
       const customerAddressId = IntegerId.create(customer_address_id);
       const assignedBy = UUID.create(assigned_by);
 

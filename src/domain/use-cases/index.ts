@@ -54,3 +54,8 @@ export * from "./order/update-order-status.use-case";
 export * from "./order/product/create-product.use-case";
 export * from "./order/product/update-product.use-case";
 export * from "./order/product/delete-product.use-case";
+
+//equipment
+export * from "./equipment/create-equipment.use-case";
+export * from "./equipment/assign-equipment.use-case";
+export * from "./equipment/unassign-equipment.use-case";

@@ -4,3 +4,4 @@ export * from "./prisma-where.mapper";
 export * from "./inventory.mapper";
 export * from "./customer.mapper";
 export * from "./order.mapper";
+export * from "./equipment.mapper";

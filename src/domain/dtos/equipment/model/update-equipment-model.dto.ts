@@ -11,6 +11,7 @@ export class UpdateEquipmentModelDto {
     [key: string]: any;
   }): [string?, UpdateEquipmentModelDto?] {
     const { name, brand, capacity } = object;
+
     if (!Validators.hasAtLeastOneField({ name, brand, capacity })) {
       return ["Se requiere al menos un campo para actualizar", undefined];
     }

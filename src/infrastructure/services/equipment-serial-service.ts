@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import {
-  EquipmentSerialGeneratorI,
+  IEquipmentSerialGenerator,
   EquipmentType,
   EquipmentSerialNumber,
   CustomError,
@@ -13,7 +13,7 @@ const TYPE_ABBREVIATIONS: Record<EquipmentType, string> = {
   [EQUIPMENT_TYPE.OTROS]: "EQP",
 };
 
-export class EquipmentSerialGenerator extends EquipmentSerialGeneratorI {
+export class EquipmentSerialGenerator extends IEquipmentSerialGenerator {
   private static readonly MAX_RETRIES = 10;
 
   constructor(private readonly prisma: PrismaClient) {
