@@ -11,10 +11,6 @@ export class CreateCustomer implements CreateCustomerUseCase {
   constructor(private customerRepository: CustomerRepository) {}
 
   async execute(data: RegisterCustomerDTO): Promise<Customer> {
-    //Steps
-    // 1. Validate data (DTO)
-
-    // 2. Check for duplicates (email, rnc)
     if (data.email) {
       const exist = await this.customerRepository.findByEmail(data.email);
       if (exist) throw CustomError.conflict("El email ya está en uso");
@@ -25,7 +21,6 @@ export class CreateCustomer implements CreateCustomerUseCase {
       if (exist) throw CustomError.conflict("El RNC ya está en uso");
     }
 
-    // 3. Check for duplicate phone numbers
     for (const phone of data.phones) {
       const exist = await this.customerRepository.findPhoneByNumber(
         phone.phoneNumber
@@ -36,6 +31,16 @@ export class CreateCustomer implements CreateCustomerUseCase {
           `El número de teléfono ${phone.phoneNumber} ya está en uso`
         );
     }
+
+    const primaryPhones = data.phones.filter((phone) => phone.isPrimary);
+    if (primaryPhones.length > 1)
+      throw CustomError.conflict("Solo puede haber un teléfono principal");
+
+    const primaryAddresses = data.addresses.filter(
+      (address) => address.isPrimary
+    );
+    if (primaryAddresses.length > 1)
+      throw CustomError.conflict("Solo puede haber una dirección principal");
 
     // 4. Create customer
     return await this.customerRepository.create(data);

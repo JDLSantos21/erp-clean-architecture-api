@@ -1,5 +1,10 @@
 import { Validators } from "../../../config";
-import { DEFAULT_LIMIT, DEFAULT_PAGE } from "../../constants";
+import {
+  DEFAULT_LIMIT,
+  DEFAULT_PAGE,
+  EMPLOYEE_POSITION,
+} from "../../constants";
+import { EmployeePosition } from "../../entities";
 
 export class EmployeeQueryDto {
   constructor(
@@ -7,7 +12,7 @@ export class EmployeeQueryDto {
     public limit: number,
     public name?: string,
     public lastName?: string,
-    public position?: string,
+    public position?: EmployeePosition,
     public phoneNumber?: string,
     public cedula?: string,
     public employeeCode?: string,
@@ -34,6 +39,14 @@ export class EmployeeQueryDto {
 
     if (isNaN(pageNum) || pageNum < 1) {
       return ["Número de página inválido", undefined];
+    }
+
+    if (
+      position &&
+      EMPLOYEE_POSITION[position as keyof typeof EMPLOYEE_POSITION] ===
+        undefined
+    ) {
+      return ["Posición de empleado inválida", undefined];
     }
 
     if (isNaN(limitNum) || limitNum < 1) {

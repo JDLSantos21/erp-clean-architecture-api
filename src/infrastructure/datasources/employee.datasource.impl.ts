@@ -51,14 +51,12 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
     employees: Employee[];
     total: number;
   }> {
-    const where = buildWhere(filters!, [
-      "name",
-      "lastName",
-      "employeeCode",
-      "position",
-      "cedula",
-      "phoneNumber",
-    ]);
+    const where = buildWhere(
+      filters!,
+      ["name", "lastName", "employeeCode", "cedula", "phoneNumber"],
+      undefined,
+      { enumFields: ["position"] }
+    );
 
     try {
       const [employees, total] = await Promise.all([

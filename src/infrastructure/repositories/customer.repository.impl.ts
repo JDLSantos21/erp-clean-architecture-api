@@ -11,6 +11,7 @@ import {
   UpdateCustomerDTO,
   UpdateCustomerPhoneDto,
   FilterParams,
+  UUID,
 } from "../../domain";
 
 export class CustomerRepositoryImpl implements CustomerRepository {
@@ -34,8 +35,11 @@ export class CustomerRepositoryImpl implements CustomerRepository {
     return this.customerDatasource.createPhone(customerId, data);
   }
 
-  async findById(id: string): Promise<Customer | null> {
-    return this.customerDatasource.findById(id);
+  async findById(
+    id: string,
+    relations?: { orders?: boolean }
+  ): Promise<Customer | null> {
+    return this.customerDatasource.findById(id, relations);
   }
 
   async findByEmail(email: string): Promise<Customer | null> {
@@ -56,6 +60,14 @@ export class CustomerRepositoryImpl implements CustomerRepository {
 
   async findAddressById(id: number): Promise<CustomerAddress | null> {
     return this.customerDatasource.findAddressById(id);
+  }
+
+  async findPrimaryPhone(customerId: UUID): Promise<CustomerPhone> {
+    return this.customerDatasource.findPrimaryPhone(customerId);
+  }
+
+  async findPrimaryAddress(customerId: UUID): Promise<CustomerAddress> {
+    return this.customerDatasource.findPrimaryAddress(customerId);
   }
 
   async list(

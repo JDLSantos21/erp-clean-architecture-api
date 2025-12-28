@@ -17,9 +17,11 @@ export class OrderRoutes {
     router.patch("/:id", controller.updateOrder);
     router.get("/:id", controller.getOrderById);
     router.post("/:id/assign", controller.assignOrderToEmployee);
-    router.post("/:id/clear-assignation", controller.clearOrderAssignation);
+    router.post("/:id/unassign", controller.clearOrderAssignation);
     router.post("/:id/status", controller.updateOrderStatus);
     router.get("/tracking/:trackingCode", controller.findOrderByTrackingCode);
+    router.get("/:id/status-history", controller.getOrderStatusHistory);
+    router.get("/stats/in-progress", controller.getInProgressOrdersStats);
     return router;
   }
 }

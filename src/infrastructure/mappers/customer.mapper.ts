@@ -1,4 +1,5 @@
-import { Customer, CustomerAddress, CustomerPhone } from "../../domain";
+import { Customer, CustomerAddress, CustomerPhone, Order } from "../../domain";
+import { OrderMapper } from "./order.mapper";
 
 export class CustomerMapper {
   static customerEntityFromObject(object: { [key: string]: any }): Customer {
@@ -14,10 +15,12 @@ export class CustomerMapper {
       updatedAt,
       phones,
       addresses,
+      orders,
     } = object;
 
     let phoneEntities: CustomerPhone[] = [];
     let addressEntities: CustomerAddress[] = [];
+    let orderEntities: Order[] = [];
 
     if (phones && Array.isArray(phones)) {
       phones.forEach((phone) => {
@@ -31,6 +34,12 @@ export class CustomerMapper {
       });
     }
 
+    if (orders && Array.isArray(orders)) {
+      orders.forEach((order) => {
+        orderEntities.push(OrderMapper.toDomain(order));
+      });
+    }
+
     return new Customer({
       id,
       businessName,
@@ -40,6 +49,7 @@ export class CustomerMapper {
       notes,
       phones: phoneEntities,
       addresses: addressEntities,
+      orders: orderEntities,
       isActive,
       createdAt,
       updatedAt,
@@ -77,6 +87,7 @@ export class CustomerMapper {
   }): CustomerAddress {
     const {
       id,
+      branchName,
       customerId,
       direction,
       city,
@@ -88,6 +99,7 @@ export class CustomerMapper {
 
     return new CustomerAddress({
       id,
+      branchName,
       direction,
       city,
       isPrimary,

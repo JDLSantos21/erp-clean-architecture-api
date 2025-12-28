@@ -9,6 +9,10 @@ import {
   CreateRole,
   SetRolesToUser,
   SetRolesToUserDto,
+  RefreshTokenDto,
+  RefreshTokenUseCase,
+  RevokeTokenUseCase,
+  LogoutUseCase,
 } from "../../domain";
 import { Request, Response } from "express";
 import { BaseController } from "../shared/base.controller";
@@ -19,6 +23,9 @@ export class AuthController extends BaseController {
     private readonly loginUserUseCase: LoginUser,
     private readonly createRoleUseCase: CreateRole,
     private readonly setRolesToUserUseCase: SetRolesToUser,
+    private readonly refreshTokenUseCase: RefreshTokenUseCase,
+    private readonly logoutUseCase: LogoutUseCase,
+    private readonly revokeTokenUseCase: RevokeTokenUseCase,
     private readonly authRepository: AuthRepository
   ) {
     super();
@@ -109,6 +116,55 @@ export class AuthController extends BaseController {
 
       await this.setRolesToUserUseCase.execute(userId, roleIds);
       this.handleNoContent(res);
+    } catch (error) {
+      this.handleError(error, res, req);
+    }
+  };
+
+  refreshToken = async (req: Request, res: Response) => {
+    try {
+      const [error, refreshTokenDto] = RefreshTokenDto.create(req.body);
+
+      if (error) {
+        const customError = CustomError.badRequest(error);
+        return this.handleError(customError, res, req);
+      }
+
+      const tokens = await this.refreshTokenUseCase.execute(refreshTokenDto!);
+      this.handleSuccess(res, tokens, req);
+    } catch (error) {
+      this.handleError(error, res, req);
+    }
+  };
+
+  logout = async (req: Request, res: Response) => {
+    try {
+      const userId = req.user.id;
+      const refreshToken = req.body.refreshToken;
+
+      await this.logoutUseCase.execute(userId, refreshToken);
+      this.handleNoContent(res);
+    } catch (error) {
+      this.handleError(error, res, req);
+    }
+  };
+
+  revokeAllTokens = async (req: Request, res: Response) => {
+    try {
+      const userId = req.user.id;
+
+      await this.logoutUseCase.execute(userId);
+      this.handleNoContent(res);
+    } catch (error) {
+      this.handleError(error, res, req);
+    }
+  };
+
+  getActiveTokens = async (req: Request, res: Response) => {
+    try {
+      const userId = req.user.id;
+      const tokens = await this.authRepository.getUserActiveTokens(userId);
+      this.handleSuccess(res, tokens, req);
     } catch (error) {
       this.handleError(error, res, req);
     }

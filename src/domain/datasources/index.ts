@@ -10,3 +10,4 @@ export * from "./vehicle-maintenance.datasource";
 export * from "./order.datasource";
 export * from "./product.datasource";
 export * from "./equipment.datasource";
+export * from "./telemetry.datasource";

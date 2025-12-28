@@ -10,6 +10,10 @@ export const envs = {
 
   // Security
   JWT_SECRET: env.get("JWT_SECRET").required().asString(),
+  CORS_ORIGINS: env
+    .get("CORS_ORIGINS")
+    .default("http://localhost:4000,http://localhost:5173")
+    .asArray(","),
 
   // Database
   POSTGRES_DB_HOST: env.get("DB_HOST").required().asString(),

@@ -519,6 +519,47 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
     }
   }
 
+  async findAllByCustomerId(customerId: UUID): Promise<Equipment[]> {
+    try {
+      const cacheKey = CacheKeyBuilder.query("equipment", customerId.value);
+      const cached = await this.cacheService.get<Equipment[]>(cacheKey);
+      if (cached)
+        return cached.map((item) =>
+          EquipmentMapper.EquipmentToDomainWithRelations(item, {
+            includeModel: true,
+            includeAssignments: true,
+          })
+        );
+
+      const equipments = await this.prisma.equipment.findMany({
+        where: { assignments: { some: { customerId: customerId.value } } },
+        include: {
+          model: true,
+          assignments: {
+            take: 1,
+            where: {
+              customerId: customerId.value,
+              AND: { unassignedAt: null },
+            },
+          },
+        },
+      });
+      await this.cacheService.set(cacheKey, equipments, CacheTTL.STATIC);
+
+      return equipments.map((equipment) =>
+        EquipmentMapper.EquipmentToDomainWithRelations(equipment, {
+          includeModel: true,
+          includeAssignments: true,
+        })
+      );
+    } catch (error) {
+      Logger.error("Error fetching all equipments by customer ID", error);
+      throw CustomError.internalServer(
+        "Ocurrió un error al obtener todos los equipos por ID de cliente"
+      );
+    }
+  }
+
   async findAllModels(): Promise<EquipmentModel[]> {
     try {
       const cacheKey = CacheKeyBuilder.list("equipmentModel");

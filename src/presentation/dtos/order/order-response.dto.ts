@@ -33,7 +33,7 @@ export class OrderResponseDto {
   };
   phone?: {
     id: number;
-    number: string;
+    phoneNumber: string;
     hasWhatsapp: boolean;
     type: string;
   };
@@ -87,15 +87,15 @@ export class OrderResponseDto {
       phone: entity.customer?.phones
         ? {
             id: entity.customer.phones[0].id,
-            number: entity.customer.phones[0].phoneNumber,
+            phoneNumber: entity.customer.phones[0].phoneNumber,
             hasWhatsapp: entity.customer.phones[0].hasWhatsapp,
             type: entity.customer.phones[0].type,
           }
         : undefined,
-      assignedTo: entity.assignedToUser
+      assignedTo: entity.assignedToEmployee
         ? {
-            id: entity.assignedToUser.id,
-            name: `${entity.assignedToUser.name} ${entity.assignedToUser.lastName}`,
+            id: entity.assignedToEmployee.id,
+            name: `${entity.assignedToEmployee.name} ${entity.assignedToEmployee.lastName}`,
           }
         : undefined,
     });

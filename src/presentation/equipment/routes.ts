@@ -18,6 +18,7 @@ export class EquipmentRoutes {
     router.post("/", controller.create);
     router.get("/:id", controller.getEquipmentById);
     router.get("/", controller.getAll);
+    router.get("/customer/:customerId", controller.getAllByCustomerId);
     router.post("/assign", controller.assignEquipment);
     router.post("/unassign", controller.unassignEquipment);
 

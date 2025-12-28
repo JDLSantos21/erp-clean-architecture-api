@@ -86,6 +86,10 @@ export class EquipmentRepositoryImpl implements EquipmentRepository {
     return this.equipmentDatasource.updateModel(id, data);
   }
 
+  findAllByCustomerId(customerId: UUID): Promise<Equipment[]> {
+    return this.equipmentDatasource.findAllByCustomerId(customerId);
+  }
+
   updateStatus(id: UUID, status: EquipmentStatus): Promise<void> {
     return this.equipmentDatasource.updateStatus(id, status);
   }

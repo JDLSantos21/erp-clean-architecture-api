@@ -6,6 +6,7 @@ import {
   RegisterUserDto,
   Role,
   User,
+  RefreshToken,
 } from "../../domain";
 
 export class AuthRepositoryImpl implements AuthRepository {
@@ -45,5 +46,39 @@ export class AuthRepositoryImpl implements AuthRepository {
 
   getUserRoles(userId: string): Promise<Role[]> {
     return this.authDatasource.getUserRoles(userId);
+  }
+
+  saveRefreshToken(
+    userId: string,
+    token: string,
+    expiresAt: Date,
+    deviceInfo?: Record<string, any>
+  ): Promise<RefreshToken> {
+    return this.authDatasource.saveRefreshToken(
+      userId,
+      token,
+      expiresAt,
+      deviceInfo
+    );
+  }
+
+  findRefreshToken(token: string): Promise<RefreshToken | null> {
+    return this.authDatasource.findRefreshToken(token);
+  }
+
+  revokeRefreshToken(tokenId: number): Promise<void> {
+    return this.authDatasource.revokeRefreshToken(tokenId);
+  }
+
+  revokeAllUserTokens(userId: string): Promise<void> {
+    return this.authDatasource.revokeAllUserTokens(userId);
+  }
+
+  deleteExpiredTokens(): Promise<void> {
+    return this.authDatasource.deleteExpiredTokens();
+  }
+
+  getUserActiveTokens(userId: string): Promise<RefreshToken[]> {
+    return this.authDatasource.getUserActiveTokens(userId);
   }
 }

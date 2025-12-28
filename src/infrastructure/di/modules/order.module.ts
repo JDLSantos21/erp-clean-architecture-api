@@ -73,13 +73,18 @@ function registerOrderUseCases(container: IDIContainer): void {
       new CreateOrder(
         container.resolve("OrderRepository"),
         container.resolve("CustomerRepository"),
-        container.resolve("TrackingCodeGenerator")
+        container.resolve("TrackingCodeGenerator"),
+        container.resolve("WssService")
       )
   );
 
   container.register(
     "UpdateOrderUseCase",
-    () => new UpdateOrder(container.resolve("OrderRepository"))
+    () =>
+      new UpdateOrder(
+        container.resolve("OrderRepository"),
+        container.resolve("WssService")
+      )
   );
 
   container.register(
@@ -87,19 +92,33 @@ function registerOrderUseCases(container: IDIContainer): void {
     () =>
       new AssignOrderToEmployee(
         container.resolve("OrderRepository"),
-        container.resolve("AuthRepository")
+        container.resolve("EmployeeRepository"),
+        container.resolve("WssService")
       )
   );
 
   container.register(
     "UpdateOrderStatusUseCase",
-    () => new UpdateOrderStatus(container.resolve("OrderRepository"))
+    () =>
+      new UpdateOrderStatus(
+        container.resolve("OrderRepository"),
+        container.resolve("WssService")
+      )
   );
 
   container.register(
     "ClearOrderAssignationUseCase",
-    () => new ClearOrderAssignation(container.resolve("OrderRepository"))
+    () =>
+      new ClearOrderAssignation(
+        container.resolve("OrderRepository"),
+        container.resolve("WssService")
+      )
   );
+  () =>
+    new ClearOrderAssignation(
+      container.resolve("OrderRepository"),
+      container.resolve("WssService")
+    );
 
   // Product Use Cases
 

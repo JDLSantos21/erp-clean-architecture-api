@@ -5,7 +5,7 @@ import {
   UpdateOrderDto,
   UpdateOrderStatusDto,
 } from "../dtos";
-import { Order } from "../entities";
+import { Order, OrderStatusHistory } from "../entities";
 import { FilterParams } from "../types";
 import { IntegerId } from "../value-object";
 
@@ -26,4 +26,12 @@ export abstract class OrderDatasource {
   abstract assignOrderToEmployee(data: AssignOrderToEmployeeDto): Promise<void>;
   abstract unassignOrder(orderId: IntegerId): Promise<void>;
   abstract trackingCodeExists(trackingCode: string): Promise<boolean>;
+  abstract getOrderStatusHistory(
+    orderId: IntegerId
+  ): Promise<OrderStatusHistory[]>;
+  abstract getInProgressOrdersStats(): Promise<{
+    pending: number;
+    preparing: number;
+    dispatched: number;
+  }>;
 }

@@ -18,6 +18,7 @@ export * from "./fuel/fuel-metrics.dto";
 export * from "./fuel/vehicle-metrics.dto";
 export * from "./vehicle/maintenance/create-maintenance-schedule.dto";
 export * from "./vehicle/maintenance/process-maintenance.dto";
+export * from "./telemetry/index";
 export * from "./vehicle/maintenance/update-maintenance-item.dto";
 export * from "./vehicle/maintenance/create-maintenance-procedure.dto";
 export * from "./vehicle/maintenance/maintenance-report.dto";
@@ -37,6 +38,8 @@ export * from "./user/set-role-to-user.dto";
 export * from "./user/create-role.dto";
 export * from "./user/register-user.dto";
 export * from "./user/login-user.dto";
+export * from "./user/refresh-token.dto";
+export * from "./user/revoke-token.dto";
 
 //Customers
 

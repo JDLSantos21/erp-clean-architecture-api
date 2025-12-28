@@ -2,7 +2,7 @@ import { CreateOrderDto } from "../../dtos";
 import { Order } from "../../entities";
 import { CustomError } from "../../errors";
 import { CustomerRepository, OrderRepository } from "../../repositories";
-import { TrackingCodeGenerator } from "../../services";
+import { TrackingCodeGenerator, IWssService } from "../../services";
 
 interface CreateOrderUseCase {
   execute(data: CreateOrderDto): Promise<Order>;
@@ -14,7 +14,8 @@ export class CreateOrder implements CreateOrderUseCase {
   constructor(
     private readonly orderRepository: OrderRepository,
     private readonly customerRepository: CustomerRepository,
-    private readonly trackingCodeGenerator: TrackingCodeGenerator
+    private readonly trackingCodeGenerator: TrackingCodeGenerator,
+    private readonly wssService: IWssService
   ) {}
 
   async execute(data: CreateOrderDto): Promise<Order> {
@@ -33,7 +34,11 @@ export class CreateOrder implements CreateOrderUseCase {
     // Generar trackingCode único
     const trackingCode = await this.generateUniqueTrackingCode();
 
-    return await this.orderRepository.create({ ...data, trackingCode });
+    const order = await this.orderRepository.create({ ...data, trackingCode });
+
+    this.wssService.sendMessage("order:created", order);
+
+    return order;
   }
 
   private async generateUniqueTrackingCode(): Promise<string> {

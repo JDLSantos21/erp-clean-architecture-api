@@ -7,6 +7,7 @@ import {
   OrderDatasource,
   OrderQueryDto,
   OrderRepository,
+  OrderStatusHistory,
   UpdateOrderDto,
   UpdateOrderStatusDto,
 } from "../../domain";
@@ -56,5 +57,19 @@ export class OrderRepositoryImpl implements OrderRepository {
 
   async unassignOrder(orderId: IntegerId): Promise<void> {
     return this.orderDatasource.unassignOrder(orderId);
+  }
+
+  async getOrderStatusHistory(
+    orderId: IntegerId
+  ): Promise<OrderStatusHistory[]> {
+    return this.orderDatasource.getOrderStatusHistory(orderId);
+  }
+
+  async getInProgressOrdersStats(): Promise<{
+    pending: number;
+    preparing: number;
+    dispatched: number;
+  }> {
+    return this.orderDatasource.getInProgressOrdersStats();
   }
 }

@@ -9,3 +9,4 @@ export * from "./vehicle-maintenance.repository";
 export * from "./order.repository";
 export * from "./product.repository";
 export * from "./equipment.repository";
+export * from "./telemetry.repository";

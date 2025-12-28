@@ -5,7 +5,7 @@ import { IntegerId } from "../value-object";
 export abstract class ProductRepository {
   abstract create(data: CreateProductDTO): Promise<Product>;
   abstract findOne(id: IntegerId): Promise<Product>;
-  abstract findOneByName(name: string): Promise<Product>;
+  abstract findOneByName(name: string): Promise<Product | null>;
   abstract list(): Promise<Product[]>;
   abstract delete(id: IntegerId): Promise<void>;
   abstract update(

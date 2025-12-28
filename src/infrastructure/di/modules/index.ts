@@ -9,3 +9,4 @@ export { registerMaintenanceModule } from "./maintenance.module";
 export { registerOrderModule } from "./order.module";
 export { registerCacheModule } from "./cache.module";
 export { registerEquipmentModule } from "./equipment.module";
+export { registerTelemetryModule } from "./telemetry.module";

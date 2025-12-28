@@ -11,6 +11,7 @@ import { CustomerRoutes } from "./customers/routes";
 import { OrderRoutes } from "./order/routes";
 import { ProductRoutes } from "./order/product/routes";
 import { EquipmentRoutes } from "./equipment/routes";
+import { TelemetryRoutes } from "./telemetry/routes";
 
 export class AppRoutes {
   static get routes(): Router {
@@ -44,6 +45,9 @@ export class AppRoutes {
     router.use("/products", ProductRoutes.routes);
 
     router.use("/equipment", EquipmentRoutes.routes);
+
+    // Sistema de telemetría
+    router.use("/telemetry", TelemetryRoutes.routes);
 
     return router;
   }

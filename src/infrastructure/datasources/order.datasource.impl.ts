@@ -10,6 +10,7 @@ import {
   Order,
   OrderDatasource,
   OrderQueryDto,
+  OrderStatusHistory,
   UpdateOrderDto,
   UpdateOrderStatusDto,
 } from "../../domain";
@@ -34,7 +35,11 @@ export class OrderDatasourceImpl extends OrderDatasource {
     },
     customerAddress: true,
     createdByUser: true,
-    assignedToUser: true,
+    assignedToEmployee: {
+      include: {
+        user: true,
+      },
+    },
   };
 
   private readonly cacheInvalidator: CacheInvalidator;
@@ -203,6 +208,7 @@ export class OrderDatasourceImpl extends OrderDatasource {
           take: limit,
           skip,
           include: OrderDatasourceImpl.ORDER_INCLUDE,
+          orderBy: { createdAt: "desc" },
         }),
         await this.prisma.order.count({ where }),
       ]);
@@ -317,11 +323,35 @@ export class OrderDatasourceImpl extends OrderDatasource {
     }
   }
 
+  async getOrderStatusHistory(
+    orderId: IntegerId
+  ): Promise<OrderStatusHistory[]> {
+    try {
+      const statusHistories = await this.prisma.orderStatusHistory.findMany({
+        where: { orderId: orderId.value },
+        include: {
+          changedByUser: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      this.cacheInvalidator.invalidateQueries("order");
+      return statusHistories.map((sh) =>
+        OrderMapper.orderStatusHistoryToDomain(sh)
+      );
+    } catch (error) {
+      Logger.error("Order datasource - getOrderStatusHistory: ", error);
+      throw CustomError.internalServer(
+        "Error al obtener el historial de estados del pedido"
+      );
+    }
+  }
+
   async assignOrderToEmployee(data: AssignOrderToEmployeeDto): Promise<void> {
     try {
       await this.prisma.order.update({
         where: { id: data.orderId.value },
-        data: { assignedToId: data.userId.value },
+        data: { assignedToId: data.employeeId.value },
       });
       await this.invalidateOrderEntityCache(data.orderId.value);
     } catch (error) {
@@ -340,6 +370,49 @@ export class OrderDatasourceImpl extends OrderDatasource {
     } catch (error) {
       Logger.error("Order datasource - unassignOrder: ", error);
       throw CustomError.internalServer("Error al desasignar el pedido");
+    }
+  }
+
+  async getInProgressOrdersStats(): Promise<{
+    pending: number;
+    preparing: number;
+    dispatched: number;
+  }> {
+    try {
+      const stats = await this.prisma.order.groupBy({
+        by: ["status"],
+        where: {
+          status: {
+            in: ["PENDIENTE", "PREPARANDO", "DESPACHADO"],
+          },
+        },
+        _count: {
+          status: true,
+        },
+      });
+
+      const result = {
+        pending: 0,
+        preparing: 0,
+        dispatched: 0,
+      };
+
+      stats.forEach((stat) => {
+        if (stat.status === "PENDIENTE") result.pending = stat._count.status;
+        if (stat.status === "PREPARANDO") result.preparing = stat._count.status;
+        if (stat.status === "DESPACHADO")
+          result.dispatched = stat._count.status;
+      });
+
+      console.log("In-progress orders stats: ", result);
+      console.log("Raw stats data: ", stats);
+
+      return result;
+    } catch (error) {
+      Logger.error("Order datasource - getInProgressOrdersStats: ", error);
+      throw CustomError.internalServer(
+        "Error al obtener estadísticas de pedidos en progreso"
+      );
     }
   }
 }

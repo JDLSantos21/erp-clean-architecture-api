@@ -93,6 +93,24 @@ export class EquipmentController extends BaseController {
     }
   };
 
+  getAllByCustomerId = async (req: Request, res: Response) => {
+    const customerId = req.params.customerId;
+
+    try {
+      const equipments = await this.equipmentRepository.findAllByCustomerId(
+        UUID.create(customerId)
+      );
+      const equipmentDtos = EquipmentResponseDto.fromEntities(equipments, {
+        includeAssignments: true,
+        includeLocation: true,
+        includeModel: true,
+      });
+      this.handleSuccess(res, equipmentDtos, req);
+    } catch (error) {
+      this.handleError(error, res, req);
+    }
+  };
+
   // assignments
 
   assignEquipment = async (req: Request, res: Response) => {

@@ -9,6 +9,7 @@ import {
 } from "../dtos";
 import { Customer, CustomerAddress, CustomerPhone } from "../entities";
 import { FilterParams } from "../types";
+import { UUID } from "../value-object";
 
 // export interface UpdateCustomerDto {
 //   id: string;
@@ -70,6 +71,8 @@ export abstract class CustomerDatasource {
   abstract findPhoneByNumber(
     phoneNumber: string
   ): Promise<CustomerPhone | null>;
+  abstract findPrimaryPhone(customerId: UUID): Promise<CustomerPhone>;
+  abstract findPrimaryAddress(customerId: UUID): Promise<CustomerAddress>;
 
   abstract setPrimaryAddress(
     customerId: string,
@@ -77,7 +80,10 @@ export abstract class CustomerDatasource {
   ): Promise<void>;
   abstract setPrimaryPhone(customerId: string, phoneId: number): Promise<void>;
 
-  abstract findById(id: string): Promise<Customer | null>;
+  abstract findById(
+    id: string,
+    relations?: { orders?: boolean }
+  ): Promise<Customer | null>;
   abstract findByEmail(email: string): Promise<Customer | null>;
   abstract findByRnc(rnc: string): Promise<Customer | null>;
 

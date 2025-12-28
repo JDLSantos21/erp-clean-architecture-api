@@ -12,6 +12,7 @@ import {
   RegisterCustomerDTO,
   UpdateCustomerDTO,
   UpdateCustomerPhoneDto,
+  UUID,
 } from "../../domain";
 import { buildWhere, CustomerMapper } from "../mappers";
 
@@ -21,6 +22,8 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
   async create(data: RegisterCustomerDTO): Promise<Customer> {
     const { phones, addresses, ...customerData } = data;
+
+    console.log("Creating customer with data:", data);
 
     try {
       const newCustomer = await this.prisma.$transaction(async (tx) => {
@@ -115,12 +118,24 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
     return { customers: customersWithRelations, total };
   }
 
-  async findById(id: string): Promise<Customer | null> {
+  async findById(
+    id: string,
+    relations?: { orders?: boolean }
+  ): Promise<Customer | null> {
+    //optional includes
+
     const customer = await this.prisma.customer.findUnique({
       where: { id },
       include: {
         phones: true,
         addresses: true,
+        orders: relations?.orders
+          ? {
+              include: {
+                orderItems: { include: { product: true } },
+              },
+            }
+          : false,
       },
     });
 
@@ -192,11 +207,10 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
     phoneId: number,
     phone: Partial<UpdateCustomerPhoneDto>
   ): Promise<CustomerPhone> {
+    const { customerId, ...phoneData } = phone;
     const updatedPhone = await this.prisma.customerPhone.update({
       where: { id: phoneId },
-      data: {
-        ...phone,
-      },
+      data: phoneData,
     });
     return CustomerMapper.customerPhoneEntityFromObject(updatedPhone);
   }
@@ -229,6 +243,14 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
       where: { phoneNumber },
     });
     if (!phone) return null;
+    return CustomerMapper.customerPhoneEntityFromObject(phone);
+  }
+
+  async findPrimaryPhone(customerId: UUID): Promise<CustomerPhone> {
+    const phone = await this.prisma.customerPhone.findFirst({
+      where: { customerId: customerId.value, isPrimary: true },
+    });
+    if (!phone) throw new Error("No se pudo encontrar el teléfono primario");
     return CustomerMapper.customerPhoneEntityFromObject(phone);
   }
 
@@ -278,6 +300,14 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
     return addresses.map((address) =>
       CustomerMapper.customerAddressEntityFromObject(address)
     );
+  }
+
+  async findPrimaryAddress(customerId: UUID): Promise<CustomerAddress> {
+    const address = await this.prisma.customerAddress.findFirst({
+      where: { customerId: customerId.value, isPrimary: true },
+    });
+    if (!address) throw new Error("No se pudo encontrar la dirección primaria");
+    return CustomerMapper.customerAddressEntityFromObject(address);
   }
 
   async deleteAddress(addressId: number): Promise<void> {

@@ -46,6 +46,8 @@ export abstract class EquipmentDatasource {
     currentStatus: EquipmentStatus
   ): Promise<void>;
 
+  abstract findAllByCustomerId(customerId: UUID): Promise<Equipment[]>;
+
   abstract findAssignment(id: IntegerId): Promise<EquipmentAssignment>;
 
   abstract unassignEquipment(data: UnassignEquipmentDto): Promise<void>;

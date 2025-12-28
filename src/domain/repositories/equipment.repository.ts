@@ -51,6 +51,7 @@ export abstract class EquipmentRepository {
 
   abstract findAssignment(id: IntegerId): Promise<EquipmentAssignment>;
 
+  abstract findAllByCustomerId(customerId: UUID): Promise<Equipment[]>;
   abstract unassignEquipment(data: UnassignEquipmentDto): Promise<void>;
 
   abstract deleteAssignment(id: IntegerId): Promise<void>;

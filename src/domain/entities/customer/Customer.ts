@@ -1,4 +1,5 @@
 import Entity from "../entity";
+import { Order } from "../order";
 import { CustomerAddress } from "./CustomerAddress";
 import { CustomerPhone } from "./CustomerPhone";
 
@@ -16,6 +17,7 @@ export class Customer extends Entity<Customer> {
   // Relaciones
   phones?: CustomerPhone[];
   addresses?: CustomerAddress[];
+  orders?: Order[];
 
   public hasRnc(): boolean {
     return !!this.rnc && this.rnc.trim().length > 0;
