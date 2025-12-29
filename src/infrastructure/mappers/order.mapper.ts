@@ -4,6 +4,7 @@ import {
   IntegerId,
   Order,
   OrderItem,
+  OrderStatusHistory,
   Product,
   TrackingCode,
   UpdateOrderDto,
@@ -80,7 +81,7 @@ export class OrderMapper {
       statusHistory: orderData.statusHistory,
       customerAddress: orderData.customerAddress,
       createdByUser: orderData.createdByUser,
-      assignedToUser: orderData.assignedToUser,
+      assignedToEmployee: orderData.assignedToEmployee,
     });
   }
 
@@ -144,5 +145,19 @@ export class OrderMapper {
     }
 
     return { ...updatedData, orderItems: orderItemsArray };
+  }
+
+  static orderStatusHistoryToDomain(data: any): OrderStatusHistory {
+    return new OrderStatusHistory({
+      id: IntegerId.create(data.id),
+      orderId: data.orderId,
+      status: data.status,
+      description: data.description,
+      userId: data.userId,
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
+      // Relaciones
+      createdByUser: data.changedByUser,
+    });
   }
 }

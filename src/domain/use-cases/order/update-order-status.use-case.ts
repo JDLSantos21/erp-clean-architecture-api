@@ -1,14 +1,17 @@
-import { OrderStatus } from "@prisma/client";
 import { UpdateOrderStatusDto } from "../../dtos";
 import { OrderRepository } from "../../repositories";
 import { CustomError } from "../../errors";
+import { IWssService } from "../../services";
 
 interface UpdateOrderStatusUseCase {
   execute(data: UpdateOrderStatusDto): Promise<void>;
 }
 
 export class UpdateOrderStatus implements UpdateOrderStatusUseCase {
-  constructor(private orderRepository: OrderRepository) {}
+  constructor(
+    private orderRepository: OrderRepository,
+    private readonly wssService: IWssService
+  ) {}
   async execute(data: UpdateOrderStatusDto): Promise<void> {
     const order = await this.orderRepository.findOne(data.orderId);
 
@@ -49,6 +52,7 @@ export class UpdateOrderStatus implements UpdateOrderStatusUseCase {
         "No se puede marcar como pendiente un pedido que no está preparando"
       );
 
-    return await this.orderRepository.updateStatus(data);
+    await this.orderRepository.updateStatus(data);
+    this.wssService.sendMessage("order:updated", { id: data.orderId.value });
   }
 }

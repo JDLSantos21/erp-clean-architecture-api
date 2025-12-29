@@ -1,13 +1,5 @@
 import { RoleName } from "../entities";
-
-export const ROLE_HIERARCHY = {
-  ADMIN: 6,
-  ADMINISTRATIVO: 5,
-  SUPERVISOR: 4,
-  OPERADOR: 3,
-  CHOFER: 2,
-  USER: 1,
-} as const;
+import { ROLE_HIERARCHY } from "../../shared/constants/permission-levels";
 
 export const ROLE_DESCRIPTIONS = {
   ADMIN: "Administrador del sistema con acceso completo",
@@ -49,13 +41,3 @@ export const hasRoleOrHigher = (
   const requiredLevel = getRoleHierarchyLevel(requiredRole);
   return hasPermissionLevel(userRoles, requiredLevel);
 };
-
-// Niveles de permisos para diferentes acciones
-export const PERMISSION_LEVELS = {
-  READ_ONLY: ROLE_HIERARCHY.USER, // 1 - Cualquier usuario autenticado
-  BASIC_OPERATIONS: ROLE_HIERARCHY.CHOFER, // 2 - Operaciones básicas
-  ADVANCED_OPERATIONS: ROLE_HIERARCHY.OPERADOR, // 3 - Operaciones avanzadas
-  SUPERVISION: ROLE_HIERARCHY.SUPERVISOR, // 4 - Supervisión
-  ADMINISTRATION: ROLE_HIERARCHY.ADMINISTRATIVO, // 5 - Administración
-  SYSTEM_ADMIN: ROLE_HIERARCHY.ADMIN, // 6 - Administración del sistema
-} as const;

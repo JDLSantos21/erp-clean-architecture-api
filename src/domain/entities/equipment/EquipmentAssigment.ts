@@ -2,47 +2,41 @@ import { Customer, CustomerAddress } from "../customer";
 import Entity from "../entity";
 import { User } from "../auth";
 import { Equipment } from "./Equipment";
+import { ASSIGNMENT_STATUS } from "../../constants";
+import { IntegerId, UUID } from "../../value-object";
 
 export type AssignmentStatus =
-  | "ASIGNADO"
+  | "ACTIVO"
   | "REMOVIDO"
   | "DEVUELTO"
   | "MANTENIMIENTO"
   | "DAÑADO";
 
-export const ASSIGNMENT_STATUS = {
-  ASIGNADO: "ASIGNADO" as const,
-  REMOVIDO: "REMOVIDO" as const,
-  DEVUELTO: "DEVUELTO" as const,
-  MANTENIMIENTO: "MANTENIMIENTO" as const,
-  DAÑADO: "DAÑADO" as const,
-} as const;
-
 export class EquipmentAssignment extends Entity<EquipmentAssignment> {
-  id!: string;
-  equipmentId!: string;
-  equipment?: Equipment;
-  customerId!: string;
-  customer?: Customer;
-  customerAddressId?: string;
-  customerAddress?: CustomerAddress;
+  id!: IntegerId;
+  equipmentId!: UUID;
+  customerId!: UUID;
+  customerAddressId!: IntegerId;
   assignedAt!: Date;
-  unassignedAt?: Date;
-  deliveredAt?: Date;
+  unassignedAt?: Date | null;
+  deliveredAt?: Date | null;
   status!: AssignmentStatus;
-  assignedById!: string;
-  assignedBy?: User;
-  unassignedById?: string;
-  unassignedBy?: User;
-  deliveredById?: string;
-  deliveredBy?: User;
-  notes?: string;
+  assignedById!: UUID;
+  unassignedById?: UUID | null;
+  deliveredById?: UUID | null;
+  notes?: string | null;
   createdAt!: Date;
   updatedAt!: Date;
-
+  //relaciones
+  equipment?: Equipment;
+  customerAddress?: CustomerAddress;
+  customer?: Customer;
+  assignedBy?: User;
+  unassignedBy?: User;
+  deliveredBy?: User;
   // Métodos de negocio
   public isActive(): boolean {
-    return this.status === ASSIGNMENT_STATUS.ASIGNADO;
+    return this.status === ASSIGNMENT_STATUS.ACTIVO;
   }
 
   public isRemoved(): boolean {
@@ -65,28 +59,6 @@ export class EquipmentAssignment extends Entity<EquipmentAssignment> {
     return !!this.deliveredAt;
   }
 
-  public remove(userId: string): void {
-    if (!this.isActive()) {
-      throw new Error("Solo se puede remover un equipo que esté asignado");
-    }
-
-    this.status = ASSIGNMENT_STATUS.REMOVIDO;
-    this.unassignedAt = new Date();
-    this.unassignedById = userId;
-  }
-
-  public markAsReturned(userId: string): void {
-    if (!this.isActive() && !this.isRemoved()) {
-      throw new Error(
-        "Solo se puede marcar como devuelto un equipo asignado o removido"
-      );
-    }
-
-    this.status = ASSIGNMENT_STATUS.DEVUELTO;
-    this.unassignedAt = new Date();
-    this.unassignedById = userId;
-  }
-
   public sendToMaintenance(): void {
     if (!this.isActive()) {
       throw new Error(
@@ -99,15 +71,6 @@ export class EquipmentAssignment extends Entity<EquipmentAssignment> {
 
   public markAsDamaged(): void {
     this.status = ASSIGNMENT_STATUS.DAÑADO;
-  }
-
-  public deliver(userId: string): void {
-    if (this.isDelivered()) {
-      throw new Error("El equipo ya ha sido entregado");
-    }
-
-    this.deliveredAt = new Date();
-    this.deliveredById = userId;
   }
 
   public canBeRemoved(): boolean {

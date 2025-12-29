@@ -1,6 +1,7 @@
 import * as cron from "node-cron";
 import { PrismaClient } from "@prisma/client";
 import { MaintenanceSchedulerJob } from "../jobs/maintenance-scheduler.job";
+import { TelemetrySyncJob } from "../jobs/telemetry-sync.job";
 import { Logger } from "../../domain";
 
 export class CronService {
@@ -15,6 +16,9 @@ export class CronService {
    */
   startCronJobs(): void {
     Logger.info("🚀 Iniciando trabajos programados...");
+
+    // Iniciar sincronización de telemetría
+    TelemetrySyncJob.start();
 
     // Ejecutar diariamente a las 6:00 AM
     cron.schedule("0 6 * * *", async () => {

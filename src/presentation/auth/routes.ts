@@ -18,12 +18,19 @@ export class AuthRoutes {
     router.post("/role", controller.createRole);
     router.post("/register", controller.registerUser);
     router.post("/login", controller.login);
+    router.post("/refresh-token", controller.refreshToken);
 
+    // Protected routes
     router.use(authMiddleware.validateJWT);
 
     router.get("/", controller.getUsers);
     router.get("/:id", controller.findById);
     router.post("/set-roles/:id", elevateRole, controller.setRolesToUser);
+
+    // Token management
+    router.post("/logout", controller.logout);
+    router.post("/revoke-all", controller.revokeAllTokens);
+    router.get("/active-tokens", controller.getActiveTokens);
 
     return router;
   }

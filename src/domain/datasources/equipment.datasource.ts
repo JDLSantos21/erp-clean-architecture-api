@@ -1,138 +1,58 @@
-import { Equipment, EquipmentModel, EquipmentLocation } from "../entities";
-import { EquipmentStatus } from "../entities";
-
-export interface CreateEquipmentDto {
-  name: string;
-  serialNumber: string;
-  modelId: number;
-  locationId?: number;
-  status?: EquipmentStatus;
-}
-
-export interface UpdateEquipmentDto {
-  id: string;
-  name?: string;
-  serialNumber?: string;
-  modelId?: number;
-  locationId?: number;
-  status?: EquipmentStatus;
-  isActive?: boolean;
-}
-
-export interface CreateEquipmentModelDto {
-  name: string;
-  brand: string;
-  description?: string;
-  specifications?: string;
-}
-
-export interface CreateEquipmentLocationDto {
-  name: string;
-  description?: string;
-  latitude?: number;
-  longitude?: number;
-  address?: string;
-}
-
-export interface EquipmentFilters {
-  name?: string;
-  serialNumber?: string;
-  modelId?: number;
-  locationId?: number;
-  status?: EquipmentStatus;
-  isActive?: boolean;
-}
-
-export interface EquipmentSummary {
-  totalEquipment: number;
-  availableEquipment: number;
-  assignedEquipment: number;
-  inMaintenanceEquipment: number;
-  damagedEquipment: number;
-  outOfServiceEquipment: number;
-  lostEquipment: number;
-}
+import {
+  CreateEquipmentAssignmentDto,
+  CreateEquipmentDto,
+  CreateEquipmentModelDto,
+  CreateEquipmentReportDto,
+  CreateEquipmentRequestDto,
+  EquipmentQueryDto,
+  UnassignEquipmentDto,
+  UpdateEquipmentModelDto,
+} from "../dtos";
+import {
+  Equipment,
+  EquipmentAssignment,
+  EquipmentModel,
+  EquipmentReport,
+  EquipmentStatus,
+} from "../entities";
+import { FilterParams } from "../types";
+import { IntegerId, UUID } from "../value-object";
 
 export abstract class EquipmentDatasource {
-  // Equipment CRUD Operations
-  abstract createEquipment(
-    createEquipmentDto: CreateEquipmentDto
-  ): Promise<Equipment>;
-  abstract getEquipmentById(id: string): Promise<Equipment>;
-  abstract getAllEquipment(filters?: EquipmentFilters): Promise<Equipment[]>;
-  abstract updateEquipment(
-    updateEquipmentDto: UpdateEquipmentDto
-  ): Promise<Equipment>;
-  abstract deleteEquipment(id: string): Promise<Equipment>;
-
-  // Equipment Model Operations
+  abstract createEquipment(data: CreateEquipmentDto): Promise<Equipment>;
+  abstract findOne(id: UUID): Promise<Equipment>;
+  abstract delete(id: UUID): Promise<void>;
+  abstract update(id: UUID, data: unknown): Promise<Equipment>;
+  abstract findAll(
+    filterParams: FilterParams<EquipmentQueryDto>
+  ): Promise<{ equipments: Equipment[]; total: number }>;
+  abstract updateStatus(id: UUID, status: EquipmentStatus): Promise<void>;
   abstract createEquipmentModel(
-    createModelDto: CreateEquipmentModelDto
+    data: CreateEquipmentModelDto
   ): Promise<EquipmentModel>;
-  abstract getEquipmentModels(isActive?: boolean): Promise<EquipmentModel[]>;
-  abstract updateEquipmentModel(
-    id: number,
-    updates: Partial<CreateEquipmentModelDto>
+  abstract findOneModel(id: IntegerId): Promise<EquipmentModel>;
+  abstract updateModel(
+    id: IntegerId,
+    data: UpdateEquipmentModelDto
   ): Promise<EquipmentModel>;
-  abstract deleteEquipmentModel(id: number): Promise<EquipmentModel>;
+  abstract deleteModel(id: IntegerId): Promise<void>;
+  abstract findAllModels(): Promise<EquipmentModel[]>;
 
-  // Equipment Location Operations
-  abstract createEquipmentLocation(
-    createLocationDto: CreateEquipmentLocationDto
-  ): Promise<EquipmentLocation>;
-  abstract getEquipmentLocations(
-    isActive?: boolean
-  ): Promise<EquipmentLocation[]>;
-  abstract updateEquipmentLocation(
-    id: number,
-    updates: Partial<CreateEquipmentLocationDto>
-  ): Promise<EquipmentLocation>;
-  abstract deleteEquipmentLocation(id: number): Promise<EquipmentLocation>;
+  abstract createRequest(data: CreateEquipmentRequestDto): Promise<void>;
+  abstract deleteRequest(id: IntegerId): Promise<void>;
 
-  // Status Management Operations
-  abstract changeEquipmentStatus(
-    equipmentId: string,
-    newStatus: EquipmentStatus
-  ): Promise<Equipment>;
-  abstract assignEquipment(equipmentId: string): Promise<Equipment>;
-  abstract unassignEquipment(equipmentId: string): Promise<Equipment>;
-  abstract sendToMaintenance(equipmentId: string): Promise<Equipment>;
-  abstract completeMaintenanceAsWorking(
-    equipmentId: string
-  ): Promise<Equipment>;
-  abstract markAsDamaged(equipmentId: string): Promise<Equipment>;
-  abstract markAsOutOfService(equipmentId: string): Promise<Equipment>;
-  abstract markAsLost(equipmentId: string): Promise<Equipment>;
-  abstract reactivateEquipment(equipmentId: string): Promise<Equipment>;
+  abstract createAssignment(
+    data: CreateEquipmentAssignmentDto,
+    currentStatus: EquipmentStatus
+  ): Promise<void>;
 
-  // Query Operations
-  abstract getAvailableEquipment(): Promise<Equipment[]>;
-  abstract getAssignedEquipment(): Promise<Equipment[]>;
-  abstract getEquipmentInMaintenance(): Promise<Equipment[]>;
-  abstract getDamagedEquipment(): Promise<Equipment[]>;
-  abstract searchEquipment(query: string): Promise<Equipment[]>;
-  abstract getEquipmentByModel(modelId: number): Promise<Equipment[]>;
-  abstract getEquipmentByLocation(locationId: number): Promise<Equipment[]>;
+  abstract findAllByCustomerId(customerId: UUID): Promise<Equipment[]>;
 
-  // Analytics and Reporting
-  abstract getEquipmentSummary(): Promise<EquipmentSummary>;
-  abstract getEquipmentUtilizationReport(): Promise<
-    Array<
-      Equipment & {
-        assignmentHistory: number;
-        maintenanceHistory: number;
-        currentStatus: EquipmentStatus;
-      }
-    >
-  >;
+  abstract findAssignment(id: IntegerId): Promise<EquipmentAssignment>;
 
-  // Business Validation
-  abstract validateSerialNumberUniqueness(
-    serialNumber: string,
-    excludeId?: string
-  ): Promise<boolean>;
-  abstract canEquipmentBeAssigned(equipmentId: string): Promise<boolean>;
-  abstract canEquipmentReceiveMaintenanceRequest(
-    equipmentId: string
-  ): Promise<boolean>;
+  abstract unassignEquipment(data: UnassignEquipmentDto): Promise<void>;
+
+  abstract createReport(
+    data: CreateEquipmentReportDto
+  ): Promise<EquipmentReport>;
 }

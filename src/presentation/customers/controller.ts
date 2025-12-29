@@ -20,6 +20,7 @@ import {
 } from "../../domain";
 import { Validators } from "../../config";
 import { BaseController } from "../shared/base.controller";
+import { CustomerResponseDto, OrderResponseDto } from "../dtos";
 
 export class CustomerController extends BaseController {
   constructor(
@@ -80,17 +81,34 @@ export class CustomerController extends BaseController {
   getCustomerById = async (req: Request, res: Response) => {
     try {
       const customerId = req.params.id;
+      const relations = { orders: true };
 
       if (!Validators.uuid.test(customerId)) {
         const customError = CustomError.badRequest("ID de cliente inválido");
         return this.handleError(customError, res, req);
       }
 
-      const customer = await this.customerRepository.findById(customerId);
+      const customer = await this.customerRepository.findById(
+        customerId,
+        relations
+      );
 
       if (!customer) {
         const customError = CustomError.notFound("Cliente no encontrado");
         return this.handleError(customError, res, req);
+      }
+
+      const parsedCustomer = CustomerResponseDto.fromEntity(customer);
+
+      const { orders } = customer;
+
+      if (orders) {
+        this.handleSuccess(
+          res,
+          { ...parsedCustomer, orders: OrderResponseDto.fromEntities(orders) },
+          req
+        );
+        return;
       }
 
       this.handleSuccess(res, customer, req);

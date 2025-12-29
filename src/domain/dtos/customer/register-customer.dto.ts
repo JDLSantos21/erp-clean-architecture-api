@@ -9,7 +9,7 @@ export class RegisterCustomerDTO {
     public addresses: CreateCustomerAddressDTO[],
     public email?: string,
     public rnc?: string,
-    public note?: string
+    public notes?: string
   ) {}
 
   static create(object: {
@@ -22,7 +22,7 @@ export class RegisterCustomerDTO {
       email,
       phones,
       addresses,
-      note,
+      notes,
     } = object;
 
     if (!Validators.isValidString(business_name))
@@ -57,7 +57,7 @@ export class RegisterCustomerDTO {
       valid_addresses.push(addressDTO!);
     }
 
-    if (note && note.length > 100)
+    if (notes && notes.length > 100)
       return ["La nota debe tener un máximo de 100 caracteres"];
 
     return [
@@ -69,7 +69,7 @@ export class RegisterCustomerDTO {
         valid_addresses,
         email,
         rnc,
-        note
+        notes?.trim()
       ),
     ];
   }

@@ -1,19 +1,15 @@
+import { EQUIPMENT_TYPE } from "../../constants";
+import { IntegerId } from "../../value-object";
 import Entity from "../entity";
 
 export type EquipmentType = "ANAQUEL" | "NEVERA" | "OTROS";
 
-export const EQUIPMENT_TYPE = {
-  ANAQUEL: "ANAQUEL" as const,
-  NEVERA: "NEVERA" as const,
-  OTROS: "OTROS" as const,
-} as const;
-
 export class EquipmentModel extends Entity<EquipmentModel> {
-  id!: number;
+  id!: IntegerId;
   name!: string;
   type!: EquipmentType;
-  brand?: string;
-  capacity?: number;
+  brand?: string | null;
+  capacity?: number | null;
   createdAt!: Date;
   updatedAt!: Date;
 

@@ -199,9 +199,124 @@ export class AuthDataSourceImpl extends AuthDataSource {
         include: { role: true },
       });
 
-      return userRoles.map((UserRole) => new Role(UserRole.role));
+      return userRoles.map((userRole) => new Role(userRole.role));
     } catch (error) {
       throw CustomError.internalServer();
+    }
+  }
+
+  async saveRefreshToken(
+    userId: string,
+    token: string,
+    expiresAt: Date,
+    deviceInfo?: Record<string, any>
+  ) {
+    try {
+      const refreshToken = await this.prisma.refreshToken.create({
+        data: {
+          userId,
+          token,
+          expiresAt,
+          deviceInfo: deviceInfo ?? undefined,
+        },
+      });
+
+      const { RefreshTokenMapper } = await import(
+        "../mappers/refresh-token.mapper"
+      );
+      return RefreshTokenMapper.toEntity(refreshToken);
+    } catch (error) {
+      throw CustomError.internalServer("Error al guardar refresh token");
+    }
+  }
+
+  async findRefreshToken(token: string) {
+    try {
+      const refreshToken = await this.prisma.refreshToken.findFirst({
+        where: { token },
+      });
+
+      if (!refreshToken) return null;
+
+      const { RefreshTokenMapper } = await import(
+        "../mappers/refresh-token.mapper"
+      );
+      return RefreshTokenMapper.toEntity(refreshToken);
+    } catch (error) {
+      throw CustomError.internalServer("Error al buscar refresh token");
+    }
+  }
+
+  async revokeRefreshToken(tokenId: number): Promise<void> {
+    try {
+      await this.prisma.refreshToken.update({
+        where: { id: tokenId },
+        data: {
+          revoked: true,
+          revokedAt: new Date(),
+        },
+      });
+    } catch (error) {
+      throw CustomError.internalServer("Error al revocar refresh token");
+    }
+  }
+
+  async revokeAllUserTokens(userId: string): Promise<void> {
+    try {
+      await this.prisma.refreshToken.updateMany({
+        where: {
+          userId,
+          revoked: false,
+        },
+        data: {
+          revoked: true,
+          revokedAt: new Date(),
+        },
+      });
+    } catch (error) {
+      throw CustomError.internalServer(
+        "Error al revocar todos los tokens del usuario"
+      );
+    }
+  }
+
+  async deleteExpiredTokens(): Promise<void> {
+    try {
+      await this.prisma.refreshToken.deleteMany({
+        where: {
+          expiresAt: {
+            lt: new Date(),
+          },
+        },
+      });
+    } catch (error) {
+      throw CustomError.internalServer("Error al eliminar tokens expirados");
+    }
+  }
+
+  async getUserActiveTokens(userId: string) {
+    try {
+      const tokens = await this.prisma.refreshToken.findMany({
+        where: {
+          userId,
+          revoked: false,
+          expiresAt: {
+            gt: new Date(),
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+      const { RefreshTokenMapper } = await import(
+        "../mappers/refresh-token.mapper"
+      );
+      return tokens.map((token) => RefreshTokenMapper.toEntity(token));
+    } catch (error) {
+      throw CustomError.internalServer(
+        "Error al obtener tokens activos del usuario"
+      );
     }
   }
 }

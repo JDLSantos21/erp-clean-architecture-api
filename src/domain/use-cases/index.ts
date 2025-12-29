@@ -1,6 +1,9 @@
 //auth
 export * from "./auth/login-user.use-case";
 export * from "./auth/register-user.use-case";
+export * from "./auth/refresh-token.use-case";
+export * from "./auth/logout.use-case";
+export * from "./auth/revoke-token.use-case";
 export * from "./auth/create-role.use-case";
 export * from "./auth/set-roles-to-user.use-case";
 
@@ -14,6 +17,9 @@ export * from "./vehicle/maintenance/process-maintenance-completion.use-case";
 //employees
 export * from "./employee/create-employee.use-case";
 export * from "./employee/update-employee.use-case";
+
+//telemetry
+export * from "./telemetry/index";
 
 //inventory
 export * from "./inventory/create-material.use-case";
@@ -54,3 +60,8 @@ export * from "./order/update-order-status.use-case";
 export * from "./order/product/create-product.use-case";
 export * from "./order/product/update-product.use-case";
 export * from "./order/product/delete-product.use-case";
+
+//equipment
+export * from "./equipment/create-equipment.use-case";
+export * from "./equipment/assign-equipment.use-case";
+export * from "./equipment/unassign-equipment.use-case";

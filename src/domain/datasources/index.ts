@@ -1,7 +1,7 @@
 export * from "./customer.datasource";
 export * from "./employee.datasource";
 export * from "./auth.datasource";
-export * from "./equipment-report.datasource";
+// export * from "./equipment-report.datasource";
 export * from "./equipment.datasource";
 export * from "./vehicle.datasource";
 export * from "./inventory.datasource";
@@ -9,3 +9,5 @@ export * from "./fuel.datasource";
 export * from "./vehicle-maintenance.datasource";
 export * from "./order.datasource";
 export * from "./product.datasource";
+export * from "./equipment.datasource";
+export * from "./telemetry.datasource";

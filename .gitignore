@@ -2,6 +2,7 @@ node_modules
 # Keep environment variables out of version control
 .env.local
 src/data/postgresql/generated
+docker-compose.yml
 prisma/migrations
 dist
 pnpm-lock.yaml

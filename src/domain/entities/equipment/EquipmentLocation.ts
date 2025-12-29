@@ -5,6 +5,7 @@ export class EquipmentLocation extends Entity<EquipmentLocation> {
   id!: number;
   latitude!: number;
   longitude!: number;
+  gpsPoint?: string; // geography(Point,4326) en DB
   address?: string;
   description?: string;
   gpsUpdatedAt!: Date;

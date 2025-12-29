@@ -10,6 +10,10 @@ export const envs = {
 
   // Security
   JWT_SECRET: env.get("JWT_SECRET").required().asString(),
+  CORS_ORIGINS: env
+    .get("CORS_ORIGINS")
+    .default("http://localhost:4000,http://localhost:5173")
+    .asArray(","),
 
   // Database
   POSTGRES_DB_HOST: env.get("DB_HOST").required().asString(),
@@ -33,4 +37,8 @@ export const envs = {
   // Upstash Redis - Para serverless/cloud
   UPSTASH_REDIS_REST_URL: env.get("UPSTASH_REDIS_REST_URL").asString(),
   UPSTASH_REDIS_REST_TOKEN: env.get("UPSTASH_REDIS_REST_TOKEN").asString(),
+
+  //Smartcar varibles
+  SMARTCAR_USER: env.get("SMARTCAR_USER").asString(),
+  SMARTCAR_PASSWORD: env.get("SMARTCAR_PASSWORD").asString(),
 };

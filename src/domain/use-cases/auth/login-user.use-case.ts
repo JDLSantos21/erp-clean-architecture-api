@@ -11,36 +11,38 @@ type User = {
   roles: RoleName[];
 };
 
-interface UserToken {
-  token: string;
+interface TokenResponse {
+  accessToken: string;
+  refreshToken: string;
   user: User;
 }
 
-type signToken = (payload: Object, duration?: number) => Promise<string | null>;
-
-interface LoginUserUseCase {
-  execute(LoginUserDto: LoginUserDto): Promise<UserToken>;
+export interface ILoginUserUseCase {
+  execute(LoginUserDto: LoginUserDto): Promise<TokenResponse>;
 }
 
-export class LoginUser implements LoginUserUseCase {
-  constructor(
-    private readonly authRepository: AuthRepository,
-    private readonly signToken: signToken = JwtAdapter.generateToken
-  ) {}
+export class LoginUser implements ILoginUserUseCase {
+  constructor(private readonly authRepository: AuthRepository) {}
 
-  async execute(loginUserDto: LoginUserDto): Promise<UserToken> {
-    const TOKEN_DURATION_IN_MILISECONS = 7200;
-
+  async execute(loginUserDto: LoginUserDto): Promise<TokenResponse> {
     const user = await this.authRepository.login(loginUserDto);
 
     const { id, name, lastName, roles } = user;
 
-    const token = await this.signToken({ id }, TOKEN_DURATION_IN_MILISECONS);
+    // Generar access token y refresh token
+    const accessToken = await JwtAdapter.generateAccessToken({ id });
+    const refreshToken = await JwtAdapter.generateRefreshToken({ id });
 
-    if (!token)
-      throw CustomError.internalServer(
-        "Ocurrio un error al generar el token ErrC:Ax01"
-      );
+    if (!accessToken || !refreshToken) {
+      throw CustomError.internalServer("Error al generar tokens ErrC:Ax01");
+    }
+
+    // Guardar refresh token en la base de datos
+    await this.authRepository.saveRefreshToken(
+      id,
+      refreshToken,
+      JwtAdapter.getRefreshTokenExpirationDate()
+    );
 
     return {
       user: {
@@ -49,7 +51,8 @@ export class LoginUser implements LoginUserUseCase {
         name,
         roles: roles.map((role) => role),
       },
-      token,
+      accessToken,
+      refreshToken,
     };
   }
 }

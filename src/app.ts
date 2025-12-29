@@ -5,6 +5,7 @@ import { Server } from "./presentation/server";
 import { CronService } from "./infrastructure/services/cron.service";
 import { DIContainer } from "./infrastructure/di/container";
 import { ILogger } from "./domain";
+import { WssService } from "./infrastructure/services";
 
 (() => {
   main();
@@ -13,6 +14,11 @@ import { ILogger } from "./domain";
 async function main() {
   // Obtener logger del DI Container
   const container = DIContainer.getInstance();
+
+  // Register WssService
+  const wssService = new WssService();
+  container.registerSingleton("WssService", () => wssService);
+
   const logger = container.resolve<ILogger>("Logger");
 
   try {

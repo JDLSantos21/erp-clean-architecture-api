@@ -14,7 +14,7 @@ import {
   UpdateOrderStatus,
   UpdateOrderStatusDto,
 } from "../../domain";
-import { OrderResponseDto } from "../dtos/order";
+import { OrderResponseDto, OrderStatusResponseDto } from "../dtos/order";
 import { BaseController } from "../shared/base.controller";
 import { Request, Response } from "express";
 
@@ -180,6 +180,26 @@ export class OrderController extends BaseController {
         { message: "Estado del pedido actualizado" },
         req
       );
+    } catch (error) {
+      this.handleError(error, res, req);
+    }
+  };
+
+  getOrderStatusHistory = async (req: Request, res: Response) => {
+    const orderId = IntegerId.create(Number(req.params.id));
+    try {
+      const history = await this.orderRepository.getOrderStatusHistory(orderId);
+      const historyResponse = OrderStatusResponseDto.fromEntities(history);
+      this.handleSuccess(res, historyResponse, req);
+    } catch (error) {
+      this.handleError(error, res, req);
+    }
+  };
+
+  getInProgressOrdersStats = async (req: Request, res: Response) => {
+    try {
+      const stats = await this.orderRepository.getInProgressOrdersStats();
+      this.handleSuccess(res, stats, req);
     } catch (error) {
       this.handleError(error, res, req);
     }

@@ -10,41 +10,44 @@ type User = {
   roles: string[];
 };
 
-interface UserToken {
-  token: string;
+interface TokenResponse {
+  accessToken: string;
+  refreshToken: string;
   user: User;
 }
 
-type signToken = (payload: Object, duration?: number) => Promise<string | null>;
-
-interface RegisterUserUseCase {
-  execute(registerUserDto: RegisterUserDto): Promise<UserToken>;
+export interface IRegisterUserUseCase {
+  execute(registerUserDto: RegisterUserDto): Promise<TokenResponse>;
 }
 
-export class RegisterUser implements RegisterUserUseCase {
-  private static readonly TOKEN_DURATION_HOURS = 2;
+export class RegisterUser implements IRegisterUserUseCase {
+  constructor(private readonly authRepository: AuthRepository) {}
 
-  constructor(
-    private readonly authRepository: AuthRepository,
-    private readonly signToken: signToken = JwtAdapter.generateToken
-  ) {}
-
-  async execute(registerUserDto: RegisterUserDto): Promise<UserToken> {
+  async execute(registerUserDto: RegisterUserDto): Promise<TokenResponse> {
     await this.existsUser(registerUserDto.username);
     await this.verifyRoleExists(registerUserDto.roles);
 
     // crear usuario
     const user = await this.authRepository.register(registerUserDto);
-    // token
-    const tokenDurationInSeconds = RegisterUser.TOKEN_DURATION_HOURS * 3600;
 
-    const token = await this.signToken({ id: user.id }, tokenDurationInSeconds);
+    // Generar access token y refresh token
+    const accessToken = await JwtAdapter.generateAccessToken({ id: user.id });
+    const refreshToken = await JwtAdapter.generateRefreshToken({ id: user.id });
 
-    if (!token)
-      throw CustomError.internalServer("Error register user ErrC:Ax01");
+    if (!accessToken || !refreshToken) {
+      throw CustomError.internalServer("Error al generar tokens ErrC:Ax01");
+    }
+
+    // Guardar refresh token en la base de datos
+    await this.authRepository.saveRefreshToken(
+      user.id,
+      refreshToken,
+      JwtAdapter.getRefreshTokenExpirationDate()
+    );
 
     return {
-      token,
+      accessToken,
+      refreshToken,
       user: {
         id: user.id,
         name: user.name,

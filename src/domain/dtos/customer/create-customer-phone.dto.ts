@@ -7,7 +7,8 @@ export class CreateCustomerPhoneDTO {
     public phoneNumber: string,
     public type: PhoneType,
     public hasWhatsapp: boolean,
-    public isPrimary: boolean
+    public isPrimary: boolean,
+    public description?: string
   ) {}
   static create(
     object: {
@@ -15,7 +16,8 @@ export class CreateCustomerPhoneDTO {
     },
     customerId?: string
   ): [string?, CreateCustomerPhoneDTO?] {
-    const { phone_number, type, has_whatsapp, is_primary } = object;
+    const { phone_number, type, has_whatsapp, is_primary, description } =
+      object;
 
     if (
       has_whatsapp === undefined ||
@@ -24,6 +26,9 @@ export class CreateCustomerPhoneDTO {
       type === undefined
     )
       return ["Todos los campos son obligatorios"];
+
+    if (description && !Validators.isValidString(description))
+      return ["La descripción no es válida"];
 
     if (customerId && !Validators.uuid.test(customerId))
       return ["El formato del ID de cliente no es válido"];
@@ -46,7 +51,13 @@ export class CreateCustomerPhoneDTO {
 
     return [
       undefined,
-      new CreateCustomerPhoneDTO(phone_number, type, has_whatsapp, is_primary),
+      new CreateCustomerPhoneDTO(
+        phone_number,
+        type,
+        has_whatsapp,
+        is_primary,
+        description
+      ),
     ];
   }
 }

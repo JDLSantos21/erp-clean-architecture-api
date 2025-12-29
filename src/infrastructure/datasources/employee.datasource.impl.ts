@@ -5,6 +5,7 @@ import {
   Employee,
   EmployeeDatasource,
   EmployeeQueryDto,
+  EquipmentSerialNumber,
   FilterParams,
 } from "../../domain";
 import { buildWhere } from "../mappers/prisma-where.mapper";
@@ -13,7 +14,9 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
   constructor(private readonly prisma: PrismaClient) {
     super();
   }
-  async createEmployee(data: CreateEmployeeDto): Promise<Employee> {
+  async createEmployee(
+    data: CreateEmployeeDto & { serialNumber: EquipmentSerialNumber }
+  ): Promise<Employee> {
     try {
       const registeredEmployee = await this.prisma.employee.create({ data });
       return new Employee(registeredEmployee);
@@ -48,14 +51,12 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
     employees: Employee[];
     total: number;
   }> {
-    const where = buildWhere(filters!, [
-      "name",
-      "lastName",
-      "employeeCode",
-      "position",
-      "cedula",
-      "phoneNumber",
-    ]);
+    const where = buildWhere(
+      filters!,
+      ["name", "lastName", "employeeCode", "cedula", "phoneNumber"],
+      undefined,
+      { enumFields: ["position"] }
+    );
 
     try {
       const [employees, total] = await Promise.all([
@@ -67,7 +68,7 @@ export class EmployeeDatasourceImpl extends EmployeeDatasource {
         await this.prisma.employee.count({ where }),
       ]);
 
-      return { employees, total };
+      return { employees: employees.map((emp) => new Employee(emp)), total };
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;

@@ -14,3 +14,5 @@ export { Username } from "./Username";
 export { Password } from "./Password";
 
 export { FutureDate } from "./FutureDate";
+
+export { EquipmentSerialNumber } from "./equipment-serial.vo";

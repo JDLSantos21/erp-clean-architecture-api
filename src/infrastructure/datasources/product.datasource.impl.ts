@@ -38,12 +38,14 @@ export class ProductDatasourceImpl extends ProductDatasource {
     return productEntity;
   }
 
-  async findOneByName(name: string): Promise<Product> {
+  async findOneByName(name: string): Promise<Product | null> {
     try {
       const product = await this.prisma.product.findUnique({
         where: { name },
       });
-      if (!product) throw CustomError.notFound("Producto no encontrado");
+
+      if (!product) return null;
+
       return OrderMapper.productToDomain(product);
     } catch (error) {
       if (error instanceof CustomError) throw error;

@@ -8,3 +8,4 @@ export * from "./inventory.repository.impl";
 export * from "./employee.repository.impl";
 export * from "./order.repository.impl";
 export * from "./product.repository.impl";
+export * from "./equipment.repository.impl";

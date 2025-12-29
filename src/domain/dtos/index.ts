@@ -18,6 +18,7 @@ export * from "./fuel/fuel-metrics.dto";
 export * from "./fuel/vehicle-metrics.dto";
 export * from "./vehicle/maintenance/create-maintenance-schedule.dto";
 export * from "./vehicle/maintenance/process-maintenance.dto";
+export * from "./telemetry/index";
 export * from "./vehicle/maintenance/update-maintenance-item.dto";
 export * from "./vehicle/maintenance/create-maintenance-procedure.dto";
 export * from "./vehicle/maintenance/maintenance-report.dto";
@@ -37,6 +38,8 @@ export * from "./user/set-role-to-user.dto";
 export * from "./user/create-role.dto";
 export * from "./user/register-user.dto";
 export * from "./user/login-user.dto";
+export * from "./user/refresh-token.dto";
+export * from "./user/revoke-token.dto";
 
 //Customers
 
@@ -59,3 +62,13 @@ export * from "./order/assign-order-to-employee.dto";
 
 // Order Products
 export * from "./order/product/create-order-product.dto";
+
+// Equipments
+export * from "./equipment/create-equipment.dto";
+export * from "./equipment/model/create-equipment-model.dto";
+export * from "./equipment/model/update-equipment-model.dto";
+export * from "./equipment/create-equipment-assignment.dto";
+export * from "./equipment/unassign-equipment.dto";
+export * from "./equipment/create-equipment-report.dto";
+export * from "./equipment/create-equipment-request.dto";
+export * from "./equipment/equipment-query.dto";

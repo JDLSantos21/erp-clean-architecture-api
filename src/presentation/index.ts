@@ -5,10 +5,11 @@ export * from "./fuel/routes";
 export * from "./fuel/analytics-routes";
 export * from "./inventory/routes";
 export * from "./vehicles/maintenance/routes";
-export * from "./equipment-reports/equipment-report.routes";
+// export * from "./equipment-reports/equipment-report.routes";
 export * from "./customers/routes";
 export * from "./order/routes";
 export * from "./order/product/routes";
+export * from "./equipment/routes";
 
 //controllers
 export * from "./auth/controller";
@@ -21,5 +22,6 @@ export * from "./inventory/controller";
 export * from "./vehicles/maintenance/controller";
 export * from "./order/controller";
 export * from "./order/product/controller";
+export * from "./equipment/controller";
 
 export * from "./middlewares/index";

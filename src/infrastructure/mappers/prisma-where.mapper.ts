@@ -1,4 +1,3 @@
-import { start } from "repl";
 import { buildUtcDateRange } from "../../shared/utils/date-range.util";
 
 type FilterValue =
@@ -17,6 +16,41 @@ interface FilterRules {
 
 interface FieldTypeConfig {
   enumFields?: string[];
+  relationFilters?: RelationFilter[];
+}
+
+/**
+ * Configuración para filtros en relaciones anidadas
+ *
+ * @example
+ * // Filtrar Equipment por nombre de Customer (relación indirecta)
+ * {
+ *   dtoField: 'customerName',
+ *   prismaRelation: 'assignments',
+ *   nestedPath: 'customer.businessName',
+ *   operator: 'some'
+ * }
+ *
+ * Genera:
+ * assignments: {
+ *   some: {
+ *     customer: {
+ *       businessName: { contains: 'valor', mode: 'insensitive' }
+ *     }
+ *   }
+ * }
+ */
+interface RelationFilter {
+  /** Campo en el DTO (ej: 'customerName') */
+  dtoField: string;
+  /** Relación Prisma (ej: 'assignments') */
+  prismaRelation: string;
+  /** Path anidado hasta el campo (ej: 'customer.businessName') */
+  nestedPath: string;
+  /** Operador Prisma: 'some', 'every', 'none' */
+  operator: "some" | "every" | "none";
+  /** Tipo de comparación: 'contains', 'equals', 'in' */
+  comparison?: "contains" | "equals" | "in";
 }
 
 export function buildWhere<T extends Record<string, any>>(
@@ -29,6 +63,7 @@ export function buildWhere<T extends Record<string, any>>(
   const { search, startDate, endDate, ...rest } = filters;
 
   const enumFields = fieldConfig?.enumFields || [];
+  const relationFilters = fieldConfig?.relationFilters || [];
 
   const defaultRules: FilterRules = {
     string: (value) => ({ contains: value as string, mode: "insensitive" }),
@@ -40,6 +75,16 @@ export function buildWhere<T extends Record<string, any>>(
   // Handle regular filters
   for (const [key, value] of Object.entries(rest)) {
     if (value === undefined || value === null || value === "") continue;
+
+    // Check if this field is handled by a relation filter
+    const relationFilter = relationFilters.find((rf) => rf.dtoField === key);
+    if (relationFilter) {
+      where[relationFilter.prismaRelation] = buildRelationFilter(
+        relationFilter,
+        value
+      );
+      continue;
+    }
 
     // Special handling for enum fields
     if (enumFields.includes(key)) {
@@ -80,4 +125,49 @@ export function buildWhere<T extends Record<string, any>>(
   }
 
   return where;
+}
+
+/**
+ * Construye el filtro de relación anidada
+ *
+ * @example
+ * buildRelationFilter({
+ *   dtoField: 'customerName',
+ *   prismaRelation: 'assignments',
+ *   nestedPath: 'customer.businessName',
+ *   operator: 'some',
+ *   comparison: 'contains'
+ * }, 'John')
+ *
+ * Retorna:
+ * {
+ *   some: {
+ *     customer: {
+ *       businessName: { contains: 'John', mode: 'insensitive' }
+ *     }
+ *   }
+ * }
+ */
+function buildRelationFilter(config: RelationFilter, value: FilterValue): any {
+  const { nestedPath, operator, comparison = "contains" } = config;
+  const parts = nestedPath.split(".");
+
+  // Build nested condition from innermost to outermost
+  let condition: any;
+
+  if (comparison === "contains") {
+    condition = { contains: value, mode: "insensitive" };
+  } else if (comparison === "equals") {
+    condition = { equals: value };
+  } else if (comparison === "in") {
+    condition = { in: Array.isArray(value) ? value : [value] };
+  }
+
+  // Build nested structure
+  for (let i = parts.length - 1; i >= 0; i--) {
+    condition = { [parts[i]]: condition };
+  }
+
+  // Wrap with operator
+  return { [operator]: condition };
 }

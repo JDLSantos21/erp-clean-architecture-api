@@ -5,12 +5,14 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
 }
 
 model User {
@@ -43,7 +45,6 @@ model User {
   
   // Relaciones para módulo de pedidos
   createdOrders Order[] @relation("OrderCreatedBy")
-  assignedOrders Order[] @relation("OrderAssignedTo")
   orderStatusChanges OrderStatusHistory[] @relation("OrderStatusChangedBy")
   
   // Relaciones para módulo de solicitudes de equipos
@@ -82,7 +83,7 @@ model RefreshToken {
   id         Int       @id @default(autoincrement())
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     String    @map("user_id") @db.Uuid
-  token      String
+  token      String    @unique
   expiresAt  DateTime  @map("expires_at")
   revoked    Boolean   @default(false)
   revokedAt  DateTime? @map("revoked_at")
@@ -90,6 +91,8 @@ model RefreshToken {
   createdAt  DateTime  @default(now()) @map("created_at")
   updatedAt  DateTime  @updatedAt @map("updated_at")
 
+  @@index([userId, revoked, expiresAt])
+  @@index([expiresAt])
   @@map("refresh_tokens")
 }
 
@@ -123,6 +126,7 @@ model Employee {
   updatedAt             DateTime          @updatedAt @map("updated_at")
 
   FuelConsumption       FuelConsumption[]
+  assignedOrders        Order[]           @relation("OrderAssignedTo")
 
   @@map("employees")
 }
@@ -424,7 +428,6 @@ enum RoleName {
 
 model Equipment {
   id           String          @id @default(uuid()) @db.Uuid
-  name         String          @db.VarChar(100)
   serialNumber String          @unique @map("serial_number") @db.VarChar(100)
   modelId      Int             @map("model_id")
   locationId   Int?            @map("location_id") // Referencia a ubicación GPS
@@ -451,7 +454,7 @@ model EquipmentModel {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   equipments Equipment[]
-  equipmentRequests EquipmentRequest[] // Solicitudes para este modelo específico
+  equipmentRequests EquipmentRequest[] 
   
   @@map("equipment_models")
 }
@@ -467,6 +470,7 @@ model EquipmentLocation {
   // Coordenadas GPS del equipo (capturadas desde app móvil)
   latitude     Float    // Latitud GPS
   longitude    Float    // Longitud GPS
+  gpsPoint     Unsupported("geography(Point,4326)")? @map("gps_point") // Tipo geográfico para consultas espaciales
   address      String?  @db.VarChar(255) // Dirección física opcional
   description  String?  @db.VarChar(255)
   gpsUpdatedAt DateTime @default(now()) @map("gps_updated_at") // Cuándo se capturó
@@ -551,7 +555,7 @@ model CustomerAddress {
 }
 
 model EquipmentAssignment {
-  id              String   @id @default(uuid()) @db.Uuid
+  id              Int      @id @default(autoincrement())
   equipmentId     String   @map("equipment_id") @db.Uuid
   customerId      String   @map("customer_id") @db.Uuid
   customerAddressId Int   @map("customer_address_id") // En qué sucursal está
@@ -711,7 +715,7 @@ model Order {
   customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   customerAddress CustomerAddress? @relation(fields: [customerAddressId], references: [id], onDelete: SetNull)
   createdByUser   User     @relation("OrderCreatedBy", fields: [createdById], references: [id])
-  assignedToUser  User?    @relation("OrderAssignedTo", fields: [assignedToId], references: [id])
+  assignedToEmployee Employee? @relation("OrderAssignedTo", fields: [assignedToId], references: [id])
   
   // Relaciones hijas
   orderItems      OrderItem[]

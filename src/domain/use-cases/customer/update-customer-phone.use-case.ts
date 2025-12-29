@@ -19,6 +19,19 @@ export class UpdateCustomerPhone implements UpdateCustomerPhoneUseCase {
   ): Promise<CustomerPhone> {
     const phone = await this.customerRepository.findPhoneById(phoneId);
     if (!phone) throw CustomError.notFound("El teléfono no existe");
+    const { isPrimary } = data;
+
+    if (isPrimary) {
+      const primaryPhone = await this.customerRepository.findPrimaryPhone(
+        data.customerId
+      );
+
+      if (primaryPhone && primaryPhone.id !== phoneId) {
+        await this.customerRepository.updatePhone(primaryPhone.id, {
+          isPrimary: false,
+        });
+      }
+    }
 
     if (data.phoneNumber && data.phoneNumber !== phone.phoneNumber) {
       const exist = await this.customerRepository.findPhoneByNumber(

@@ -6,10 +6,12 @@ import { FuelRoutes } from "./fuel/routes";
 import { FuelAnalyticsRoutes } from "./fuel/analytics-routes";
 import { InventoryRoutes } from "./inventory/routes";
 import { MaintenanceRoutes } from "./vehicles/maintenance/routes";
-import { EquipmentReportRoutes } from "./equipment-reports/equipment-report.routes";
+// import { EquipmentReportRoutes } from "./equipment-reports/equipment-report.routes";
 import { CustomerRoutes } from "./customers/routes";
 import { OrderRoutes } from "./order/routes";
 import { ProductRoutes } from "./order/product/routes";
+import { EquipmentRoutes } from "./equipment/routes";
+import { TelemetryRoutes } from "./telemetry/routes";
 
 export class AppRoutes {
   static get routes(): Router {
@@ -35,12 +37,17 @@ export class AppRoutes {
     // Sistema de gestión de clientes
     router.use("/customers", CustomerRoutes.routes);
     // Sistema de reportes de equipos
-    router.use("/equipment-reports", EquipmentReportRoutes.routes);
+    // router.use("/equipment-reports", EquipmentReportRoutes.routes);
 
     // Sistema de gestión de pedidos
     router.use("/orders", OrderRoutes.routes);
 
     router.use("/products", ProductRoutes.routes);
+
+    router.use("/equipment", EquipmentRoutes.routes);
+
+    // Sistema de telemetría
+    router.use("/telemetry", TelemetryRoutes.routes);
 
     return router;
   }

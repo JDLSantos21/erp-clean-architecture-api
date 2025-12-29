@@ -1,10 +1,12 @@
 //Auth Module - Dependency Injection Registration
-import { JwtAdapter } from "../../../config/jwt";
 import {
   RegisterUser,
   LoginUser,
   CreateRole,
   SetRolesToUser,
+  RefreshTokenUseCase,
+  LogoutUseCase,
+  RevokeTokenUseCase,
 } from "../../../domain";
 import { AuthController, AuthMiddleware } from "../../../presentation";
 import { AuthDataSourceImpl } from "../../datasources";
@@ -45,21 +47,13 @@ function registerAuthUseCases(container: IDIContainer): void {
   // RegisterUser
   container.register(
     "RegisterUserUseCase",
-    () =>
-      new RegisterUser(
-        container.resolve("AuthRepository"),
-        JwtAdapter.generateToken
-      )
+    () => new RegisterUser(container.resolve("AuthRepository"))
   );
 
   // LoginUser
   container.register(
     "LoginUserUseCase",
-    () =>
-      new LoginUser(
-        container.resolve("AuthRepository"),
-        JwtAdapter.generateToken
-      )
+    () => new LoginUser(container.resolve("AuthRepository"))
   );
 
   // CreateRole
@@ -73,6 +67,24 @@ function registerAuthUseCases(container: IDIContainer): void {
     "SetRolesToUserUseCase",
     () => new SetRolesToUser(container.resolve("AuthRepository"))
   );
+
+  // RefreshToken
+  container.register(
+    "RefreshTokenUseCase",
+    () => new RefreshTokenUseCase(container.resolve("AuthRepository"))
+  );
+
+  // Logout
+  container.register(
+    "LogoutUseCase",
+    () => new LogoutUseCase(container.resolve("AuthRepository"))
+  );
+
+  // RevokeToken
+  container.register(
+    "RevokeTokenUseCase",
+    () => new RevokeTokenUseCase(container.resolve("AuthRepository"))
+  );
 }
 
 //Controllers
@@ -85,6 +97,9 @@ function registerAuthControllers(container: IDIContainer): void {
         container.resolve("LoginUserUseCase"),
         container.resolve("CreateRoleUseCase"),
         container.resolve("SetRolesToUserUseCase"),
+        container.resolve("RefreshTokenUseCase"),
+        container.resolve("LogoutUseCase"),
+        container.resolve("RevokeTokenUseCase"),
         container.resolve("AuthRepository")
       )
   );

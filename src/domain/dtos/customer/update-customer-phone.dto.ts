@@ -2,9 +2,11 @@ import { Validators } from "../../../config";
 import { PhoneTypes } from "../../constants";
 import { PhoneType } from "../../entities";
 import { CustomError } from "../../errors";
+import { UUID } from "../../value-object";
 
 export class UpdateCustomerPhoneDto {
   private constructor(
+    public customerId: UUID,
     public phoneNumber?: string,
     public description?: string,
     public isPrimary?: boolean,
@@ -18,8 +20,14 @@ export class UpdateCustomerPhoneDto {
     },
     phoneId: number
   ): [string?, UpdateCustomerPhoneDto?] {
-    const { phone_number, description, is_primary, type, has_whatsapp } =
-      object;
+    const {
+      phone_number,
+      description,
+      is_primary,
+      type,
+      has_whatsapp,
+      customer_id,
+    } = object;
 
     if (
       !Validators.hasAtLeastOneField({
@@ -59,6 +67,7 @@ export class UpdateCustomerPhoneDto {
     return [
       undefined,
       new UpdateCustomerPhoneDto(
+        UUID.create(customer_id),
         phone_number,
         description,
         is_primary,

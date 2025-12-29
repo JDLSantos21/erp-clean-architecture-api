@@ -1,6 +1,7 @@
 import { Customer, CustomerAddress } from "../customer";
 import Entity from "../entity";
 import { User } from "../auth";
+import { Employee } from "../employee/Employee";
 import { IntegerId, TrackingCode } from "../../value-object";
 import { OrderStatusHistory } from "./OrderStatusHistory";
 import { OrderItem } from "./OrderItem";
@@ -27,7 +28,7 @@ export class Order extends Entity<Order> {
   createdById!: string;
   createdByUser?: User | null;
   assignedToId?: string | null;
-  assignedToUser?: User | null;
+  assignedToEmployee?: Employee | null;
   notes?: string | null;
   deliveryNotes?: string | null;
   isActive!: boolean;
@@ -202,8 +203,8 @@ export class Order extends Entity<Order> {
       summary += ` - Programado: ${this.scheduledDate!.toLocaleDateString()}`;
     }
 
-    if (this.isAssigned() && this.assignedToUser) {
-      summary += ` - Asignado a: ${this.assignedToUser.name}`;
+    if (this.isAssigned() && this.assignedToEmployee) {
+      summary += ` - Asignado a: ${this.assignedToEmployee.name}`;
     }
 
     return summary;

@@ -3,7 +3,7 @@ export * from "./equipment/Equipment";
 export * from "./equipment/EquipmentModel";
 export * from "./equipment/EquipmentLocation";
 export * from "./equipment/EquipmentAssigment";
-export * from "./equipment/EquipmetRequest";
+export * from "./equipment/EquipmentRequest";
 export * from "./equipment/EquipmentReport";
 
 // Fuel Management System
@@ -15,5 +15,6 @@ export * from "./auth/index";
 export * from "./employee/index";
 export * from "./vehicle/index";
 export * from "./order/index";
+export * from "./telemetry/index";
 
 export { default as Entity } from "./entity";

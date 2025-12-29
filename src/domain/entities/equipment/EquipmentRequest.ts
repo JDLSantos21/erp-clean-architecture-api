@@ -2,23 +2,9 @@ import { Customer } from "../customer";
 import Entity from "../entity";
 import { User } from "../auth";
 import { EquipmentModel } from "./EquipmentModel";
+import { REQUEST_STATUS } from "../../constants";
 
-export type RequestStatus =
-  | "PENDIENTE"
-  | "APROBADO"
-  | "COMPLETADO"
-  | "CANCELADO"
-  | "RECHAZADO"
-  | "EXPIRADO";
-
-export const REQUEST_STATUS = {
-  PENDIENTE: "PENDIENTE" as const,
-  APROBADO: "APROBADO" as const,
-  COMPLETADO: "COMPLETADO" as const,
-  CANCELADO: "CANCELADO" as const,
-  RECHAZADO: "RECHAZADO" as const,
-  EXPIRADO: "EXPIRADO" as const,
-} as const;
+export type RequestStatus = keyof typeof REQUEST_STATUS;
 
 export class EquipmentRequest extends Entity<EquipmentRequest> {
   id!: string;

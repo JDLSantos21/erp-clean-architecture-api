@@ -4,12 +4,12 @@ import {
   RoleName,
   hasRoleOrHigher,
   hasPermissionLevel,
-  PERMISSION_LEVELS,
   getRoleHierarchyLevel,
   getRoleNameByLevel,
   StatusCode,
 } from "../../domain";
 import { ResponseBuilder } from "../../shared/response/ResponseBuilder";
+import { PERMISSION_LEVELS } from "../../shared/constants/permission-levels";
 
 export class PermissionMiddleware {
   // Middleware genérico para verificar niveles de permisos
