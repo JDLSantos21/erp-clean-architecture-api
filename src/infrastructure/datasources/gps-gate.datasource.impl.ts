@@ -1,3 +1,5 @@
+import { envs } from "../../config";
+import { CacheService, Logger } from "../../domain";
 import { TelemetryDatasource } from "../../domain/datasources/telemetry.datasource";
 import { VehicleTelemetry } from "../../domain/entities/telemetry/VehicleTelemetry";
 import axios, { AxiosInstance } from "axios";
@@ -5,11 +7,12 @@ import vm from "vm";
 
 export class GpsGateDatasourceImpl implements TelemetryDatasource {
   private readonly axiosInstance: AxiosInstance;
-  private fransonSessionId: string = "";
-  private fransonApplicationId: string = "example-app-id"; // Reemplazar con el Application ID real
+  private readonly fransonApplicationId: string =
+    "0DB484A0E3533C5D82C95536146A609E";
   private readonly baseUrl: string = "https://smartcar.claro.com.do";
+  private sessionPromise: Promise<string> | null = null;
 
-  constructor() {
+  constructor(private readonly cacheService: CacheService) {
     this.axiosInstance = axios.create({
       baseURL: this.baseUrl,
       headers: {
@@ -24,24 +27,68 @@ export class GpsGateDatasourceImpl implements TelemetryDatasource {
     });
 
     this.setupInterceptors();
+
+    // Inicialización "Eager" (fuego y olvido) para calentar el caché
+    this.getSessionId().catch((err) =>
+      Logger.error("[INFRA] Error en inicialización temprana de sesión", err)
+    );
   }
 
   private setupInterceptors() {
-    this.axiosInstance.interceptors.request.use((config) => {
-      if (this.fransonSessionId) {
-        config.headers.Cookie = `FransonSessionID=${this.fransonSessionId}; FransonApplicationID=${this.fransonApplicationId}`;
+    this.axiosInstance.interceptors.request.use(async (config) => {
+      try {
+        const sessionId = await this.getSessionId();
+        if (sessionId) {
+          config.headers.Cookie = `FransonSessionID=${sessionId}; FransonApplicationID=${this.fransonApplicationId}`;
+        }
+      } catch (error) {
+        Logger.error(
+          "[INFRA] No se pudo obtener Session ID para la petición",
+          error
+        );
       }
       return config;
     });
 
     this.axiosInstance.interceptors.response.use(
-      (response) => response,
+      async (response) => {
+        let data = response.data;
+
+        // Si la respuesta es string (debido a transformResponse), intentamos parsear
+        // para verificar si es un error JSON-RPC en lugar del script esperado.
+        if (typeof data === "string") {
+          try {
+            if (data.trim().startsWith("{")) {
+              data = JSON.parse(data);
+            }
+          } catch (e) {
+            // No es JSON, probablemente es el script esperado
+          }
+        }
+
+        if (data?.error?.message === "Session has expired") {
+          const originalRequest = response.config as any;
+
+          if (!originalRequest._retry) {
+            originalRequest._retry = true;
+            Logger.info(
+              "[INFRA] JSON-RPC Session Expired - Invalidando sesión y reintentando..."
+            );
+            this.sessionPromise = null;
+            await this.cacheService.delete("GPSGATE_SESSION_ID");
+            return this.axiosInstance(originalRequest);
+          }
+        }
+        return response;
+      },
       async (error) => {
         const originalRequest = error.config;
         // Reintento si recibimos 401 (Sesión vencida)
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
-          await this.login();
+          Logger.info("[INFRA] 401 Detectado - Invalidando sesión");
+          this.sessionPromise = null; // invalidar promesa actual para forzar login
+          await this.cacheService.delete("GPSGATE_SESSION_ID");
           return this.axiosInstance(originalRequest);
         }
         return Promise.reject(error);
@@ -49,8 +96,31 @@ export class GpsGateDatasourceImpl implements TelemetryDatasource {
     );
   }
 
-  private async login(): Promise<void> {
-    console.log("[INFRA] Refreshing GpsGate session...");
+  /**
+   * Obtiene un Session ID válido, ya sea de memoria, caché o login.
+   * Maneja condiciones de carrera retornando la misma promesa a llamadas simultáneas.
+   */
+  private async getSessionId(): Promise<string> {
+    if (this.sessionPromise) {
+      return this.sessionPromise;
+    }
+
+    this.sessionPromise = (async () => {
+      const cachedSession = await this.cacheService.get<string>(
+        "GPSGATE_SESSION_ID"
+      );
+
+      if (cachedSession) return cachedSession;
+      return this.performLogin();
+    })().catch((error) => {
+      this.sessionPromise = null;
+      throw error;
+    });
+
+    return this.sessionPromise;
+  }
+
+  private async performLogin(): Promise<string> {
     try {
       const response = await axios.post(
         `${this.baseUrl}/comGpsGate/rpc/Directory/v.1?_METHOD=Login`,
@@ -58,43 +128,43 @@ export class GpsGateDatasourceImpl implements TelemetryDatasource {
           id: 1,
           method: "Login",
           params: {
-            strUserName: "example", // Mantenlo en variables de entorno en producción
-            strPassword: "example",
+            strUserName: envs.SMARTCAR_USER,
+            strPassword: envs.SMARTCAR_PASSWORD,
             bStaySignedIn: false,
             appId: 0,
           },
         }
       );
 
-      console.log("Login successfully executed.");
-
-      console.log(
-        "[INFRA] GpsGate login response cookie.",
-        response.headers["set-cookie"]
-      );
+      if (response.data.error) {
+        throw new Error(
+          response.data.error.message || "Error desconocido en Login GpsGate"
+        );
+      }
 
       const cookies = response.headers["set-cookie"];
+      let sessionId = "";
+
       if (cookies) {
         const sessionCookie = cookies.find((c) =>
           c.includes("FransonSessionID")
         );
         if (sessionCookie) {
-          this.fransonSessionId = sessionCookie.split(";")[0].split("=")[1];
-          console.log("[INFRA] Session ID updated successfully.");
+          sessionId = sessionCookie.split(";")[0].split("=")[1];
         }
       }
+
+      if (!sessionId) throw new Error("No se sessionID en las cookies");
+
+      await this.cacheService.set("GPSGATE_SESSION_ID", sessionId, 18000);
+      return sessionId;
     } catch (error) {
-      console.error("[INFRA] Login failed:", error);
+      Logger.error("[INFRA] Fallo en Login:", error);
       throw new Error("Authentication failed with GpsGate");
     }
   }
 
   async getFleetTelemetry(): Promise<VehicleTelemetry[]> {
-    if (!this.fransonSessionId) {
-      console.log("[INFRA] No session ID, logging in...");
-      await this.login();
-    }
-
     const payload = {
       id: 1,
       method: "GetLatestUserDataByViewChunked",
@@ -105,38 +175,37 @@ export class GpsGateDatasourceImpl implements TelemetryDatasource {
       const response = await this.axiosInstance.post(
         "/comGpsGate/rpc/Directory/v.1?_METHOD=GetLatestUserDataByViewChunked",
         payload,
-        { transformResponse: [(d) => d] } // Evitamos que Axios intente parsear el string ejecutable
+        { transformResponse: [(d) => d] }
       );
 
-      console.log("[INFRA] Fetched fleet telemetry data.");
-
       const result = this.executeScript(response.data);
-
-      // La estructura de GpsGate es: result.result.users
       const users = result?.result?.result?.users || [];
-      console.log("[INFRA] First user name:", users[0]?.name);
+
+      if (users.length > 0) {
+        Logger.info(`[INFRA] ${users.length} encontrados.`);
+      } else {
+        Logger.warn("[INFRA] La lista de vehiculos está vacía.");
+      }
+
       return this.mapToEntities(users);
     } catch (error) {
-      console.error("[INFRA] Error fetching fleet telemetry:", error);
+      Logger.error("[INFRA] Error fetching fleet telemetry:", error);
       throw error;
     }
   }
 
   private executeScript(script: string): any {
     try {
-      // GpsGate envía: {"id":1, "result": {...}}
-      // Lo envolvemos para que el VM lo retorne como expresión
       const scriptToRun = `(${script})`;
       return vm.runInNewContext(scriptToRun, { Date });
     } catch (e) {
-      console.error("[INFRA] VM script execution failed", e);
+      Logger.error("[INFRA] VM script execution failed", e);
       throw new Error("Failed to process GpsGate executable response");
     }
   }
 
   private mapToEntities(users: any[]): VehicleTelemetry[] {
     return users.map((u: any) => {
-      // El objeto 'u' (user) contiene 'trackPoint' con la telemetría real
       return new VehicleTelemetry({
         id: u.id,
         name: u.name || `Vehículo ${u.id}`,
@@ -144,7 +213,7 @@ export class GpsGateDatasourceImpl implements TelemetryDatasource {
         lng: u.trackPoint?.pos?.lng || 0,
         speed: Math.round(u.trackPoint?.vel?.speed || 0),
         heading: u.trackPoint?.vel?.heading || 0,
-        lastUpdate: new Date(), // GpsGate usa timestamps internos, aquí usamos el de recepción
+        lastUpdate: new Date(),
       });
     });
   }

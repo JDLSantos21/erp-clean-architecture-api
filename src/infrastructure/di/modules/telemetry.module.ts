@@ -10,13 +10,17 @@ export function registerTelemetryModule(container: IDIContainer): void {
   // Datasource
   container.registerSingleton(
     "TelemetryDatasource",
-    () => new GpsGateDatasourceImpl()
+    () => new GpsGateDatasourceImpl(container.resolve("CacheService"))
   );
 
   // Repository
   container.registerSingleton(
     "TelemetryRepository",
-    () => new TelemetryRepositoryImpl()
+    () =>
+      new TelemetryRepositoryImpl(
+        container.resolve("TelemetryDatasource"),
+        container.resolve("CacheService")
+      )
   );
 
   // Use Cases

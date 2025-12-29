@@ -20,7 +20,7 @@ import {
 } from "../../domain";
 import { Validators } from "../../config";
 import { BaseController } from "../shared/base.controller";
-import { OrderResponseDto } from "../dtos";
+import { CustomerResponseDto, OrderResponseDto } from "../dtos";
 
 export class CustomerController extends BaseController {
   constructor(
@@ -98,12 +98,14 @@ export class CustomerController extends BaseController {
         return this.handleError(customError, res, req);
       }
 
+      const parsedCustomer = CustomerResponseDto.fromEntity(customer);
+
       const { orders } = customer;
 
       if (orders) {
         this.handleSuccess(
           res,
-          { ...customer, orders: OrderResponseDto.fromEntities(orders) },
+          { ...parsedCustomer, orders: OrderResponseDto.fromEntities(orders) },
           req
         );
         return;

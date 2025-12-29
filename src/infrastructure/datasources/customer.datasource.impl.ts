@@ -122,8 +122,6 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
     id: string,
     relations?: { orders?: boolean }
   ): Promise<Customer | null> {
-    //optional includes
-
     const customer = await this.prisma.customer.findUnique({
       where: { id },
       include: {

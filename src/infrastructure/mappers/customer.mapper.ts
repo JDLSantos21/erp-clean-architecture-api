@@ -93,6 +93,8 @@ export class CustomerMapper {
       city,
       isPrimary,
       isActive,
+      latitude,
+      longitude,
       createdAt,
       updatedAt,
     } = object;
@@ -102,6 +104,8 @@ export class CustomerMapper {
       branchName,
       direction,
       city,
+      latitude,
+      longitude,
       isPrimary,
     });
   }
