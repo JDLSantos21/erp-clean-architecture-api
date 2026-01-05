@@ -563,11 +563,18 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
   async findAllModels(): Promise<EquipmentModel[]> {
     try {
       const cacheKey = CacheKeyBuilder.list("equipmentModel");
-      const cached = await this.cacheService.get<EquipmentModel[]>(cacheKey);
-      if (cached) return cached.map((item) => new EquipmentModel(item));
+      const cached = await this.cacheService.get<any[]>(cacheKey);
+      console.log("Cached models:", cached);
+
+      if (cached)
+        return cached.map(
+          (item) =>
+            new EquipmentModel({ ...item, id: IntegerId.create(item.id) })
+        );
 
       const models = await this.prisma.equipmentModel.findMany();
       await this.cacheService.set(cacheKey, models, CacheTTL.STATIC);
+
       return models.map(
         (item) => new EquipmentModel({ ...item, id: IntegerId.create(item.id) })
       );

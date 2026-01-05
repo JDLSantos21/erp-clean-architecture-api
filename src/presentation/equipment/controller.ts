@@ -188,7 +188,10 @@ export class EquipmentController extends BaseController {
   getAllModels = async (req: Request, res: Response) => {
     try {
       const models = await this.equipmentRepository.findAllModels();
-      this.handleSuccess(res, modelResponseDto.fromEntities(models), req);
+
+      const modelResponse = modelResponseDto.fromEntities(models);
+
+      this.handleSuccess(res, modelResponse, req);
     } catch (error) {
       this.handleError(error, res, req);
     }
