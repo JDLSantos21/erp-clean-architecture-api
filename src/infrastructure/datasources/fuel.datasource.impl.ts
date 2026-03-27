@@ -196,6 +196,8 @@ export class FuelDatasourceImpl extends FuelDatasource {
     const { filters, skip, limit } = params;
     const { vehicleId, ...validFilters } = filters!;
 
+    console.log(filters);
+
     const searchTermFields = [
       "notes",
       "vehicle.currentTag",
@@ -215,6 +217,9 @@ export class FuelDatasourceImpl extends FuelDatasource {
         this.prisma.fuelConsumption.findMany({
           where: {
             ...where,
+            tankRefillId: filters?.tankRefillId
+              ? { equals: Number(filters.tankRefillId) }
+              : undefined,
             vehicleId: filters?.vehicleId
               ? { equals: filters.vehicleId }
               : undefined,

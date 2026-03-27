@@ -1,5 +1,6 @@
 import { Validators } from "../../../config";
 import { DEFAULT_LIMIT, DEFAULT_PAGE } from "../../constants";
+import { IntegerId } from "../../value-object";
 
 export class FuelConsumptionQueryDto {
   constructor(
@@ -10,7 +11,8 @@ export class FuelConsumptionQueryDto {
     public userId?: string,
     public startDate?: string,
     public endDate?: string,
-    public search?: string
+    public tankRefillId?: number,
+    public search?: string,
   ) {}
 
   static create(object: {
@@ -21,6 +23,7 @@ export class FuelConsumptionQueryDto {
       end_date,
       vehicle_id,
       driver_id,
+      tank_refill_id,
       user_id,
       search,
       page,
@@ -57,6 +60,10 @@ export class FuelConsumptionQueryDto {
       return ["Fecha de fin inválida", undefined];
     }
 
+    if (tank_refill_id && !Validators.isPositiveInteger(tank_refill_id)) {
+      return ["ID de recarga de tanque inválido", undefined];
+    }
+
     if (start_date && end_date) {
       const start = new Date(start_date);
       const end = new Date(end_date);
@@ -82,7 +89,8 @@ export class FuelConsumptionQueryDto {
         user_id,
         start_date,
         end_date,
-        search
+        tank_refill_id ? Number(tank_refill_id) : undefined,
+        search,
       ),
     ];
   }
