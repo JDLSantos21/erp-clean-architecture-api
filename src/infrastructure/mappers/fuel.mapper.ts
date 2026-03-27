@@ -103,7 +103,7 @@ export class FuelMapper {
   static fuelTankResetEntityFromObject(object: {
     [key: string]: any;
   }): FuelTankReset {
-    const { id, previousLevel, userId, createdAt, updatedAt } = object;
+    const { id, previousLevel, userId, tankRefillId, createdAt, updatedAt } = object;
 
     if (!id || !previousLevel || !userId || !createdAt || !updatedAt) {
       throw CustomError.badRequest("Invalid fuel tank reset object");
@@ -113,6 +113,7 @@ export class FuelMapper {
       id,
       previousLevel,
       userId,
+      tankRefillId,
       createdAt,
       updatedAt,
     });

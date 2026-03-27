@@ -46,6 +46,7 @@ export class FuelTankReset extends Entity<FuelTankReset> {
   id!: number;
   previousLevel!: number;
   userId!: string;
+  tankRefillId?: number | null;
   createdAt!: Date;
   updatedAt!: Date;
 }

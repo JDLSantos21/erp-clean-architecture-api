@@ -18,28 +18,28 @@ import { FilterParams } from "../types";
 
 export abstract class FuelRepository {
   abstract createFuelConsumption(
-    data: CreateFuelConsumptionDto
+    data: CreateFuelConsumptionDto,
   ): Promise<FuelConsumption>;
 
   abstract findAllFuelConsumptions(
-    params: FilterParams<FuelConsumptionQueryDto>
+    params: FilterParams<FuelConsumptionQueryDto>,
   ): Promise<{ consumptions: FuelConsumption[]; totalPages: number }>;
 
   abstract findFuelConsumptionById(id: number): Promise<FuelConsumption | null>;
 
   abstract updateFuelConsumption(
     id: number,
-    data: UpdateFuelConsumptionDto
+    data: UpdateFuelConsumptionDto,
   ): Promise<FuelConsumption | null>;
   abstract deleteFuelConsumption(id: number): Promise<void>;
 
   abstract createFuelTankRefill(
-    data: CreateFuelTankRefillDto
+    data: CreateFuelTankRefillDto,
   ): Promise<FuelRefill>;
 
   abstract getFuelTankRefillById(
     id: number,
-    consumptions?: boolean
+    consumptions?: boolean,
   ): Promise<FuelRefill | null>;
   abstract deleteFuelTankRefill(id: number): Promise<void>;
 
@@ -47,34 +47,34 @@ export abstract class FuelRepository {
 
   abstract findVehicleLastConsumptionExcluding(
     vehicleId: string,
-    consumptionId: number
+    consumptionId: number,
   ): Promise<FuelConsumption | null>;
 
   abstract findVehicleNextConsumption(
     vehicleId: string,
-    consumptionId: number
+    consumptionId: number,
   ): Promise<FuelConsumption | null>;
 
   abstract resetFuelTankLevel(userId: string): Promise<FuelTankReset | null>;
 
   abstract createOrUpdateFuelTankLevel(
-    params: CreateUpdateFuelTankDto
+    params: CreateUpdateFuelTankDto,
   ): Promise<FuelTank>;
 
   abstract createFuelTank(params: CreateFuelTankDto): Promise<FuelTank>;
 
   abstract updateFuelTank(
     id: number,
-    params: UpdateFuelTankDto
+    params: UpdateFuelTankDto,
   ): Promise<FuelTank | null>;
 
   abstract findVehicleLastConsumption(
-    vehicleId: string
+    vehicleId: string,
   ): Promise<FuelConsumption | null>;
 
   abstract findLastTankRefill(): Promise<FuelRefill | null>;
 
   abstract findAllTankRefills(
-    params: FilterParams<FuelTankRefillQueryDto>
+    params: FilterParams<FuelTankRefillQueryDto>,
   ): Promise<{ refills: FuelRefill[]; totalPages: number }>;
 }

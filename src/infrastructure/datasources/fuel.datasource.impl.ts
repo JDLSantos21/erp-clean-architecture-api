@@ -286,9 +286,14 @@ export class FuelDatasourceImpl extends FuelDatasource {
   async resetFuelTankLevel(userId: string): Promise<FuelTankReset | null> {
     try {
       const result = await this.prisma.$transaction(async (prisma) => {
-        const currentTank = await this.prisma.fuelTank.findUnique({
-          where: { id: 1 },
-        });
+        const [lastRefill, currentTank] = await Promise.all([
+          prisma.fuelRefill.findFirst({
+            orderBy: { createdAt: "desc" },
+          }),
+          prisma.fuelTank.findUnique({
+            where: { id: 1 },
+          }),
+        ]);
 
         if (!currentTank) {
           throw CustomError.notFound("No se encontró el tanque de combustible");
@@ -300,11 +305,15 @@ export class FuelDatasourceImpl extends FuelDatasource {
           );
         }
 
-        const resetInfo = await this.prisma.fuelTankReset.create({
-          data: { userId, previousLevel: currentTank.currentLevel },
+        const resetInfo = await prisma.fuelTankReset.create({
+          data: {
+            userId,
+            previousLevel: currentTank.currentLevel,
+            tankRefillId: lastRefill?.id || null,
+          },
         });
 
-        await this.prisma.fuelTank.update({
+        await prisma.fuelTank.update({
           where: { id: 1 },
           data: { currentLevel: 0 },
         });
