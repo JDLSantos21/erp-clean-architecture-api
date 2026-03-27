@@ -45,7 +45,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
   async updateFuelTank(
     id: number,
-    params: CreateUpdateFuelTankDto
+    params: CreateUpdateFuelTankDto,
   ): Promise<FuelTank | null> {
     const updateData: Partial<UpdateFuelTankDto> = {};
 
@@ -84,7 +84,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
   }
 
   async createFuelConsumption(
-    data: CreateFuelConsumptionDto
+    data: CreateFuelConsumptionDto,
   ): Promise<FuelConsumption> {
     try {
       const insertedConsumption = await this.prisma.$transaction(
@@ -104,7 +104,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
           });
 
           return createdConsumption;
-        }
+        },
       );
 
       const consumptionEntity =
@@ -121,7 +121,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
   async updateFuelConsumption(
     id: number,
-    data: UpdateFuelConsumptionDto
+    data: UpdateFuelConsumptionDto,
   ): Promise<FuelConsumption | null> {
     try {
       const result = await this.prisma.fuelConsumption.update({
@@ -172,7 +172,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
         if (!consumption)
           throw CustomError.notFound(
-            "No se ha encontrado el consumo de combustible"
+            "No se ha encontrado el consumo de combustible",
           );
 
         await this.prisma.fuelConsumption.delete({ where: { id } });
@@ -191,12 +191,24 @@ export class FuelDatasourceImpl extends FuelDatasource {
   }
 
   async findAllFuelConsumptions(
-    params: FiltersParams
+    params: FiltersParams,
   ): Promise<{ consumptions: FuelConsumption[]; totalPages: number }> {
     const { filters, skip, limit } = params;
     const { vehicleId, ...validFilters } = filters!;
 
-    const where = buildWhere(validFilters, [""], "consumedAt"); //todo: mejorar filtros
+    const searchTermFields = [
+      "notes",
+      "vehicle.currentTag",
+      "vehicle.licensePlate",
+      "driver.name",
+      "driver.lastName",
+      "user.name",
+      "user.lastName",
+    ];
+
+    const where = buildWhere(validFilters, searchTermFields, "consumedAt", {
+      exactMatchFields: ["driverId", "userId"],
+    });
 
     try {
       const [consumptions, totalPages] = await Promise.all([
@@ -221,28 +233,26 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
       return {
         consumptions: consumptions.map((c) =>
-          FuelMapper.fuelConsumptionEntityFromObject(c)
+          FuelMapper.fuelConsumptionEntityFromObject(c),
         ),
         totalPages,
       };
     } catch (error) {
-      if (error instanceof CustomError) {
-        throw error;
-      }
+      if (error instanceof CustomError) throw error;
       throw CustomError.internalServer(undefined, error);
     }
   }
 
   async findAllTankRefills(
-    params: FiltersParams
+    params: FiltersParams,
   ): Promise<{ refills: FuelRefill[]; totalPages: number }> {
     const { filters, skip, limit } = params;
 
-    const where = buildWhere(
-      filters!,
-      ["vehicleId", "driverId", "userId", "previousLevel", "newLevel"],
-      "createdAt"
-    );
+    const searchTermFields = ["user.name", "user.lastName"];
+
+    const where = buildWhere(filters!, searchTermFields, "createdAt", {
+      exactMatchFields: ["userId", "driverId", "vehicleId"],
+    });
 
     try {
       const [refills, totalPages] = await Promise.all([
@@ -281,7 +291,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
         if (currentTank.currentLevel === 0) {
           throw CustomError.badRequest(
-            "El nivel del tanque ya está en cero, no es necesario reiniciarlo"
+            "El nivel del tanque ya está en cero, no es necesario reiniciarlo",
           );
         }
 
@@ -307,13 +317,13 @@ export class FuelDatasourceImpl extends FuelDatasource {
   }
 
   createOrUpdateFuelTankLevel(
-    params: CreateUpdateFuelTankDto
+    params: CreateUpdateFuelTankDto,
   ): Promise<FuelTank> {
     throw new Error("Method not implemented.");
   }
 
   async findVehicleLastConsumption(
-    vehicleId: string
+    vehicleId: string,
   ): Promise<FuelConsumption | null> {
     try {
       const result = await this.prisma.fuelConsumption.findFirst({
@@ -331,7 +341,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
   async findVehicleNextConsumption(
     vehicleId: string,
-    consumptionId: number
+    consumptionId: number,
   ): Promise<FuelConsumption | null> {
     try {
       const result = await this.prisma.fuelConsumption.findFirst({
@@ -349,7 +359,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
   async findVehicleLastConsumptionExcluding(
     vehicleId: string,
-    consumptionId: number
+    consumptionId: number,
   ): Promise<FuelConsumption | null> {
     try {
       const result = await this.prisma.fuelConsumption.findFirst({
@@ -366,7 +376,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
   }
 
   async createFuelTankRefill(
-    data: CreateFuelTankRefillDto
+    data: CreateFuelTankRefillDto,
   ): Promise<FuelRefill> {
     try {
       const tankRefill = await this.prisma.$transaction(async (prisma) => {
@@ -411,7 +421,7 @@ export class FuelDatasourceImpl extends FuelDatasource {
 
   async getFuelTankRefillById(
     id: number,
-    Consumptions: boolean = false
+    Consumptions: boolean = false,
   ): Promise<FuelRefill | null> {
     try {
       const result = await this.prisma.fuelRefill.findUnique({

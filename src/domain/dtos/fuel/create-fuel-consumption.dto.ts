@@ -10,7 +10,7 @@ export class CreateFuelConsumptionDto {
     public mileage?: number | null,
     public tankRefillId?: number,
     public notes?: string,
-    public consumedAt?: Date
+    public consumedAt?: Date,
   ) {}
 
   /**
@@ -20,7 +20,7 @@ export class CreateFuelConsumptionDto {
    */
   static create(
     object: { [key: string]: any },
-    userId: string
+    userId: string,
   ): [string?, CreateFuelConsumptionDto?] {
     const {
       vehicleType,
@@ -108,7 +108,7 @@ export class CreateFuelConsumptionDto {
       mileage_final = null;
     }
 
-    if (consumed_at !== undefined) {
+    if (consumed_at) {
       if (isNaN(new Date(consumed_at).getTime())) {
         return ["La fecha de consumo no es válida", undefined];
       }
@@ -118,7 +118,7 @@ export class CreateFuelConsumptionDto {
       }
     }
 
-    if (notes !== undefined) {
+    if (notes) {
       if (typeof notes !== "string")
         return ["El formato de las notas no es válido", undefined];
       if (notes.trim() === "")
@@ -127,7 +127,7 @@ export class CreateFuelConsumptionDto {
         return ["Las notas no pueden exceder los 500 caracteres", undefined];
     }
 
-    if (tank_refill_id !== undefined && isNaN(Number(tank_refill_id))) {
+    if (tank_refill_id && !isNaN(Number(tank_refill_id))) {
       return ["El ID del reabastecimiento no es válido", undefined];
     }
 
@@ -139,9 +139,9 @@ export class CreateFuelConsumptionDto {
         userId,
         driver_id_final,
         mileage_final,
-        tank_refill_id !== undefined ? Number(tank_refill_id) : undefined,
+        tank_refill_id ? Number(tank_refill_id) : undefined,
         notes,
-        consumed_at ? new Date(consumed_at) : undefined
+        consumed_at ? new Date(consumed_at) : undefined,
       ),
     ];
   }

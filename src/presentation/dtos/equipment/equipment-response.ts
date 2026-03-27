@@ -28,9 +28,8 @@ export class EquipmentResponseDto {
 
   static fromEntity(
     entity: Equipment,
-    options: EquipmentOptions
+    options: EquipmentOptions,
   ): EquipmentResponseDto {
-    console.log(entity);
     const dto = new EquipmentResponseDto({
       id: entity.id.value,
       serialNumber: entity.serialNumber.value,
@@ -54,7 +53,6 @@ export class EquipmentResponseDto {
       updatedAt: entity.updatedAt,
     });
 
-    console.log("dto", dto);
     return dto;
   }
 
@@ -63,7 +61,7 @@ export class EquipmentResponseDto {
     options: EquipmentOptions = {
       includeModel: true,
       includeLocation: true,
-    }
+    },
   ): EquipmentResponseDto[] {
     return entities.map((entity) => this.fromEntity(entity, { ...options }));
   }

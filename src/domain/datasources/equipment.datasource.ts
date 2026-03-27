@@ -24,16 +24,16 @@ export abstract class EquipmentDatasource {
   abstract delete(id: UUID): Promise<void>;
   abstract update(id: UUID, data: unknown): Promise<Equipment>;
   abstract findAll(
-    filterParams: FilterParams<EquipmentQueryDto>
+    filterParams: FilterParams<EquipmentQueryDto>,
   ): Promise<{ equipments: Equipment[]; total: number }>;
   abstract updateStatus(id: UUID, status: EquipmentStatus): Promise<void>;
   abstract createEquipmentModel(
-    data: CreateEquipmentModelDto
+    data: CreateEquipmentModelDto,
   ): Promise<EquipmentModel>;
   abstract findOneModel(id: IntegerId): Promise<EquipmentModel>;
   abstract updateModel(
     id: IntegerId,
-    data: UpdateEquipmentModelDto
+    data: UpdateEquipmentModelDto,
   ): Promise<EquipmentModel>;
   abstract deleteModel(id: IntegerId): Promise<void>;
   abstract findAllModels(): Promise<EquipmentModel[]>;
@@ -43,7 +43,7 @@ export abstract class EquipmentDatasource {
 
   abstract createAssignment(
     data: CreateEquipmentAssignmentDto,
-    currentStatus: EquipmentStatus
+    currentStatus: EquipmentStatus,
   ): Promise<void>;
 
   abstract findAllByCustomerId(customerId: UUID): Promise<Equipment[]>;
@@ -53,6 +53,10 @@ export abstract class EquipmentDatasource {
   abstract unassignEquipment(data: UnassignEquipmentDto): Promise<void>;
 
   abstract createReport(
-    data: CreateEquipmentReportDto
+    data: CreateEquipmentReportDto,
   ): Promise<EquipmentReport>;
+
+  abstract findEquipmentAssignments(
+    equipmentId: UUID,
+  ): Promise<EquipmentAssignment[]>;
 }

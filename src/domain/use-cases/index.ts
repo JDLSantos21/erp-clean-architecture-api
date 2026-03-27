@@ -65,3 +65,4 @@ export * from "./order/product/delete-product.use-case";
 export * from "./equipment/create-equipment.use-case";
 export * from "./equipment/assign-equipment.use-case";
 export * from "./equipment/unassign-equipment.use-case";
+export * from "./equipment/delete-equipmet.use-case";

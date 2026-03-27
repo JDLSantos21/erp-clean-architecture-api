@@ -6,6 +6,7 @@ import {
   CreateEquipmentDto,
   CreateEquipmentModelDto,
   CustomError,
+  DeleteEquipment,
   EquipmentQueryDto,
   EquipmentRepository,
   FilterParams,
@@ -23,7 +24,8 @@ export class EquipmentController extends BaseController {
     private readonly createEquipmentUseCase: CreateEquipment,
     private readonly assignEquipmentUseCase: AssignEquipment,
     private readonly unassignEquipmentUseCase: UnassignEquipment,
-    private readonly equipmentRepository: EquipmentRepository
+    private readonly deleteEquipmentUseCase: DeleteEquipment,
+    private readonly equipmentRepository: EquipmentRepository,
   ) {
     super();
   }
@@ -51,7 +53,7 @@ export class EquipmentController extends BaseController {
     const equipmentId = req.params.id;
     try {
       const equipment = await this.equipmentRepository.findOne(
-        UUID.create(equipmentId)
+        UUID.create(equipmentId),
       );
 
       const equipmentDto = EquipmentResponseDto.fromEntity(equipment, {
@@ -82,9 +84,8 @@ export class EquipmentController extends BaseController {
         skip: (page - 1) * limit,
       };
 
-      const { equipments, total } = await this.equipmentRepository.findAll(
-        filterParams
-      );
+      const { equipments, total } =
+        await this.equipmentRepository.findAll(filterParams);
       const equipmentDtos = EquipmentResponseDto.fromEntities(equipments);
       const pagination = { total, page, limit };
       this.handleSuccessWithPagination(res, equipmentDtos, pagination, req);
@@ -98,7 +99,7 @@ export class EquipmentController extends BaseController {
 
     try {
       const equipments = await this.equipmentRepository.findAllByCustomerId(
-        UUID.create(customerId)
+        UUID.create(customerId),
       );
       const equipmentDtos = EquipmentResponseDto.fromEntities(equipments, {
         includeAssignments: true,
@@ -106,6 +107,24 @@ export class EquipmentController extends BaseController {
         includeModel: true,
       });
       this.handleSuccess(res, equipmentDtos, req);
+    } catch (error) {
+      this.handleError(error, res, req);
+    }
+  };
+
+  delete = async (req: Request, res: Response) => {
+    const equipmentId = req.params.id;
+
+    if (!equipmentId) {
+      const customError = CustomError.badRequest(
+        "No se proporcionó el ID del equipo",
+      );
+      return this.handleError(customError, res, req);
+    }
+
+    try {
+      await this.deleteEquipmentUseCase.execute(UUID.create(equipmentId));
+      this.handleNoContent(res);
     } catch (error) {
       this.handleError(error, res, req);
     }
@@ -177,7 +196,7 @@ export class EquipmentController extends BaseController {
       }
       const model = await this.equipmentRepository.updateModel(
         IntegerId.create(Number(modelId)),
-        dto!
+        dto!,
       );
       this.handleSuccess(res, modelResponseDto.fromEntity(model), req);
     } catch (error) {
@@ -198,7 +217,7 @@ export class EquipmentController extends BaseController {
     try {
       const modelId = req.params.id;
       const model = await this.equipmentRepository.findOneModel(
-        IntegerId.create(Number(modelId))
+        IntegerId.create(Number(modelId)),
       );
       this.handleSuccess(res, modelResponseDto.fromEntity(model), req);
     } catch (error) {

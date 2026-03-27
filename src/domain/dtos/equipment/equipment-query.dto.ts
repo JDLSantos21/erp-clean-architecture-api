@@ -12,7 +12,7 @@ export class EquipmentQueryDto {
     public customerId?: UUID,
     public status?: EquipmentStatus,
     public customerName?: string,
-    public search?: string
+    public search?: string,
   ) {}
 
   static create(object: {
@@ -76,7 +76,7 @@ export class EquipmentQueryDto {
           customerId,
           status,
           customer_name ? customer_name.trim() : undefined,
-          search ? search.trim() : undefined
+          search ? search.trim() : undefined,
         ),
       ];
     } catch (error: any) {

@@ -3,6 +3,7 @@ import {
   AssignEquipment,
   CreateEquipment,
   UnassignEquipment,
+  DeleteEquipment,
 } from "../../../domain";
 import { EquipmentController } from "../../../presentation";
 import { EquipmentSerialGenerator } from "../../services";
@@ -32,8 +33,8 @@ function registerEquipmentDatasources(container: IDIContainer): void {
     () =>
       new EquipmentDatasourceImpl(
         container.resolve("PrismaClient"),
-        container.resolve("CacheService")
-      )
+        container.resolve("CacheService"),
+      ),
   );
 }
 
@@ -41,7 +42,7 @@ function registerEquipmentDatasources(container: IDIContainer): void {
 function registerEquipmentRepositories(container: IDIContainer): void {
   container.register(
     "EquipmentRepository",
-    () => new EquipmentRepositoryImpl(container.resolve("EquipmentDatasource"))
+    () => new EquipmentRepositoryImpl(container.resolve("EquipmentDatasource")),
   );
 }
 
@@ -54,8 +55,9 @@ function registerEquipmentControllers(container: IDIContainer): void {
         container.resolve("CreateEquipmentUseCase"),
         container.resolve("AssignEquipmentUseCase"),
         container.resolve("UnassignEquipmentUseCase"),
-        container.resolve("EquipmentRepository")
-      )
+        container.resolve("DeleteEquipmentUseCase"),
+        container.resolve("EquipmentRepository"),
+      ),
   );
 }
 
@@ -66,17 +68,22 @@ function registerEquipmentUseCases(container: IDIContainer): void {
     () =>
       new CreateEquipment(
         container.resolve("EquipmentRepository"),
-        container.resolve("EquipmentSerialGenerator")
-      )
+        container.resolve("EquipmentSerialGenerator"),
+      ),
   );
   container.register(
     "AssignEquipmentUseCase",
-    () => new AssignEquipment(container.resolve("EquipmentRepository"))
+    () => new AssignEquipment(container.resolve("EquipmentRepository")),
   );
 
   container.register(
     "UnassignEquipmentUseCase",
-    () => new UnassignEquipment(container.resolve("EquipmentRepository"))
+    () => new UnassignEquipment(container.resolve("EquipmentRepository")),
+  );
+
+  container.register(
+    "DeleteEquipmentUseCase",
+    () => new DeleteEquipment(container.resolve("EquipmentRepository")),
   );
 }
 
@@ -84,6 +91,6 @@ function registerEquipmentUseCases(container: IDIContainer): void {
 function registerEquipmentServices(container: IDIContainer): void {
   container.register(
     "EquipmentSerialGenerator",
-    () => new EquipmentSerialGenerator(container.resolve("PrismaClient"))
+    () => new EquipmentSerialGenerator(container.resolve("PrismaClient")),
   );
 }

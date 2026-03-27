@@ -30,7 +30,10 @@ export class Equipment extends Entity<Equipment> {
   }
 
   public isAssigned(): boolean {
-    return this.status === "ASIGNADO";
+    const activeAssignment = this.assignments?.find((assignment) =>
+      assignment.isActive(),
+    );
+    return !!activeAssignment;
   }
 
   public isInMaintenance(): boolean {
@@ -66,7 +69,7 @@ export class Equipment extends Entity<Equipment> {
   public sendToMaintenance(): void {
     if (this.isOutOfService()) {
       throw new Error(
-        "No se puede enviar a mantenimiento un equipo fuera de servicio"
+        "No se puede enviar a mantenimiento un equipo fuera de servicio",
       );
     }
 
@@ -77,7 +80,7 @@ export class Equipment extends Entity<Equipment> {
   public completeMaintenanceAsWorking(): void {
     if (!this.isInMaintenance()) {
       throw new Error(
-        "El equipo debe estar en mantenimiento para completar el mantenimiento"
+        "El equipo debe estar en mantenimiento para completar el mantenimiento",
       );
     }
 
@@ -106,7 +109,7 @@ export class Equipment extends Entity<Equipment> {
       this.updatedAt = new Date();
     } else {
       throw new Error(
-        "Solo se puede reactivar un equipo que esté inhabilitado o dañado"
+        "Solo se puede reactivar un equipo que esté inhabilitado o dañado",
       );
     }
   }

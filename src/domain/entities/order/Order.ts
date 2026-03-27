@@ -86,7 +86,7 @@ export class Order extends Entity<Order> {
   public assign(userId: string): void {
     if (!this.canBeAssigned()) {
       throw new Error(
-        "El pedido debe estar pendiente o preparando para ser asignado"
+        "El pedido debe estar pendiente o preparando para ser asignado",
       );
     }
     this.assignedToId = userId;
@@ -96,7 +96,6 @@ export class Order extends Entity<Order> {
     const canUnassign =
       this.isAssigned() &&
       (this.isPending() || this.isPreparing() || this.isDispatched());
-    console.log("canBeUnassigned:", canUnassign);
     return canUnassign;
   }
 
@@ -117,7 +116,7 @@ export class Order extends Entity<Order> {
   public markAsDelivered(): void {
     if (!this.isDispatched()) {
       throw new Error(
-        "Solo se puede marcar como entregado un pedido despachado"
+        "Solo se puede marcar como entregado un pedido despachado",
       );
     }
     this.deliveredDate = new Date();

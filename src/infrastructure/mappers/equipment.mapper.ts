@@ -8,6 +8,8 @@ import {
   UUID,
   EquipmentSerialNumber,
 } from "../../domain";
+import { CustomerMapper } from "./customer.mapper";
+import { UserMapper } from "./user.mapper";
 
 export class EquipmentMapper {
   /**
@@ -47,7 +49,7 @@ export class EquipmentMapper {
       includeLocation?: boolean;
       includeAssignments?: boolean;
       includeReports?: boolean;
-    } = {}
+    } = {},
   ): Equipment {
     const equipment = this.EquipmentToDomain(data);
 
@@ -62,13 +64,19 @@ export class EquipmentMapper {
 
     if (options.includeAssignments && data.assignments) {
       equipment.assignments = data.assignments.map((a: any) =>
-        this.EquipmentAssignmentToDomain(a)
+        this.EquipmentAssignmentToDomainWithRelations(a, {
+          includeCustomer: !!a.customer,
+          includeCustomerAddress: !!a.customerAddress,
+          includeAssignedBy: !!a.assignedByUser,
+          includeUnassignedBy: !!a.unassignedByUser,
+          includeDeliveredBy: !!a.deliveredByUser,
+        }),
       );
     }
 
     if (options.includeReports && data.reports) {
       equipment.reports = data.reports.map((r: any) =>
-        this.EquipmentReportToDomain(r)
+        this.EquipmentReportToDomain(r),
       );
     }
 
@@ -151,13 +159,42 @@ export class EquipmentMapper {
       includeAssignedBy?: boolean;
       includeUnassignedBy?: boolean;
       includeDeliveredBy?: boolean;
-    } = {}
+    } = {},
   ): EquipmentAssignment {
     const assignment = this.EquipmentAssignmentToDomain(data);
 
     // Equipment SIN sus assignments para evitar ciclo infinito
     if (options.includeEquipment && data.equipment) {
       assignment.equipment = this.EquipmentToDomain(data.equipment);
+    }
+
+    if (options.includeCustomer && data.customer) {
+      assignment.customer = CustomerMapper.customerEntityFromObject(
+        data.customer,
+      );
+    }
+
+    if (options.includeCustomerAddress && data.customerAddress) {
+      assignment.customerAddress =
+        CustomerMapper.customerAddressEntityFromObject(data.customerAddress);
+    }
+
+    if (options.includeAssignedBy && data.assignedByUser) {
+      assignment.assignedBy = UserMapper.userEntityFromObject(
+        data.assignedByUser,
+      );
+    }
+
+    if (options.includeUnassignedBy && data.unassignedByUser) {
+      assignment.unassignedBy = UserMapper.userEntityFromObject(
+        data.unassignedByUser,
+      );
+    }
+
+    if (options.includeDeliveredBy && data.deliveredByUser) {
+      assignment.deliveredBy = UserMapper.userEntityFromObject(
+        data.deliveredByUser,
+      );
     }
 
     // TODO: Agregar mappers de Customer cuando estén disponibles

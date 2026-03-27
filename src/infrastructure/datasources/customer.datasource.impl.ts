@@ -23,8 +23,6 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   async create(data: RegisterCustomerDTO): Promise<Customer> {
     const { phones, addresses, ...customerData } = data;
 
-    console.log("Creating customer with data:", data);
-
     try {
       const newCustomer = await this.prisma.$transaction(async (tx) => {
         const createdCustomer = await tx.customer.create({
@@ -65,7 +63,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
       if (!customerWithRelations) {
         throw new CustomError(
           500,
-          "El cliente fue creado pero hubo un error al obtener sus datos"
+          "El cliente fue creado pero hubo un error al obtener sus datos",
         );
       }
 
@@ -87,7 +85,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
   }
 
   async list(
-    params: FilterParams<CustomerQueryDTO>
+    params: FilterParams<CustomerQueryDTO>,
   ): Promise<{ customers: Customer[]; total: number }> {
     const { filters, limit, skip } = params;
 
@@ -112,7 +110,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
     ]);
 
     const customersWithRelations = customers.map((customer) =>
-      CustomerMapper.customerEntityFromObject(customer)
+      CustomerMapper.customerEntityFromObject(customer),
     );
 
     return { customers: customersWithRelations, total };
@@ -120,7 +118,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
 
   async findById(
     id: string,
-    relations?: { orders?: boolean }
+    relations?: { orders?: boolean },
   ): Promise<Customer | null> {
     const customer = await this.prisma.customer.findUnique({
       where: { id },
@@ -189,7 +187,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
 
   async createPhone(
     customerId: string,
-    data: CreateCustomerPhoneDTO
+    data: CreateCustomerPhoneDTO,
   ): Promise<CustomerPhone> {
     const createdPhone = await this.prisma.customerPhone.create({
       data: {
@@ -203,7 +201,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
 
   async updatePhone(
     phoneId: number,
-    phone: Partial<UpdateCustomerPhoneDto>
+    phone: Partial<UpdateCustomerPhoneDto>,
   ): Promise<CustomerPhone> {
     const { customerId, ...phoneData } = phone;
     const updatedPhone = await this.prisma.customerPhone.update({
@@ -218,7 +216,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
       where: { customerId },
     });
     return phones.map((phone) =>
-      CustomerMapper.customerPhoneEntityFromObject(phone)
+      CustomerMapper.customerPhoneEntityFromObject(phone),
     );
   }
 
@@ -267,7 +265,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
 
   async createAddress(
     customerId: string,
-    address: CreateCustomerAddressDTO
+    address: CreateCustomerAddressDTO,
   ): Promise<CustomerAddress> {
     const createdAddress = await this.prisma.customerAddress.create({
       data: {
@@ -280,7 +278,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
 
   async updateAddress(
     addressId: number,
-    address: Partial<CreateCustomerAddressDTO>
+    address: Partial<CreateCustomerAddressDTO>,
   ): Promise<CustomerAddress> {
     const updatedAddress = await this.prisma.customerAddress.update({
       where: { id: addressId },
@@ -296,7 +294,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
       where: { customerId },
     });
     return addresses.map((address) =>
-      CustomerMapper.customerAddressEntityFromObject(address)
+      CustomerMapper.customerAddressEntityFromObject(address),
     );
   }
 
@@ -324,7 +322,7 @@ export class CustomerDatasourceImpl extends CustomerDatasource {
 
   async setPrimaryAddress(
     customerId: string,
-    addressId: number
+    addressId: number,
   ): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
       await tx.customerAddress.updateMany({

@@ -25,7 +25,7 @@ export class OrderController extends BaseController {
     private readonly updateOrderStatusUseCase: UpdateOrderStatus,
     private readonly clearOrderAssignationUseCase: ClearOrderAssignation,
     private readonly assignOrderUseCase: AssignOrderToEmployee,
-    private readonly orderRepository: OrderRepository
+    private readonly orderRepository: OrderRepository,
   ) {
     super();
   }
@@ -111,16 +111,15 @@ export class OrderController extends BaseController {
 
     if (!isValid) {
       const customError = CustomError.badRequest(
-        "El código de rastreo no es válido"
+        "El código de rastreo no es válido",
       );
       this.handleError(customError, res, req);
       return;
     }
 
     try {
-      const order = await this.orderRepository.findOneByTrackingCode(
-        trackingCode
-      );
+      const order =
+        await this.orderRepository.findOneByTrackingCode(trackingCode);
       const orderResponse = OrderResponseDto.fromEntity(order);
       this.handleSuccess(res, orderResponse, req);
     } catch (error) {
@@ -178,7 +177,7 @@ export class OrderController extends BaseController {
       this.handleSuccess(
         res,
         { message: "Estado del pedido actualizado" },
-        req
+        req,
       );
     } catch (error) {
       this.handleError(error, res, req);

@@ -54,14 +54,14 @@ export class OrderDatasourceImpl extends OrderDatasource {
 
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly cacheService: CacheService
+    private readonly cacheService: CacheService,
   ) {
     super();
     this.cacheInvalidator = new CacheInvalidator(cacheService);
   }
 
   async create(
-    data: CreateOrderDto & { trackingCode: string }
+    data: CreateOrderDto & { trackingCode: string },
   ): Promise<Order> {
     try {
       const createdOrderId = await this.prisma.$transaction(async (prisma) => {
@@ -98,7 +98,7 @@ export class OrderDatasourceImpl extends OrderDatasource {
 
       if (!createdOrder)
         throw CustomError.notFound(
-          "El pedido no fue encontrado, despues de su creación"
+          "El pedido no fue encontrado, despues de su creación",
         );
 
       await Promise.all([
@@ -109,7 +109,7 @@ export class OrderDatasourceImpl extends OrderDatasource {
       await this.cacheService.set(
         CacheKeyBuilder.entity("order", createdOrder.id),
         createdOrder,
-        CacheTTL.DYNAMIC
+        CacheTTL.DYNAMIC,
       );
 
       return OrderMapper.toDomain(createdOrder);
@@ -169,7 +169,7 @@ export class OrderDatasourceImpl extends OrderDatasource {
   }
 
   async list(
-    filterParams: FilterParams<OrderQueryDto>
+    filterParams: FilterParams<OrderQueryDto>,
   ): Promise<{ orders: Order[]; total: number }> {
     try {
       const { filters, limit, skip } = filterParams;
@@ -183,11 +183,12 @@ export class OrderDatasourceImpl extends OrderDatasource {
       const dateRangeField = "orderDate";
       const where = buildWhere(filters, searchTermFields, dateRangeField, {
         enumFields: ["status"],
+        exactMatchFields: ["id", "customerId", "createdById", "assignedToId"],
       });
 
       const cacheKey = CacheKeyBuilder.list<OrderQueryDto>(
         "order",
-        filterParams
+        filterParams,
       );
 
       const cached = await this.cacheService.get<{
@@ -217,7 +218,7 @@ export class OrderDatasourceImpl extends OrderDatasource {
         await this.cacheService.set(
           cacheKey,
           { orders, total },
-          CacheTTL.DYNAMIC
+          CacheTTL.DYNAMIC,
         );
       }
 
@@ -260,7 +261,7 @@ export class OrderDatasourceImpl extends OrderDatasource {
       const cacheKey = CacheKeyBuilder.query(
         "order",
         "byTrackingCode",
-        trackingCode
+        trackingCode,
       );
       const cachedOrder = await this.cacheService.get<Order>(cacheKey);
       if (cachedOrder) return OrderMapper.toDomain(cachedOrder);
@@ -277,7 +278,7 @@ export class OrderDatasourceImpl extends OrderDatasource {
       Logger.error("Order datasource - findOneByTrackingCode: ", error);
       if (error instanceof CustomError) throw error;
       throw CustomError.internalServer(
-        "Ocurrió un error al buscar el pedido por código de seguimiento"
+        "Ocurrió un error al buscar el pedido por código de seguimiento",
       );
     }
   }
@@ -291,7 +292,7 @@ export class OrderDatasourceImpl extends OrderDatasource {
       return !!order;
     } catch (error) {
       throw CustomError.internalServer(
-        "Ocurrió un error al verificar el código de seguimiento"
+        "Ocurrió un error al verificar el código de seguimiento",
       );
     }
   }
@@ -318,13 +319,13 @@ export class OrderDatasourceImpl extends OrderDatasource {
       await this.invalidateOrderEntityCache(orderId.value);
     } catch (error) {
       throw CustomError.internalServer(
-        "Error al actualizar el estado del pedido"
+        "Error al actualizar el estado del pedido",
       );
     }
   }
 
   async getOrderStatusHistory(
-    orderId: IntegerId
+    orderId: IntegerId,
   ): Promise<OrderStatusHistory[]> {
     try {
       const statusHistories = await this.prisma.orderStatusHistory.findMany({
@@ -337,12 +338,12 @@ export class OrderDatasourceImpl extends OrderDatasource {
 
       this.cacheInvalidator.invalidateQueries("order");
       return statusHistories.map((sh) =>
-        OrderMapper.orderStatusHistoryToDomain(sh)
+        OrderMapper.orderStatusHistoryToDomain(sh),
       );
     } catch (error) {
       Logger.error("Order datasource - getOrderStatusHistory: ", error);
       throw CustomError.internalServer(
-        "Error al obtener el historial de estados del pedido"
+        "Error al obtener el historial de estados del pedido",
       );
     }
   }
@@ -404,14 +405,11 @@ export class OrderDatasourceImpl extends OrderDatasource {
           result.dispatched = stat._count.status;
       });
 
-      console.log("In-progress orders stats: ", result);
-      console.log("Raw stats data: ", stats);
-
       return result;
     } catch (error) {
       Logger.error("Order datasource - getInProgressOrdersStats: ", error);
       throw CustomError.internalServer(
-        "Error al obtener estadísticas de pedidos en progreso"
+        "Error al obtener estadísticas de pedidos en progreso",
       );
     }
   }

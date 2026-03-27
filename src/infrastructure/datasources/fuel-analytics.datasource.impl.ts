@@ -272,6 +272,7 @@ export class FuelAnalyticsDatasourceImpl {
       const summary = new DashboardSummary({
         currentTankLevel: tankStatus?.currentLevel || 0,
         tankCapacity: tankStatus?.capacity || 0,
+        minLevel: tankStatus?.minLevel || 0,
         tankPercentage: tankStatus
           ? (tankStatus.currentLevel / tankStatus.capacity) * 100
           : 0,

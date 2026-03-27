@@ -30,14 +30,14 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
 
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly cacheService: CacheService
+    private readonly cacheService: CacheService,
   ) {
     super();
     this.cacheInvalidator = new CacheInvalidator(cacheService);
   }
 
   async createEquipment(
-    data: CreateEquipmentDto & { serialNumber: EquipmentSerialNumber }
+    data: CreateEquipmentDto & { serialNumber: EquipmentSerialNumber },
   ): Promise<Equipment> {
     const { modelId, status, serialNumber } = data;
     try {
@@ -57,7 +57,7 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
       return new Equipment(
         EquipmentMapper.EquipmentToDomainWithRelations(createdEquipment, {
           includeModel: true,
-        })
+        }),
       );
     } catch (error) {
       throw new Error("Method not implemented.");
@@ -69,10 +69,13 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
       await this.prisma.equipment.delete({
         where: { id: id.value },
       });
+
+      await this.cacheInvalidator.invalidateEntity("equipment", id.value);
+      await this.cacheInvalidator.invalidateLists("equipment");
     } catch (error) {
       Logger.error("Error deleting equipment", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al eliminar el equipo"
+        "Ocurrió un error al eliminar el equipo",
       );
     }
   }
@@ -101,7 +104,7 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
     } catch (error) {
       Logger.error("Error creating equipment request", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al crear la solicitud de equipo"
+        "Ocurrió un error al crear la solicitud de equipo",
       );
     }
   }
@@ -147,7 +150,7 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
     } catch (error) {
       Logger.error("Error deleting equipment request", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al eliminar la solicitud de equipo"
+        "Ocurrió un error al eliminar la solicitud de equipo",
       );
     }
   }
@@ -158,7 +161,7 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
 
   async createAssignment(
     data: CreateEquipmentAssignmentDto,
-    currentStatus: EquipmentStatus
+    currentStatus: EquipmentStatus,
   ): Promise<void> {
     const { equipmentId, assignedBy, customerAddressId, customerId, notes } =
       data;
@@ -194,7 +197,7 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
       if (error instanceof CustomError) throw error;
       Logger.error("Error creating equipment assignment", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al crear la asignación"
+        "Ocurrió un error al crear la asignación",
       );
     }
   }
@@ -244,7 +247,7 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
       if (error instanceof CustomError) throw error;
       Logger.error("Error unassigning equipment", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al desasignar el equipo"
+        "Ocurrió un error al desasignar el equipo",
       );
     }
   }
@@ -270,19 +273,19 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
           includeEquipment: true,
           includeCustomer: true,
           includeCustomerAddress: true,
-        }
+        },
       );
     } catch (error) {
       if (error instanceof CustomError) throw error;
       Logger.error("Error fetching equipment assignment", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al obtener la asignación"
+        "Ocurrió un error al obtener la asignación",
       );
     }
   }
 
   private getEquipmentStatusFromReason(
-    reason: "REMOVIDO" | "DEVUELTO" | "DAÑADO" | "MANTENIMIENTO"
+    reason: "REMOVIDO" | "DEVUELTO" | "DAÑADO" | "MANTENIMIENTO",
   ): EquipmentStatus {
     const statusMap: Record<typeof reason, EquipmentStatus> = {
       REMOVIDO: "DISPONIBLE",
@@ -304,22 +307,24 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
             includeReports: true,
             includeLocation: true,
             includeAssignments: true,
-          })
+          }),
         );
 
       const equipment = await this.prisma.equipment.findUnique({
         where: { id: id.value },
         include: {
           model: true,
-          assignments: true,
+          assignments: { include: { customer: true } },
           reports: true,
           location: true,
         },
       });
 
+      console.log("EQQUIPO ASIgnament", equipment?.assignments[0]);
+
       if (!equipment) throw CustomError.notFound("Equipo no encontrado");
 
-      await this.cacheService.set(cacheKey, equipment, CacheTTL.STATIC);
+      // await this.cacheService.set(cacheKey, equipment, CacheTTL.STATIC);
 
       return new Equipment(
         EquipmentMapper.EquipmentToDomainWithRelations(equipment, {
@@ -327,7 +332,7 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
           includeReports: true,
           includeLocation: true,
           includeAssignments: true,
-        })
+        }),
       );
     } catch (error) {
       Logger.error("Error fetching equipment", error);
@@ -344,13 +349,13 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
     } catch (error) {
       Logger.error("Error updating equipment status", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al actualizar el estado del equipo"
+        "Ocurrió un error al actualizar el estado del equipo",
       );
     }
   }
 
   async findAll(
-    filterParams: FilterParams<EquipmentQueryDto>
+    filterParams: FilterParams<EquipmentQueryDto>,
   ): Promise<{ equipments: Equipment[]; total: number }> {
     const { filters, limit, skip } = filterParams;
 
@@ -378,12 +383,10 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
       ],
     });
 
-    console.log("Equipment where:", JSON.stringify(where, null, 2));
-
     try {
       const cacheKey = CacheKeyBuilder.list<EquipmentQueryDto>(
         "equipment",
-        filterParams
+        filterParams,
       );
 
       const cached = await this.cacheService.get<{
@@ -396,7 +399,7 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
           equipments: cached.equipments.map((item) =>
             EquipmentMapper.EquipmentToDomainWithRelations(item, {
               includeModel: true,
-            })
+            }),
           ),
           total: cached.total,
         };
@@ -415,14 +418,14 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
       await this.cacheService.set(
         cacheKey,
         { equipments, total },
-        CacheTTL.STATIC
+        CacheTTL.STATIC,
       );
 
       return {
         equipments: equipments.map((item) =>
           EquipmentMapper.EquipmentToDomainWithRelations(item, {
             includeModel: true,
-          })
+          }),
         ),
         total,
       };
@@ -433,7 +436,7 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
   }
 
   async createEquipmentModel(
-    data: CreateEquipmentModelDto
+    data: CreateEquipmentModelDto,
   ): Promise<EquipmentModel> {
     try {
       const createdModel = await this.prisma.equipmentModel.create({
@@ -442,9 +445,10 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
 
       const cacheKey = CacheKeyBuilder.entity(
         "equipmentModel",
-        createdModel.id
+        createdModel.id,
       );
       await this.cacheService.set(cacheKey, createdModel, CacheTTL.STATIC);
+      await this.cacheInvalidator.invalidateLists("equipmentModel");
       return new EquipmentModel({
         ...createdModel,
         id: IntegerId.create(createdModel.id),
@@ -452,14 +456,14 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
     } catch (error) {
       Logger.error("Error creating equipment model", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al crear el modelo de equipo"
+        "Ocurrió un error al crear el modelo de equipo",
       );
     }
   }
 
   async updateModel(
     id: IntegerId,
-    data: UpdateEquipmentModelDto
+    data: UpdateEquipmentModelDto,
   ): Promise<EquipmentModel> {
     try {
       const updatedModel = await this.prisma.equipmentModel.update({
@@ -476,7 +480,7 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
     } catch (error) {
       Logger.error("Error updating equipment model", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al actualizar el modelo de equipo"
+        "Ocurrió un error al actualizar el modelo de equipo",
       );
     }
   }
@@ -499,7 +503,7 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
       if (error instanceof CustomError) throw error;
       Logger.error("Error fetching equipment model", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al obtener el modelo de equipo"
+        "Ocurrió un error al obtener el modelo de equipo",
       );
     }
   }
@@ -509,12 +513,12 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
       await this.prisma.equipmentModel.delete({
         where: { id: id.value },
       });
-      this.cacheInvalidator.invalidateLists("equipmentModel");
-      this.cacheInvalidator.invalidateEntity("equipmentModel", id.value);
+      await this.cacheInvalidator.invalidateLists("equipmentModel");
+      await this.cacheInvalidator.invalidateEntity("equipmentModel", id.value);
     } catch (error) {
       Logger.error("Error deleting equipment model", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al eliminar el modelo de equipo"
+        "Ocurrió un error al eliminar el modelo de equipo",
       );
     }
   }
@@ -528,7 +532,7 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
           EquipmentMapper.EquipmentToDomainWithRelations(item, {
             includeModel: true,
             includeAssignments: true,
-          })
+          }),
         );
 
       const equipments = await this.prisma.equipment.findMany({
@@ -550,12 +554,12 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
         EquipmentMapper.EquipmentToDomainWithRelations(equipment, {
           includeModel: true,
           includeAssignments: true,
-        })
+        }),
       );
     } catch (error) {
       Logger.error("Error fetching all equipments by customer ID", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al obtener todos los equipos por ID de cliente"
+        "Ocurrió un error al obtener todos los equipos por ID de cliente",
       );
     }
   }
@@ -564,17 +568,68 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
     try {
       const cacheKey = CacheKeyBuilder.list("equipmentModel");
       const cached = await this.cacheService.get<EquipmentModel[]>(cacheKey);
-      if (cached) return cached.map((item) => new EquipmentModel(item));
+      if (cached) return cached;
 
       const models = await this.prisma.equipmentModel.findMany();
-      await this.cacheService.set(cacheKey, models, CacheTTL.STATIC);
-      return models.map(
-        (item) => new EquipmentModel({ ...item, id: IntegerId.create(item.id) })
+      const domainModels = models.map(
+        (item) =>
+          new EquipmentModel({ ...item, id: IntegerId.create(item.id) }),
       );
+      await this.cacheService.set(cacheKey, domainModels, CacheTTL.STATIC);
+      return domainModels;
     } catch (error) {
       Logger.error("Error fetching all equipment models", error);
       throw CustomError.internalServer(
-        "Ocurrió un error al obtener todos los modelos de equipo"
+        "Ocurrió un error al obtener todos los modelos de equipo",
+      );
+    }
+  }
+
+  async findEquipmentAssignments(
+    equipmentId: UUID,
+  ): Promise<EquipmentAssignment[]> {
+    try {
+      const cacheKey = CacheKeyBuilder.query(
+        "equipmentAssignment",
+        equipmentId.value,
+      );
+      const cached =
+        await this.cacheService.get<EquipmentAssignment[]>(cacheKey);
+      if (cached) return cached;
+
+      const assignments = await this.prisma.equipmentAssignment.findMany({
+        where: { equipmentId: equipmentId.value },
+        include: {
+          customerAddress: true,
+          customer: {
+            select: {
+              id: true,
+              representativeName: true,
+              businessName: true,
+            },
+          },
+          assignedByUser: { select: { id: true, name: true, lastName: true } },
+          unassignedByUser: {
+            select: { id: true, name: true, lastName: true },
+          },
+          deliveredByUser: { select: { id: true, name: true, lastName: true } },
+        },
+      });
+      const domainAssignments = assignments.map((assignment) =>
+        EquipmentMapper.EquipmentAssignmentToDomainWithRelations(assignment, {
+          includeCustomerAddress: true,
+          includeCustomer: true,
+          includeAssignedBy: true,
+          includeUnassignedBy: true,
+          includeDeliveredBy: true,
+        }),
+      );
+      // await this.cacheService.set(cacheKey, domainAssignments, CacheTTL.STATIC);
+      return domainAssignments;
+    } catch (error) {
+      Logger.error("Error fetching equipment assignments", error);
+      throw CustomError.internalServer(
+        "Ocurrió un error al obtener las asignaciones de equipo",
       );
     }
   }

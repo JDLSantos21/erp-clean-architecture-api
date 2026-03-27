@@ -17,6 +17,7 @@ export class FuelMetrics extends Entity<FuelMetrics> {
 export class DashboardSummary extends Entity<DashboardSummary> {
   currentTankLevel!: number;
   tankCapacity!: number;
+  minLevel!: number;
   tankPercentage!: number;
   todayConsumption!: number;
   yesterdayConsumption!: number;

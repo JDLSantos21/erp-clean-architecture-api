@@ -1,4 +1,5 @@
 import { buildUtcDateRange } from "../../shared/utils/date-range.util";
+import { ValueObject } from "../../domain";
 
 type FilterValue =
   | string
@@ -16,6 +17,7 @@ interface FilterRules {
 
 interface FieldTypeConfig {
   enumFields?: string[];
+  exactMatchFields?: string[];
   relationFilters?: RelationFilter[];
 }
 
@@ -57,12 +59,13 @@ export function buildWhere<T extends Record<string, any>>(
   filters: T,
   searchFields: string[] = [],
   dateRangeField: string = "createdAt",
-  fieldConfig?: FieldTypeConfig
+  fieldConfig?: FieldTypeConfig,
 ) {
   const where: Record<string, any> = {};
   const { search, startDate, endDate, ...rest } = filters;
 
   const enumFields = fieldConfig?.enumFields || [];
+  const exactMatchFields = fieldConfig?.exactMatchFields || [];
   const relationFilters = fieldConfig?.relationFilters || [];
 
   const defaultRules: FilterRules = {
@@ -73,7 +76,9 @@ export function buildWhere<T extends Record<string, any>>(
   };
 
   // Handle regular filters
-  for (const [key, value] of Object.entries(rest)) {
+  for (const [key, rawValue] of Object.entries(rest)) {
+    const value = unwrapValue(rawValue);
+
     if (value === undefined || value === null || value === "") continue;
 
     // Check if this field is handled by a relation filter
@@ -81,13 +86,13 @@ export function buildWhere<T extends Record<string, any>>(
     if (relationFilter) {
       where[relationFilter.prismaRelation] = buildRelationFilter(
         relationFilter,
-        value
+        value,
       );
       continue;
     }
 
     // Special handling for enum fields
-    if (enumFields.includes(key)) {
+    if (enumFields.includes(key) || exactMatchFields.includes(key)) {
       where[key] = Array.isArray(value) ? { in: value } : { equals: value };
       continue;
     }
@@ -104,24 +109,34 @@ export function buildWhere<T extends Record<string, any>>(
 
   // Handle search filters
   if (search && searchFields.length > 0) {
-    where.OR = searchFields.map((field) => {
-      const parts = field.split(".");
+    const searchTerms = search
+      .split(/\s+/)
+      .filter((term: string) => term.length > 0);
 
-      if (parts.length === 1) {
+    if (searchTerms.length > 0) {
+      where.AND = searchTerms.map((term: string) => {
         return {
-          [field]: { contains: search, mode: "insensitive" },
+          OR: searchFields.map((field) => {
+            const parts = field.split(".");
+
+            if (parts.length === 1) {
+              return {
+                [field]: { contains: term, mode: "insensitive" },
+              };
+            }
+
+            const [relation, ...nestedPath] = parts;
+            let condition: any = { contains: term, mode: "insensitive" };
+
+            for (let i = nestedPath.length - 1; i >= 0; i--) {
+              condition = { [nestedPath[i]]: condition };
+            }
+
+            return { [relation]: condition };
+          }),
         };
-      }
-
-      const [relation, ...nestedPath] = parts;
-      let condition: any = { contains: search, mode: "insensitive" };
-
-      for (let i = nestedPath.length - 1; i >= 0; i--) {
-        condition = { [nestedPath[i]]: condition };
-      }
-
-      return { [relation]: condition };
-    });
+      });
+    }
   }
 
   return where;
@@ -148,7 +163,11 @@ export function buildWhere<T extends Record<string, any>>(
  *   }
  * }
  */
-function buildRelationFilter(config: RelationFilter, value: FilterValue): any {
+function buildRelationFilter(
+  config: RelationFilter,
+  rawValue: FilterValue,
+): any {
+  const value = unwrapValue(rawValue);
   const { nestedPath, operator, comparison = "contains" } = config;
   const parts = nestedPath.split(".");
 
@@ -170,4 +189,14 @@ function buildRelationFilter(config: RelationFilter, value: FilterValue): any {
 
   // Wrap with operator
   return { [operator]: condition };
+}
+
+function unwrapValue(value: any): any {
+  if (value instanceof ValueObject) {
+    return value.value;
+  }
+  if (Array.isArray(value)) {
+    return value.map(unwrapValue);
+  }
+  return value;
 }
