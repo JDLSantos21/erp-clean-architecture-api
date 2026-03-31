@@ -28,7 +28,7 @@ export class FuelController extends BaseController {
     private readonly createFuelTankRefillUseCase: CreateFuelTankRefill,
     private readonly fuelRepository: FuelRepository,
     private readonly vehicleRepository: VehicleRepository,
-    private readonly employeeRepository: EmployeeRepository
+    private readonly employeeRepository: EmployeeRepository,
   ) {
     super();
   }
@@ -46,7 +46,7 @@ export class FuelController extends BaseController {
 
       if (currentTank) {
         const customError = CustomError.conflict(
-          "Ya existe un tanque de combustible"
+          "Ya existe un tanque de combustible",
         );
         this.handleError(customError, res, req);
       }
@@ -84,7 +84,7 @@ export class FuelController extends BaseController {
 
       if (!Validators.isPositiveInteger(idNum)) {
         const customError = CustomError.badRequest(
-          "El ID de consumo no es válido"
+          "El ID de consumo no es válido",
         );
         return this.handleError(customError, res, req);
       }
@@ -98,7 +98,7 @@ export class FuelController extends BaseController {
 
       const consumption = await this.updateFuelConsumptionUseCase.execute(
         idNum,
-        dto!
+        dto!,
       );
 
       this.handleSuccess(res, consumption, req);
@@ -147,16 +147,7 @@ export class FuelController extends BaseController {
 
       const { password, userId } = dto!;
 
-      const isValid = BcryptAdapter.compare(password, user!.password);
-
-      if (!isValid) {
-        const customError = CustomError.unauthorized(
-          "La contraseña es incorrecta"
-        );
-        return this.handleError(customError, res, req);
-      }
-
-      const reset = await this.fuelRepository.resetFuelTankLevel(userId);
+      const reset = await this.fuelRepository.resetFuelTankLevel(userId, password);
       this.handleSuccess(res, reset, req);
     } catch (error) {
       this.handleError(error, res, req);
@@ -191,7 +182,7 @@ export class FuelController extends BaseController {
       const { consumptions } = req.query;
       const [error, dto] = FuelTankRefillByIdDto.create(
         req.params,
-        consumptions
+        consumptions,
       );
 
       if (error) {
@@ -201,12 +192,12 @@ export class FuelController extends BaseController {
 
       const refill = await this.fuelRepository.getFuelTankRefillById(
         dto!.id,
-        dto!.consumptions
+        dto!.consumptions,
       );
 
       if (!refill) {
         const customError = CustomError.notFound(
-          "Reabastecimiento no encontrado"
+          "Reabastecimiento no encontrado",
         );
         return this.handleError(customError, res, req);
       }

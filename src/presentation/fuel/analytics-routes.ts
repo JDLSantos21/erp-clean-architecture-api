@@ -16,6 +16,11 @@ export class FuelAnalyticsRoutes {
 
     router.use(authMiddleware.validateJWT);
     router.use(PermissionMiddleware.elevateRole);
+
+    // Endpoint unificado del dashboard (para /fuel/metrics del frontend)
+    router.get("/dashboard", controller.getDashboardData);
+
+    // Endpoints legacy
     router.get("/dashboard/summary", controller.getDashboardSummary);
     router.get("/dashboard/metrics", controller.getDashboardMetrics);
 

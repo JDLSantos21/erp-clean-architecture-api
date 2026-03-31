@@ -4,8 +4,10 @@ import {
   GetDashboardSummary,
   GetDashboardMetrics,
   GetVehicleMetrics,
+  GetFuelDashboard,
   FuelMetricsDto,
   VehicleMetricsDto,
+  FuelDashboardQueryDto,
   CustomError,
 } from "../../domain";
 
@@ -16,6 +18,7 @@ export class FuelAnalyticsController extends BaseController {
     private readonly getDashboardSummaryUseCase: GetDashboardSummary,
     private readonly getDashboardMetricsUseCase: GetDashboardMetrics,
     private readonly getVehicleMetricsUseCase: GetVehicleMetrics,
+    private readonly getFuelDashboardUseCase: GetFuelDashboard,
     private readonly fuelAnalyticsRepository: FuelAnalyticsRepository
   ) {
     super();
@@ -35,7 +38,7 @@ export class FuelAnalyticsController extends BaseController {
 
     if (error) {
       const customError = CustomError.badRequest(error);
-      this.handleError(customError, res, req);
+      return this.handleError(customError, res, req);
     }
 
     try {
@@ -52,7 +55,7 @@ export class FuelAnalyticsController extends BaseController {
 
     if (error) {
       const customError = CustomError.badRequest(error);
-      this.handleError(customError, res, req);
+      return this.handleError(customError, res, req);
     }
 
     try {
@@ -62,4 +65,22 @@ export class FuelAnalyticsController extends BaseController {
       this.handleError(error, res, req);
     }
   };
+
+  // Endpoint unificado del dashboard de combustible
+  getDashboardData = async (req: Request, res: Response) => {
+    const [error, dto] = FuelDashboardQueryDto.create(req.query);
+
+    if (error) {
+      const customError = CustomError.badRequest(error);
+      return this.handleError(customError, res, req);
+    }
+
+    try {
+      const dashboard = await this.getFuelDashboardUseCase.execute(dto!);
+      this.handleSuccess(res, dashboard, req);
+    } catch (error) {
+      this.handleError(error, res, req);
+    }
+  };
 }
+

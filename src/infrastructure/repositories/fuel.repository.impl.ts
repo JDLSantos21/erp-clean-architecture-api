@@ -70,8 +70,8 @@ export class FuelRepositoryImpl implements FuelRepository {
     return this.fuelDatasource.getTankCurrentStatus();
   }
 
-  resetFuelTankLevel(userId: string): Promise<FuelTankReset | null> {
-    return this.fuelDatasource.resetFuelTankLevel(userId);
+  resetFuelTankLevel(userId: string, password?: string): Promise<FuelTankReset | null> {
+    return this.fuelDatasource.resetFuelTankLevel(userId, password);
   }
 
   findAllFuelConsumptions(

@@ -55,7 +55,7 @@ export abstract class FuelRepository {
     consumptionId: number,
   ): Promise<FuelConsumption | null>;
 
-  abstract resetFuelTankLevel(userId: string): Promise<FuelTankReset | null>;
+  abstract resetFuelTankLevel(userId: string, password?: string): Promise<FuelTankReset | null>;
 
   abstract createOrUpdateFuelTankLevel(
     params: CreateUpdateFuelTankDto,

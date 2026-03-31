@@ -576,8 +576,6 @@ export class EquipmentDatasourceImpl extends EquipmentDatasource {
         (item) =>
           new EquipmentModel({ ...item, id: IntegerId.create(item.id) }),
       );
-      await this.cacheService.set(cacheKey, domainModels, CacheTTL.STATIC);
-      return domainModels;
     } catch (error) {
       Logger.error("Error fetching all equipment models", error);
       throw CustomError.internalServer(

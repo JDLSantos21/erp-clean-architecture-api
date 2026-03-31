@@ -38,6 +38,7 @@ export * from "./fuel/get-dashboard-metrics.use-case";
 export * from "./fuel/get-dashboard-summary.use-case";
 export * from "./fuel/get-vehicle-metrics.use-case";
 export * from "./fuel/create-update-fuel-tank.use-case";
+export * from "./fuel/get-fuel-dashboard.use-case";
 
 //customers
 export * from "./customer/create-customer.use-case";

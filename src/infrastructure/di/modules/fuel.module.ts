@@ -7,12 +7,14 @@ import {
   GetDashboardMetrics,
   GetDashboardSummary,
   GetVehicleMetrics,
+  GetFuelDashboard,
 } from "../../../domain";
 import { FuelController, FuelAnalyticsController } from "../../../presentation";
 import {
   FuelDatasourceImpl,
   FuelAnalyticsDatasourceImpl,
 } from "../../datasources";
+import { FuelDashboardDatasourceImpl } from "../../datasources/fuel-dashboard.datasource.impl";
 import {
   FuelRepositoryImpl,
   FuelAnalyticsRepositoryImpl,
@@ -29,33 +31,35 @@ export function registerFuelModule(container: IDIContainer): void {
 
 // Datasources
 function registerFuelDatasources(container: IDIContainer): void {
-  // Fuel Datasource
   container.register(
     "FuelDatasource",
     () => new FuelDatasourceImpl(container.resolve("PrismaClient"))
   );
 
-  // Fuel Analytics Datasource
   container.register(
     "FuelAnalyticsDatasource",
     () => new FuelAnalyticsDatasourceImpl(container.resolve("PrismaClient"))
+  );
+
+  container.register(
+    "FuelDashboardDatasource",
+    () => new FuelDashboardDatasourceImpl(container.resolve("PrismaClient"))
   );
 }
 
 //Fuel Repositories
 function registerFuelRepositories(container: IDIContainer): void {
-  // Fuel Repository
   container.register(
     "FuelRepository",
     () => new FuelRepositoryImpl(container.resolve("FuelDatasource"))
   );
 
-  // Fuel Analytics Repository
   container.register(
     "FuelAnalyticsRepository",
     () =>
       new FuelAnalyticsRepositoryImpl(
-        container.resolve("FuelAnalyticsDatasource")
+        container.resolve("FuelAnalyticsDatasource"),
+        container.resolve("FuelDashboardDatasource")
       )
   );
 }
@@ -97,11 +101,14 @@ function registerFuelUseCases(container: IDIContainer): void {
     "GetVehicleMetricsUseCase",
     () => new GetVehicleMetrics(container.resolve("FuelAnalyticsRepository"))
   );
+  container.register(
+    "GetFuelDashboardUseCase",
+    () => new GetFuelDashboard(container.resolve("FuelAnalyticsRepository"))
+  );
 }
 
 // Controllers del módulo Fuel
 function registerFuelControllers(container: IDIContainer): void {
-  // Fuel Controller
   container.register(
     "FuelController",
     () =>
@@ -116,7 +123,6 @@ function registerFuelControllers(container: IDIContainer): void {
       )
   );
 
-  // Fuel Analytics Controller
   container.register(
     "FuelAnalyticsController",
     () =>
@@ -124,7 +130,9 @@ function registerFuelControllers(container: IDIContainer): void {
         container.resolve("GetDashboardSummaryUseCase"),
         container.resolve("GetDashboardMetricsUseCase"),
         container.resolve("GetVehicleMetricsUseCase"),
+        container.resolve("GetFuelDashboardUseCase"),
         container.resolve("FuelAnalyticsRepository")
       )
   );
 }
+

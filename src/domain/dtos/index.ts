@@ -16,6 +16,7 @@ export * from "./fuel/reset-fuel-tank.dto";
 
 export * from "./fuel/fuel-metrics.dto";
 export * from "./fuel/vehicle-metrics.dto";
+export * from "./fuel/fuel-dashboard-query.dto";
 export * from "./vehicle/maintenance/create-maintenance-schedule.dto";
 export * from "./vehicle/maintenance/process-maintenance.dto";
 export * from "./telemetry/index";

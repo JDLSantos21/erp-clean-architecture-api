@@ -48,7 +48,7 @@ export abstract class FuelDatasource {
 
   abstract getTankCurrentStatus(): Promise<FuelTank | null>;
 
-  abstract resetFuelTankLevel(userId: string): Promise<FuelTankReset | null>;
+  abstract resetFuelTankLevel(userId: string, password?: string): Promise<FuelTankReset | null>;
 
   abstract createFuelTank(params: CreateFuelTankDto): Promise<FuelTank>;
 

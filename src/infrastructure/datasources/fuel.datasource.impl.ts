@@ -15,6 +15,7 @@ import {
 import { buildWhere } from "../mappers/prisma-where.mapper";
 import { FuelMapper } from "../mappers/fuel.mapper";
 import { PrismaClient } from "@prisma/client";
+import { BcryptAdapter } from "../../config";
 
 interface FiltersParams {
   filters?: Partial<FuelConsumption>;
@@ -283,9 +284,24 @@ export class FuelDatasourceImpl extends FuelDatasource {
     }
   }
 
-  async resetFuelTankLevel(userId: string): Promise<FuelTankReset | null> {
+  async resetFuelTankLevel(
+    userId: string,
+    password?: string,
+  ): Promise<FuelTankReset | null> {
     try {
       const result = await this.prisma.$transaction(async (prisma) => {
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        if (!user) {
+          throw CustomError.notFound("Usuario no encontrado");
+        }
+
+        // Assuming BcryptAdapter is imported and available
+        // You might need to import BcryptAdapter if it's not already.
+        // Example: import { BcryptAdapter } from 'src/common/adapters/bcrypt.adapter';
+        if (!password || !BcryptAdapter.compare(password, user.password)) {
+          throw CustomError.unauthorized("La contraseña es incorrecta");
+        }
+
         const [lastRefill, currentTank] = await Promise.all([
           prisma.fuelRefill.findFirst({
             orderBy: { createdAt: "desc" },

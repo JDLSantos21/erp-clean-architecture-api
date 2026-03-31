@@ -1,5 +1,5 @@
-import { FuelMetricsDto, VehicleMetricsDto } from "../dtos";
-import { FuelMetrics, DashboardSummary, VehicleMetrics } from "../entities";
+import { FuelMetricsDto, VehicleMetricsDto, FuelDashboardQueryDto } from "../dtos";
+import { FuelMetrics, DashboardSummary, VehicleMetrics, FuelDashboard } from "../entities";
 
 export abstract class FuelAnalyticsRepository {
   abstract getDashboardSummary(): Promise<DashboardSummary>;
@@ -7,4 +7,7 @@ export abstract class FuelAnalyticsRepository {
   abstract getVehicleMetrics(
     params: VehicleMetricsDto
   ): Promise<VehicleMetrics>;
+  abstract getDashboardData(
+    params: FuelDashboardQueryDto
+  ): Promise<FuelDashboard>;
 }
